@@ -16,7 +16,7 @@ Bundle-Description: Apache CXF API, version 2.6.2
 Bundle-SymbolicName: com.ibm.ws.org.apache.cxf-api.2.6.2
 
 Export-Package: !org.apache.cxf.internal, \
-  org.apache.cxf.*;version=2.6.2, \
+  org.apache.cxf.*;version=2.6.2;-split-package:=merge-last,\
   org.apache.cxf.common;version=2.6.2, \
   org.apache.cxf.common.*;version=2.6.2, \
   org.apache.cxf.attachment;thread-context="true";version="1.0.16"
@@ -40,11 +40,11 @@ Import-Package: \
  !org.springframework.*;resolution:=optional;version="[2.5,4)", \
  !org.apache.aries.*;version="[0.3,2)", \
  !org.osgi.service.blueprint.*, \
- org.apache.cxf.*;version="[2.6.2,2.6.3)", \
+ org.apache.cxf.*;version="[2.6.2,2.6.3)";-split-package:=merge-last, \
  *
 
 DynamicImport-Package: org.apache.cxf.bus;version="[2.6.2,2.6.3)", \
- org.apache.cxf.*;version="[2.6.2,2.6.3)", \
+ org.apache.cxf.*;version="[2.6.2,2.6.3)";-split-package:=merge-last, \
  com.sun.xml.*, \
  javax.xml.ws, \
  javax.xml.ws.*

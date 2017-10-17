@@ -18,7 +18,7 @@ Bundle-Activator: org.apache.cxf.transport.http.osgi.HTTPTransportActivator
 
 Export-Package: \
  META-INF.cxf.osgi;version=2.6.2, \
- org.apache.cxf.*;version=2.6.2
+ org.apache.cxf.*;version=2.6.2;-split-package:=merge-last
 
 Import-Package: \
  org.apache.cxf.ws.policy.*;resolution:=optional;version="[2.6.2,2.6.3)", \
@@ -28,7 +28,7 @@ Import-Package: \
  !org.springframework.*;resolution:=optional;version="[2.5,4)", \
  !org.apache.aries.*;version="[0.3,2)", \
  !org.osgi.service.blueprint.*, \
- org.apache.cxf.*;version="[2.6.2,2.6.3)", \
+ org.apache.cxf.*;version="[2.6.2,2.6.3)";-split-package:=merge-last, \
  *
  
 DynamicImport-Package: com.ctc.wstx.*

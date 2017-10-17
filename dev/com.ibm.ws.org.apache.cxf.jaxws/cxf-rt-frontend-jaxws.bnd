@@ -21,7 +21,7 @@ app-resources= \
  META-INF/services/javax.xml.ws.spi.Provider
 
 Export-Package: \
- org.apache.cxf.*;version=2.6.2
+ org.apache.cxf.*;version=2.6.2;-split-package:=merge-last
 
 Import-Package: \
  javax.xml.bind.*;version="[2.2,3)", \
@@ -37,7 +37,7 @@ Import-Package: \
  com.ibm.websphere.ras, \
  com.ibm.websphere.ras.annotation, \
  com.ibm.ws.ffdc, \
- org.apache.cxf.*;version="[2.6.2,2.6.3)", \
+ org.apache.cxf.*;version="[2.6.2,2.6.3)";-split-package:=merge-last, \
  *
 
 # for META-INF/services/javax.xml.ws.spi.Provider=com.ibm.ws.jaxws.client.LibertyProviderImpl
