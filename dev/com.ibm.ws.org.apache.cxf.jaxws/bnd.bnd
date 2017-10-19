@@ -12,4 +12,12 @@
 
 -sub: *.bnd
 
+-buildpath: \
+	${javac.bootclasspath.java6},\
+	lib/cxf-rt-bindings-soap-2.6.2.jar;version=file, \
+	lib/cxf-rt-core-2.6.2.jar;version=file, \
+	lib/cxf-api-2.6.2.jar;version=file, \
+	lib/cxf-rt-frontend-jaxws-2.6.2.jar;version=file, \
+	lib/cxf-rt-transports-http-2.6.2.jar;version=file
+
 globalize.disabled: true
