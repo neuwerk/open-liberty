@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 IBM Corporation and others.
+ * Copyright (c) 2015, 2019 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,6 +23,7 @@ import com.ibm.ws.logging.collector.CollectorJsonHelpers;
 import com.ibm.ws.logging.collector.LogFieldConstants;
 import com.ibm.ws.logging.data.KeyValuePairList;
 import com.ibm.ws.logging.data.LogTraceData;
+import com.ibm.ws.logging.internal.NLSConstants;
 import com.ibm.ws.logging.internal.WsLogRecord;
 import com.ibm.ws.logging.utils.LogFormatUtils;
 import com.ibm.ws.logging.utils.SequenceNumber;
@@ -31,10 +32,13 @@ import com.ibm.wsspi.collector.manager.Source;
 
 public class LogSource implements Source {
 
-    private static final TraceComponent tc = Tr.register(LogSource.class);
+    private static final TraceComponent tc = Tr.register(LogSource.class, NLSConstants.GROUP, NLSConstants.LOGGING_NLS);
 
     private final String sourceName = "com.ibm.ws.logging.source.message";
     private final String location = "memory";
+    private final String SYSOUT = "SystemOut";
+    private final String SYSERR = "SystemErr";
+
     private BufferManager bufferMgr = null;
     private final SequenceNumber sequenceNumber = new SequenceNumber();
 
@@ -130,8 +134,15 @@ public class LogSource implements Source {
         logData.setModule(logRecord.getLoggerName());
         logData.setSeverity(LogFormatUtils.mapLevelToType(logRecord));
         logData.setLoglevel(LogFormatUtils.mapLevelToRawType(logRecord));
-        logData.setMethodName(logRecord.getSourceMethodName());
-        logData.setClassName(logRecord.getSourceClassName());
+
+        if (logRecord.getLoggerName() != null && (logRecord.getLoggerName().equals(SYSOUT) ||
+                                                  logRecord.getLoggerName().equals(SYSERR))) {
+            logData.setMethodName("");
+            logData.setClassName("");
+        } else {
+            logData.setMethodName(logRecord.getSourceMethodName());
+            logData.setClassName(logRecord.getSourceClassName());
+        }
 
         logData.setLevelValue(logRecord.getLevel().intValue());
         String threadName = Thread.currentThread().getName();

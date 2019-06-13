@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2010, 2016 IBM Corporation and others.
+# Copyright (c) 2010, 2019 IBM Corporation and others.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v1.0
 # which accompanies this distribution, and is available at
@@ -689,6 +689,10 @@ error.package.extension=CWWKE0950E: Der Name der Archivdatei muss mit .jar enden
 error.package.extension.explanation=Die Option --archive muss die Dateierweiterung .jar enthalten, wenn Sie --include=runnable angeben.
 error.package.extension.useraction=Geben Sie f\u00fcr die Archivdatei mit --archive die Dateierweiterung .jar an, wenn Sie --include=runnable angeben.
 
+error.package.usr.jar=CWWKE0951E: Der Archivdateiname darf nicht mit der Dateierweiterung .jar enden, wenn die Option usr verwendet wird.
+error.package.usr.jar.explanation=Die Option --archive darf nicht die Dateierweiterung .jar enthalten, wenn --include=usr angegeben wird.
+error.package.usr.jar.useraction=Geben Sie einen Dateinamen mit --archive mit einer anderen Dateierweiterung als .jar an, wenn Sie --include=usr angeben.
+
 info.serverStarting=Server {0} wird gestartet.
 info.serverStarted=Der Server {0} wurde gestartet.
 info.serverStartedWithPID=Der Server {0} wurde mit der Prozess-ID {1} gestartet.
@@ -769,3 +773,4 @@ info.no.servers.defined=Es sind keine Server im Benutzerverzeichnis {0} definier
 info.list.of.defined.servers=Die folgenden Server sind relativ zum Benutzerverzeichnis {0} definiert.
 info.communicate.server=Es ist ein Kommunikationsfehler zwischen dem Befehl {0} und dem Server {1} aufgetreten.
 
+info.serialFilterLoaded=Der Agent f\u00fcr seriellen Filter wurde geladen.

@@ -53,7 +53,13 @@ import com.ibm.wsspi.validator.Validator;
 
 @Component(configurationPolicy = ConfigurationPolicy.IGNORE,
            service = { Validator.class },
-           property = { "service.vendor=IBM", "com.ibm.wsspi.rest.handler.root=/validation", "com.ibm.wsspi.rest.handler.config.pid=com.ibm.ws.jca.connectionFactory.supertype" })
+           property = { "service.vendor=IBM", "com.ibm.wsspi.rest.handler.root=/validation",
+                        "com.ibm.wsspi.rest.handler.config.pid=com.ibm.ws.jca.connectionFactory",
+                        "com.ibm.wsspi.rest.handler.config.pid=com.ibm.ws.jca.connectionFactory.supertype", // used by app-defined connection factory
+                        "com.ibm.wsspi.rest.handler.config.pid=com.ibm.ws.jca.jmsConnectionFactory",
+                        "com.ibm.wsspi.rest.handler.config.pid=com.ibm.ws.jca.jmsQueueConnectionFactory",
+                        "com.ibm.wsspi.rest.handler.config.pid=com.ibm.ws.jca.jmsTopicConnectionFactory"
+           })
 public class ConnectionFactoryValidator implements Validator {
     private final static TraceComponent tc = Tr.register(ConnectionFactoryValidator.class);
 
@@ -106,7 +112,9 @@ public class ConnectionFactoryValidator implements Validator {
     }
 
     @Override
-    public LinkedHashMap<String, ?> validate(Object instance, Map<String, Object> props, Locale locale) {
+    public LinkedHashMap<String, ?> validate(Object instance,
+                                             @Sensitive Map<String, Object> props, // @Sensitive prevents auto-FFDC from including password value
+                                             Locale locale) {
         final String methodName = "validate";
         String user = (String) props.get("user");
         String password = (String) props.get("password");
@@ -230,10 +238,6 @@ public class ConnectionFactoryValidator implements Validator {
             result.put("resourceAdapterName", adapterData.getAdapterName());
             result.put("resourceAdapterVersion", adapterData.getAdapterVersion());
 
-            String spec = adapterData.getSpecVersion();
-            if (spec != null && spec.length() > 0)
-                result.put("resourceAdapterJCASupport", spec);
-
             String vendor = adapterData.getAdapterVendorName();
             if (vendor != null && vendor.length() > 0)
                 result.put("resourceAdapterVendor", vendor);
@@ -241,6 +245,10 @@ public class ConnectionFactoryValidator implements Validator {
             String desc = adapterData.getAdapterShortDescription();
             if (desc != null && desc.length() > 0)
                 result.put("resourceAdapterDescription", desc);
+
+            String spec = adapterData.getSpecVersion();
+            if (spec != null && spec.length() > 0)
+                result.put("connectorSpecVersion", spec);
         } catch (NotSupportedException ignore) {
         } catch (UnsupportedOperationException ignore) {
         }
@@ -254,7 +262,7 @@ public class ConnectionFactoryValidator implements Validator {
 
             if (conSpec == null) {
                 // TODO find ConnectionSpec impl another way?
-                throw new RuntimeException("Unable to locate javax.resource.cci.ConnectionSpec impl from resource adapter.");
+                throw new RuntimeException("Unable to locate " + ConnectionSpec.class.getName() + " impl from resource adapter.");
             }
         }
 
