@@ -117,6 +117,7 @@ public class PolicyDataEngineImpl implements PolicyDataEngine {
         return policies;
     }
 
+    @Trivial
     public <T> void assertMessage(Message message, T confPol,
                                   PolicyCalculator<T> policyCalculator) {
         T messagePol = message.get(policyCalculator.getDataClass());
