@@ -12,6 +12,7 @@
 
 instrument.ffdc: false
 
+instrument.classesExcludes: org/apache/cxf/ws/policy/*.class
 cxfVersion=2.6.2
 
 Include-Resource: \
