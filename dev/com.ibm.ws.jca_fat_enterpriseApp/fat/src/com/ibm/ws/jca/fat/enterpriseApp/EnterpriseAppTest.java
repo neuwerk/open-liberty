@@ -79,12 +79,6 @@ public class EnterpriseAppTest extends FATServletClient {
         ShrinkHelper.addDirectory(ear, "lib/LibertyFATTestFiles/enterpriseApp");
         ShrinkHelper.exportToServer(server, "apps", ear);
 
-        // TODO remove this
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "tempLoginModule.jar");
-        jar.addPackage("com.ibm.test.jca.enterprisera");
-        jar.addPackage("com.ibm.test.jca.loginmodra");
-        ShrinkHelper.exportToServer(server, "/", jar);
-
         server.addInstalledAppForValidation(appName);
         server.startServer();
     }

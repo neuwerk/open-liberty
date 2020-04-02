@@ -16,10 +16,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
+import java.security.AccessController;
 import java.security.KeyPair;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +45,10 @@ import org.shredzone.acme4j.util.KeyPairUtils;
 
 import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
+import com.ibm.websphere.ras.annotation.Trivial;
+import com.ibm.ws.ffdc.annotation.FFDCIgnore;
 import com.ibm.ws.security.acme.AcmeCaException;
+import com.ibm.ws.security.acme.AcmeCertificate;
 import com.ibm.ws.security.acme.internal.util.AcmeConstants;
 
 /**
@@ -52,45 +57,12 @@ import com.ibm.ws.security.acme.internal.util.AcmeConstants;
  */
 public class AcmeClient {
 
-	/*
-	 * TODO Support external account binding?
-	 */
-
-	/**
-	 * The class' trace component.
-	 */
 	private static final TraceComponent tc = Tr.register(AcmeClient.class);
 
 	/**
-	 * A collection of account contacts.
+	 * Acme configuration for this client.
 	 */
-	private Collection<String> accountContacts;
-
-	/**
-	 * File name of the account key pair.
-	 */
-	private String accountKeyFilePath = null;
-
-	/**
-	 * The number of times to retry updating the status of a challenge.
-	 */
-	private int challengeRetries = 10;
-
-	/**
-	 * How long to wait (in ms) before retrying to update the status of a
-	 * challenge.
-	 */
-	private long challengeRetryWaitMs = 5000L;
-
-	/**
-	 * The URI of ACME CA server's directory.
-	 */
-	private String directoryURI = null;
-
-	/**
-	 * File name of the domain key pair.
-	 */
-	private String domainKeyFilePath = null;
+	private final AcmeConfig acmeConfig;
 
 	/**
 	 * This is a map of HTTP-01 challenge tokens to authorizations. The
@@ -102,51 +74,16 @@ public class AcmeClient {
 	private final Map<String, String> httpTokenToAuthzMap = new HashMap<String, String>();
 
 	/**
-	 * The number of times to retry updating the status of an order.
-	 */
-	private int orderRetries = 10;
-
-	/**
-	 * How long to wait (in ms) before retrying to update the status of an
-	 * order.
-	 */
-	private long orderRetryWaitMs = 3000L;
-
-	/**
-	 * Whether the account accepts any terms of service.
-	 */
-	private boolean termsOfServiceAgreed = false;
-
-	/**
 	 * Create a new {@link AcmeClient} instance.
 	 * 
-	 * @param directoryURI
-	 *            The URI of the ACME CA's directory service. Must be non-null
-	 *            and non-empty.
-	 * @param accountKeyFilePath
-	 *            The path to the account account key file. This path must be
-	 *            readable if it exists and writable if it does not exist.
-	 * @param domainKeyFilePath
-	 *            The path to the account domain key file. This path must be
-	 *            readable if it exists and writable if it does not exist.
-	 * @param accountContacts
-	 *            A collection of account contacts.
+	 * @param acmeConfig
+	 *            The {@link AcmeConfig} object to create the {@link AcmeClient}
+	 *            from.
 	 * @throws AcmeCaException
 	 *             if the parameters passed in were invalid.
 	 */
-	public AcmeClient(String directoryURI, String accountKeyFilePath, String domainKeyFilePath,
-			Collection<String> accountContacts) throws AcmeCaException {
-
-		if (directoryURI == null || directoryURI.trim().isEmpty()) {
-			throw new AcmeCaException("The ACME CA's directory URI must be a valid URI.");
-		}
-		validateKeyFilePath(accountKeyFilePath, "account");
-		validateKeyFilePath(domainKeyFilePath, "domain");
-
-		this.directoryURI = directoryURI;
-		this.accountKeyFilePath = accountKeyFilePath;
-		this.domainKeyFilePath = domainKeyFilePath;
-		this.accountContacts = accountContacts;
+	public AcmeClient(AcmeConfig acmeConfig) throws AcmeCaException {
+		this.acmeConfig = acmeConfig;
 	}
 
 	/**
@@ -158,6 +95,7 @@ public class AcmeClient {
 	 * @throws AcmeCaException
 	 *             if there was an issue authorizing the domain.
 	 */
+	@FFDCIgnore({ AcmeException.class, AcmeRetryAfterException.class })
 	private void authorize(Authorization authorization) throws AcmeCaException {
 		/*
 		 * The authorization is already valid. No need to process a challenge.
@@ -186,27 +124,27 @@ public class AcmeClient {
 			try {
 				challenge.trigger();
 			} catch (AcmeException e) {
-				throw new AcmeCaException("Error triggering challenge to ACME server.", e);
+				throw new AcmeCaException(
+						Tr.formatMessage(tc, "CWPKI2009E", acmeConfig.getDirectoryURI(), e.getMessage()), e);
 			}
 
 			/*
 			 * Poll for the challenge to complete.
 			 */
-			int attempts = challengeRetries + 1;
+			int attempts = acmeConfig.getChallengeRetries() + 1;
 			while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
 				// Did the authorization fail?
 				if (challenge.getStatus() == Status.INVALID) {
-					String msg = "ACME CA responded that the challenge failed for domain '"
-							+ authorization.getIdentifier().getDomain() + "' with status " + Status.INVALID.toString()
-							+ ".";
-					Tr.error(tc, msg);
+					String msg = Tr.formatMessage(tc, "CWPKI2001E", acmeConfig.getDirectoryURI(),
+							authorization.getIdentifier().getDomain(), challenge.getStatus().toString(),
+							challenge.getError().toString());
 					throw new AcmeCaException(msg);
 				}
 
 				/*
 				 * Wait to update the status.
 				 */
-				sleep(challengeRetryWaitMs);
+				sleep(acmeConfig.getChallengeRetryWaitMs());
 
 				/*
 				 * Then update the status
@@ -218,7 +156,8 @@ public class AcmeClient {
 					// Instant.
 					// Instant when = e.getRetryAfter();
 				} catch (AcmeException e) {
-					throw new AcmeCaException("Error updating challenge status from ACME server.", e);
+					throw new AcmeCaException(
+							Tr.formatMessage(tc, "CWPKI2010E", acmeConfig.getDirectoryURI(), e.getMessage()), e);
 				}
 			}
 
@@ -227,10 +166,9 @@ public class AcmeClient {
 			 * authorization?
 			 */
 			if (challenge.getStatus() != Status.VALID) {
-				String msg = "Timed out waiting for successful challenge for domain '"
-						+ authorization.getIdentifier().getDomain() + "'. Status is "
-						+ challenge.getStatus().toString();
-				Tr.error(tc, msg);
+				String msg = Tr.formatMessage(tc, "CWPKI2002E", acmeConfig.getDirectoryURI(),
+						authorization.getIdentifier().getDomain(), challenge.getStatus().toString(),
+						(acmeConfig.getChallengeRetries() * acmeConfig.getChallengeRetryWaitMs()) + "ms");
 				throw new AcmeCaException(msg);
 			}
 
@@ -248,14 +186,17 @@ public class AcmeClient {
 	 * Generates a certificate for the CSR options. Also takes care for the
 	 * registration process.
 	 *
-	 * @param options
-	 *            The certificate signing request options.
+	 * @param dryRun
+	 *            Whether this should be a dry run to report any errors. The no
+	 *            order will be made with the ACME CA server and no certificate
+	 *            will be retrieved.
 	 * @return The {@link X509Certificate} returned from the certificate
 	 *         authority.
 	 * @throws AcmeCaException
 	 *             if there was an issue fetching the certificate.
 	 */
-	public AcmeCertificate fetchCertificate(CSROptions csrOptions) throws AcmeCaException {
+	@FFDCIgnore({ IOException.class, AcmeException.class, AcmeRetryAfterException.class })
+	public AcmeCertificate fetchCertificate(boolean dryRun) throws AcmeCaException {
 
 		/*
 		 * Load the account key file. If there is no key file, create a new one.
@@ -265,7 +206,7 @@ public class AcmeClient {
 		/*
 		 * Create a session to the ACME CA directory service.
 		 */
-		Session session = new Session(this.directoryURI);
+		Session session = getNewSession();
 
 		/*
 		 * Get the Account. If there is no account yet, create a new one.
@@ -278,18 +219,26 @@ public class AcmeClient {
 		KeyPair domainKeyPair = loadOrCreateDomainKeyPair();
 
 		/*
+		 * Stop now if this is a dry run.
+		 */
+		if (dryRun) {
+			return null;
+		}
+
+		/*
 		 * Order the certificate
 		 */
 		OrderBuilder orderBuilder = acct.newOrder();
-		orderBuilder.domains(csrOptions.getDomains());
-		if (csrOptions.getValidForMs() != null && csrOptions.getValidForMs() > 0) {
-			orderBuilder.notAfter(Instant.now().plusMillis(csrOptions.getValidForMs()));
+		orderBuilder.domains(acmeConfig.getDomains());
+		if (acmeConfig.getValidFor() != null && acmeConfig.getValidFor() > 0) {
+			orderBuilder.notAfter(Instant.now().plusMillis(acmeConfig.getValidFor()));
 		}
 		Order order;
 		try {
 			order = orderBuilder.create();
 		} catch (AcmeException e) {
-			throw new AcmeCaException("Error creating order for ACME server.", e);
+			throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2011E", acmeConfig.getDirectoryURI(), e.getMessage()),
+					e);
 		}
 
 		/*
@@ -304,25 +253,25 @@ public class AcmeClient {
 		 * key pair.
 		 */
 		CSRBuilder csrb = new CSRBuilder();
-		csrb.addDomains(csrOptions.getDomains());
+		csrb.addDomains(acmeConfig.getDomains());
 
 		/*
 		 * Some CA's ignore these options, but set them anyway.
 		 */
-		if (csrOptions.getCountry() != null) {
-			csrb.setCountry(csrOptions.getCountry());
+		if (acmeConfig.getCountry() != null) {
+			csrb.setCountry(acmeConfig.getCountry());
 		}
-		if (csrOptions.getState() != null) {
-			csrb.setState(csrOptions.getState());
+		if (acmeConfig.getState() != null) {
+			csrb.setState(acmeConfig.getState());
 		}
-		if (csrOptions.getLocality() != null) {
-			csrb.setLocality(csrOptions.getLocality());
+		if (acmeConfig.getLocality() != null) {
+			csrb.setLocality(acmeConfig.getLocality());
 		}
-		if (csrOptions.getOrganization() != null) {
-			csrb.setOrganization(csrOptions.getOrganization());
+		if (acmeConfig.getOrganization() != null) {
+			csrb.setOrganization(acmeConfig.getOrganization());
 		}
-		if (csrOptions.getOrganizationalUnit() != null) {
-			csrb.setOrganizationalUnit(csrOptions.getOrganizationalUnit());
+		if (acmeConfig.getOrganizationalUnit() != null) {
+			csrb.setOrganizationalUnit(acmeConfig.getOrganizationalUnit());
 		}
 
 		/*
@@ -331,7 +280,8 @@ public class AcmeClient {
 		try {
 			csrb.sign(domainKeyPair);
 		} catch (IOException e) {
-			throw new AcmeCaException("Error signing the certificate signing request.", e);
+			throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2012E", acmeConfig.getDirectoryURI(), e.getMessage()),
+					e);
 		}
 		Tr.debug(tc, "Certificate Signing Request: " + csrb.toString());
 
@@ -341,30 +291,31 @@ public class AcmeClient {
 		try {
 			order.execute(csrb.getEncoded());
 		} catch (AcmeException e) {
-			throw new AcmeCaException("Error ordering the certificate.", e);
+			throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2013E", acmeConfig.getDirectoryURI(), e.getMessage()),
+					e);
 		} catch (IOException e) {
-			throw new AcmeCaException("Error getting the encoded certificate signing request.", e);
+			throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2014E", acmeConfig.getDirectoryURI(), e.getMessage()),
+					e);
 		}
 
 		/*
 		 * Wait for the order to complete
 		 */
-		int attempts = orderRetries + 1;
+		int attempts = acmeConfig.getOrderRetries() + 1;
 		while (order.getStatus() != Status.VALID && attempts-- > 0) {
 			/*
 			 * Did the order fail?
 			 */
 			if (order.getStatus() == Status.INVALID) {
-				String msg = "ACME CA responded that the challenge failed for domains " + csrOptions.getDomains()
-						+ " with status " + Status.INVALID.toString() + ".";
-				Tr.error(tc, msg);
+				String msg = Tr.formatMessage(tc, "CWPKI2001E", acmeConfig.getDirectoryURI(), acmeConfig.getDomains(),
+						order.getStatus().toString(), order.getError().toString());
 				throw new AcmeCaException(msg);
 			}
 
 			/*
 			 * Wait to update the status.
 			 */
-			sleep(orderRetryWaitMs);
+			sleep(acmeConfig.getOrderRetryWaitMs());
 
 			/*
 			 * Then update the status
@@ -375,7 +326,8 @@ public class AcmeClient {
 				// TODO Wait until the moment defined in the returned Instant.
 				// Instant when = e.getRetryAfter();
 			} catch (AcmeException e) {
-				throw new AcmeCaException("Error updating the order status from the ACME server.", e);
+				throw new AcmeCaException(
+						Tr.formatMessage(tc, "CWPKI2015E", acmeConfig.getDirectoryURI(), e.getMessage()), e);
 			}
 		}
 
@@ -383,9 +335,9 @@ public class AcmeClient {
 		 * All re-attempts are used up and there is still no valid order?
 		 */
 		if (order.getStatus() != Status.VALID) {
-			String msg = "Timed out waiting for successful order for domains " + csrOptions.getDomains()
-					+ ". Status is " + order.getStatus().toString();
-			Tr.error(tc, msg);
+			String msg = Tr.formatMessage(tc, "CWPKI2004E", acmeConfig.getDirectoryURI(), acmeConfig.getDomains(),
+					order.getStatus().toString(),
+					(acmeConfig.getOrderRetries() * acmeConfig.getOrderRetryWaitMs()) + "ms");
 			throw new AcmeCaException(msg);
 		}
 
@@ -408,13 +360,19 @@ public class AcmeClient {
 	 * @throws AcmeCaException
 	 *             if there was an issue requesting an existing account.
 	 */
+	@FFDCIgnore({ AcmeServerException.class })
 	private Account findExistingAccount(Session session, KeyPair accountKey) throws AcmeCaException {
 		try {
 			return new AccountBuilder().useKeyPair(accountKey).onlyExisting().create(session);
 		} catch (AcmeServerException e) {
 			return null;
-		} catch (AcmeException e) {
-			throw new AcmeCaException("Error requesting an existing account from ACME server.", e);
+		} catch (Exception e) {
+			/*
+			 * We want FFDC here as this will usually be the first communication
+			 * we try with the ACME server. We want to capture why we failed.
+			 */
+			throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2016E",
+					new Object[] { acmeConfig.getDirectoryURI(), getRootCauseMessage(e) }), e);
 		}
 	}
 
@@ -429,6 +387,7 @@ public class AcmeClient {
 	 * @throws AcmeCaException
 	 *             if there was an issue finding or registering an account.
 	 */
+	@FFDCIgnore(AcmeException.class)
 	private Account findOrRegisterAccount(Session session, KeyPair accountKey) throws AcmeCaException {
 
 		/*
@@ -447,27 +406,18 @@ public class AcmeClient {
 			try {
 				tosURI = session.getMetadata().getTermsOfService();
 			} catch (AcmeException e) {
-				throw new AcmeCaException("Error retrieving the terms of service from the ACME server.", e);
+				throw new AcmeCaException(
+						Tr.formatMessage(tc, "CWPKI2017E", acmeConfig.getDirectoryURI(), e.getMessage()), e);
 			}
 
 			/*
 			 * If the server provides terms of service, the account must accept
 			 * them.
 			 */
-			if (tosURI != null && !termsOfServiceAgreed) {
-				String msg = "The account must accept the terms of service by setting the ACME CA configuration to have a value of \"true\" for '"
-						+ AcmeConstants.ACCEPT_TERMS
-						+ "' in the server.xml. The terms of service can be found at the following URI: " + tosURI;
-				Tr.error(tc, msg);
-				throw new AcmeCaException(msg);
-			} else if (tosURI != null) {
-				/*
-				 * Log that we are accepting the terms of the CA on behalf of
-				 * the account.
-				 */
-				Tr.info(tc,
-						"Accepted the ACME CA's terms of service on behalf of the account. See the terms of service here: "
-								+ tosURI);
+			if (tosURI == null) {
+				Tr.debug(tc, "No terms of service provided");
+			} else {
+				Tr.audit(tc, "CWPKI2006I", acmeConfig.getDirectoryURI(), tosURI);
 			}
 
 			/*
@@ -478,8 +428,8 @@ public class AcmeClient {
 			/*
 			 * Add any account contacts.
 			 */
-			if (accountContacts != null && !accountContacts.isEmpty()) {
-				for (String contact : accountContacts) {
+			if (acmeConfig.getAccountContacts() != null && !acmeConfig.getAccountContacts().isEmpty()) {
+				for (String contact : acmeConfig.getAccountContacts()) {
 					accountBuilder.addContact(contact);
 				}
 			}
@@ -490,11 +440,12 @@ public class AcmeClient {
 			try {
 				account = accountBuilder.create(session);
 			} catch (AcmeException e) {
-				throw new AcmeCaException("Error creating account on ACME server.", e);
+				throw new AcmeCaException(
+						Tr.formatMessage(tc, "CWPKI2018E", acmeConfig.getDirectoryURI(), e.getMessage()), e);
 			}
 		}
 
-		Tr.info(tc, "Fetched account from ACME CA. URL: " + account.getLocation());
+		Tr.audit(tc, "CWPKI2019I", acmeConfig.getDirectoryURI(), account.getLocation());
 		return account;
 	}
 
@@ -518,11 +469,12 @@ public class AcmeClient {
 	 * @throws AcmeCaException
 	 *             if there was an issue loading the account key pair.
 	 */
+	@FFDCIgnore(IOException.class)
 	private KeyPair loadAccountKeyPair() throws AcmeCaException {
 
 		File accountKeyFile = null;
-		if (accountKeyFilePath != null) {
-			accountKeyFile = new File(accountKeyFilePath);
+		if (acmeConfig.getAccountKeyFile() != null) {
+			accountKeyFile = new File(acmeConfig.getAccountKeyFile());
 		}
 
 		if (accountKeyFile != null && accountKeyFile.exists()) {
@@ -532,7 +484,7 @@ public class AcmeClient {
 			try (FileReader fr = new FileReader(accountKeyFile)) {
 				return KeyPairUtils.readKeyPair(fr);
 			} catch (IOException e) {
-				throw new AcmeCaException("Error reading domain key file.", e);
+				throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2021E", accountKeyFile, e.getMessage()), e);
 			}
 		}
 
@@ -546,11 +498,12 @@ public class AcmeClient {
 	 * @throws AcmeCaException
 	 *             if there was an issue loading the domain key pair.
 	 */
+	@FFDCIgnore(IOException.class)
 	private KeyPair loadDomainKeyPair() throws AcmeCaException {
 
 		File domainKeyFile = null;
-		if (domainKeyFilePath != null) {
-			domainKeyFile = new File(domainKeyFilePath);
+		if (acmeConfig.getDomainKeyFile() != null) {
+			domainKeyFile = new File(acmeConfig.getDomainKeyFile());
 		}
 
 		if (domainKeyFile != null && domainKeyFile.exists()) {
@@ -560,7 +513,7 @@ public class AcmeClient {
 			try (FileReader fr = new FileReader(domainKeyFile)) {
 				return KeyPairUtils.readKeyPair(fr);
 			} catch (IOException e) {
-				throw new AcmeCaException("Error reading domain key pair file.", e);
+				throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2020E", domainKeyFile, e.getMessage()), e);
 			}
 		}
 
@@ -579,6 +532,7 @@ public class AcmeClient {
 	 *             if there was an error reading or writing the account key pair
 	 *             file.
 	 */
+	@FFDCIgnore(IOException.class)
 	private KeyPair loadOrCreateAccountKeyPair() throws AcmeCaException {
 
 		/*
@@ -596,14 +550,23 @@ public class AcmeClient {
 			accountKeyPair = KeyPairUtils.createKeyPair(AcmeConstants.KEY_SIZE);
 
 			File accountKeyFile = null;
-			if (accountKeyFilePath != null) {
-				accountKeyFile = new File(accountKeyFilePath);
+			if (acmeConfig.getAccountKeyFile() != null) {
+				accountKeyFile = new File(acmeConfig.getAccountKeyFile());
+
+				/*
+				 * Create parent directories if the abstract path contains
+				 * parent directories.
+				 */
+				if (accountKeyFile.getParentFile() != null) {
+					accountKeyFile.getParentFile().mkdirs();
+				}
 			}
 			if (accountKeyFile != null) {
 				try (FileWriter fw = new FileWriter(accountKeyFile)) {
 					KeyPairUtils.writeKeyPair(accountKeyPair, fw);
 				} catch (IOException e) {
-					throw new AcmeCaException("Error writing account key pair file.", e);
+					throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2023E", acmeConfig.getDirectoryURI(),
+							accountKeyFile, e.getMessage()), e);
 				}
 			}
 		}
@@ -623,6 +586,7 @@ public class AcmeClient {
 	 *             if there was an error reading or writing the account key pair
 	 *             file.
 	 */
+	@FFDCIgnore(IOException.class)
 	private KeyPair loadOrCreateDomainKeyPair() throws AcmeCaException {
 
 		/*
@@ -640,14 +604,23 @@ public class AcmeClient {
 			domainKeyPair = KeyPairUtils.createKeyPair(AcmeConstants.KEY_SIZE);
 
 			File domainKeyFile = null;
-			if (domainKeyFilePath != null) {
-				domainKeyFile = new File(domainKeyFilePath);
+			if (acmeConfig.getDomainKeyFile() != null) {
+				domainKeyFile = new File(acmeConfig.getDomainKeyFile());
+
+				/*
+				 * Create parent directories if the abstract path contains
+				 * parent directories.
+				 */
+				if (domainKeyFile.getParentFile() != null) {
+					domainKeyFile.getParentFile().mkdirs();
+				}
 			}
 			if (domainKeyFile != null) {
 				try (FileWriter fw = new FileWriter(domainKeyFile)) {
 					KeyPairUtils.writeKeyPair(domainKeyPair, fw);
 				} catch (IOException e) {
-					throw new AcmeCaException("Error writing account key pair file.", e);
+					throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2022E", acmeConfig.getDirectoryURI(),
+							domainKeyFile, e.getMessage()), e);
 				}
 			}
 		}
@@ -674,13 +647,12 @@ public class AcmeClient {
 	 */
 	public Challenge prepareHttpChallenge(Authorization auth) throws AcmeCaException {
 		/*
-		 * Find a single http-01 challenge
+		 * Find a single HTTP-01 challenge
 		 */
 		Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
 		if (challenge == null) {
-			String msg = "Didn't find a " + Http01Challenge.TYPE + " challenge type.";
-			Tr.error(tc, msg);
-			throw new AcmeCaException(msg);
+			throw new AcmeCaException(
+					Tr.formatMessage(tc, "CWPKI2005E", acmeConfig.getDirectoryURI(), Http01Challenge.TYPE));
 		}
 
 		/*
@@ -688,7 +660,7 @@ public class AcmeClient {
 		 */
 		httpTokenToAuthzMap.put(challenge.getToken(), challenge.getAuthorization());
 
-		Tr.debug(tc, "Prepared the following challenge with token '" + challenge.getToken() + "' and authorization '"
+		Tr.debug(tc, "Prepared the HTTP-01 challenge with token '" + challenge.getToken() + "' and authorization '"
 				+ challenge.getAuthorization() + "'.");
 		return challenge;
 	}
@@ -702,6 +674,7 @@ public class AcmeClient {
 	 * @throws AcmeCaException
 	 *             if there was an issue revoking the certificate.
 	 */
+	@FFDCIgnore(AcmeException.class)
 	public void revoke(X509Certificate certificate) throws AcmeCaException {
 
 		/*
@@ -709,14 +682,13 @@ public class AcmeClient {
 		 */
 		KeyPair accountKeyPair = loadAccountKeyPair();
 		if (accountKeyPair == null) {
-			throw new AcmeCaException(
-					"Could not load account KeyPair. Revoking a certificate requires a valid account key pair.");
+			throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2025W", acmeConfig.getDirectoryURI()));
 		}
 
 		/*
 		 * Create a session to the ACME CA directory service.
 		 */
-		Session session = new Session(this.directoryURI);
+		Session session = getNewSession();
 
 		/*
 		 * Get the Account.
@@ -731,74 +703,11 @@ public class AcmeClient {
 			try {
 				Certificate.revoke(login, certificate, RevocationReason.UNSPECIFIED);
 			} catch (AcmeException e) {
-				throw new AcmeCaException("Error revoking certificate.", e);
+				throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2024E", acmeConfig.getDirectoryURI(),
+						certificate.getSerialNumber().toString(16), e.getMessage()), e);
 			}
 		} else {
-			throw new AcmeCaException(
-					"Unable to find account to revoke certificate.  Revoking a certificate requires a valid account.");
-		}
-	}
-
-	/**
-	 * Set the accept terms of service response. If the ACME CA service has
-	 * terms of service, this needs to be set to 'true'.
-	 * 
-	 * @param acceptTos
-	 *            Whether to accept any terms of service issued by the ACME CA.
-	 */
-	public void setAcceptTos(Boolean acceptTos) {
-		if (acceptTos != null) {
-			this.termsOfServiceAgreed = acceptTos;
-		}
-	}
-
-	/**
-	 * Set the number of times to try to update a challenge before failing.
-	 * 
-	 * @param retries
-	 *            The number of time to try to update a challenge.
-	 */
-	public void setChallengeRetries(Integer retries) {
-		if (retries != null && retries >= 0) {
-			this.challengeRetries = retries;
-		}
-	}
-
-	/**
-	 * Set the amount of time, in milliseconds, to wait to retry updating the
-	 * challenge.
-	 * 
-	 * @param retryWaitMs
-	 *            The time to wait before re-trying to update a challenge.
-	 */
-	public void setChallengeRetryWait(Long retryWaitMs) {
-		if (retryWaitMs != null && retryWaitMs >= 0) {
-			this.challengeRetryWaitMs = retryWaitMs;
-		}
-	}
-
-	/**
-	 * Set the number of times to try to update an order before failing.
-	 * 
-	 * @param retries
-	 *            The number of time to try to update an order.
-	 */
-	public void setOrderRetries(Integer retries) {
-		if (retries != null && retries >= 0) {
-			this.orderRetries = retries;
-		}
-	}
-
-	/**
-	 * Set the amount of time, in milliseconds, to wait to retry updating the
-	 * order.
-	 * 
-	 * @param retryWaitMs
-	 *            The time to wait before re-trying to update an order.
-	 */
-	public void setOrderRetryWait(Long retryWaitMs) {
-		if (retryWaitMs != null && retryWaitMs >= 0) {
-			this.orderRetryWaitMs = retryWaitMs;
+			throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2026W", acmeConfig.getDirectoryURI()));
 		}
 	}
 
@@ -808,6 +717,7 @@ public class AcmeClient {
 	 * @param sleepMs
 	 *            The number of milliseconds to sleep.
 	 */
+	@FFDCIgnore(InterruptedException.class)
 	private static void sleep(long sleepMs) {
 
 		long current, terminate = System.currentTimeMillis() + sleepMs;
@@ -821,27 +731,81 @@ public class AcmeClient {
 	}
 
 	/**
-	 * Validate the key file path is usable.
+	 * Create a new session with the ACME CA server.
 	 * 
-	 * @param path
-	 *            The file path to verify.
-	 * @param type
-	 *            The key file type (account or domain). For logging only.
+	 * @return the session
 	 * @throws AcmeCaException
-	 *             if the file path exists and is not readable or if the file
-	 *             path does not exist and is not writable.
+	 *             If there was an error trying to create the new session.
 	 */
-	private static void validateKeyFilePath(String path, String type) throws AcmeCaException {
-		if (path == null || path.trim().isEmpty()) {
-			throw new AcmeCaException("The " + type + " key file path must be valid.");
+	@FFDCIgnore({ Exception.class })
+	private Session getNewSession() throws AcmeCaException {
+
+		try {
+			return AccessController.doPrivileged(new PrivilegedExceptionAction<Session>() {
+
+				@Override
+				public Session run() throws Exception {
+					ClassLoader origLoader = null;
+					try {
+						/*
+						 * Acme4J tries to load the providers using
+						 * ServiceLoader, which requires the ClassLoader is for
+						 * this bundle. If it isn't, calls through our HTTP
+						 * end-points will cause Acme4J to fail to load the
+						 * providers.
+						 */
+						origLoader = Thread.currentThread().getContextClassLoader();
+						Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+
+						return new Session(AcmeClient.this.acmeConfig.getDirectoryURI());
+					} finally {
+						Thread.currentThread().setContextClassLoader(origLoader);
+					}
+				}
+			});
+		} catch (Exception e) {
+			if (tc.isDebugEnabled()) {
+				Tr.debug(tc,
+						"Getting a new session failed for " + acmeConfig.getDirectoryURI() + ", full stack trace is",
+						e);
+			}
+
+			/*
+			 * Get the cause. PrivilegedActionException ONLY wraps checked
+			 * exceptions.
+			 */
+			Throwable cause;
+			if (e instanceof PrivilegedActionException) {
+				cause = ((PrivilegedActionException) e).getException();
+			} else {
+				cause = e;
+			}
+
+			throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2028E", acmeConfig.getDirectoryURI()), cause);
+		}
+	}
+
+	/**
+	 * Get the root cause message. The acme4j library has a tendency to
+	 * genericize the exception messages which makes it hard to determine root
+	 * cause.
+	 * 
+	 * @param t
+	 *            Throwable to get the root cause's message from.
+	 * @return The message from the lowest level cause that isn't empty or null.
+	 */
+	@Trivial
+	private static String getRootCauseMessage(Throwable t) {
+		Throwable cause;
+		String rootMessage = t.getMessage();
+
+		for (cause = t; cause != null; cause = cause.getCause()) {
+			String msg = cause.getMessage();
+			if (msg != null && !msg.trim().isEmpty()) {
+				rootMessage = msg;
+			}
 		}
 
-		File file = new File(path);
-		if (file.exists() && !file.canRead()) {
-			throw new AcmeCaException("Cannot read existing " + type + " key file.");
-		}
-		if (file.exists() && !file.canWrite()) {
-			throw new AcmeCaException("Cannot write to specified " + type + " key file location.");
-		}
+		return rootMessage;
 	}
 }

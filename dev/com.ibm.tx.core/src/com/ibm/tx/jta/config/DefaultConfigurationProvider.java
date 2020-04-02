@@ -279,6 +279,39 @@ public class DefaultConfigurationProvider implements ConfigurationProvider {
     /*
      * (non-Javadoc)
      *
+     * @see com.ibm.tx.config.ConfigurationProvider#getLeaseCheckStrategy()
+     */
+    @Override
+    public String getLeaseCheckStrategy() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.ibm.tx.config.ConfigurationProvider#getLeaseCheckInterval()
+     */
+    @Override
+    public int getLeaseCheckInterval() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.ibm.tx.config.ConfigurationProvider#getLeaseLength()
+     */
+    @Override
+    public int getLeaseLength() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
      * @see com.ibm.tx.config.ConfigurationProvider#isSQLRecoveryLog()
      */
     @Override
@@ -328,5 +361,45 @@ public class DefaultConfigurationProvider implements ConfigurationProvider {
     public int getPeerTimeBeforeStale() {
         // TODO Auto-generated method stub
         return 10;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.ibm.tx.config.ConfigurationProvider#getLightweightTransientErrorRetryTime()
+     */
+    @Override
+    public int getLightweightTransientErrorRetryTime() {
+        return 1;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.ibm.tx.config.ConfigurationProvider#getLightweightTransientErrorRetryAttempts()
+     */
+    @Override
+    public int getLightweightTransientErrorRetryAttempts() {
+        return 2;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.ibm.tx.config.ConfigurationProvider#getStandardTransientErrorRetryTime()
+     */
+    @Override
+    public int getStandardTransientErrorRetryTime() {
+        return 10;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.ibm.tx.config.ConfigurationProvider#getStandardTransientErrorRetryAttempts()
+     */
+    @Override
+    public int getStandardTransientErrorRetryAttempts() {
+        return 180;
     }
 }

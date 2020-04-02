@@ -11,11 +11,15 @@
 
 package com.ibm.ws.security.acme.internal;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.ibm.ws.security.acme.AcmeCaException;
+import com.ibm.ws.security.acme.internal.util.AcmeConstants;
 
 /**
  * Unit tests for the {@link AcmeClient} class. These tests are limited to those
@@ -36,48 +40,62 @@ public class AcmeClientTest {
 	@Test
 	public void constructor_NullURI() throws Exception {
 		expectedException.expect(AcmeCaException.class);
-		expectedException.expectMessage("The ACME CA's directory URI must be a valid URI.");
+		expectedException.expectMessage("CWPKI2008E");
 
-		new AcmeClient(null, VALID_USER_KEY_PATH, VALID_DOMAIN_KEY_PATH, null);
+		new AcmeClient(getAcmeConfig(null, VALID_USER_KEY_PATH, VALID_DOMAIN_KEY_PATH));
 	}
 
 	@Test
 	public void constructor_EmptyURI() throws Exception {
 		expectedException.expect(AcmeCaException.class);
-		expectedException.expectMessage("The ACME CA's directory URI must be a valid URI.");
+		expectedException.expectMessage("CWPKI2008E");
 
-		new AcmeClient("", VALID_USER_KEY_PATH, VALID_DOMAIN_KEY_PATH, null);
+		new AcmeClient(getAcmeConfig("", VALID_USER_KEY_PATH, VALID_DOMAIN_KEY_PATH));
 	}
 
 	@Test
 	public void constructor_NullAccountKeyPath() throws Exception {
 		expectedException.expect(AcmeCaException.class);
-		expectedException.expectMessage("The account key file path must be valid.");
+		expectedException.expectMessage("CWPKI2027E");
+		expectedException.expectMessage(AcmeConstants.ACCOUNT_TYPE);
 
-		new AcmeClient(VALID_URI, null, VALID_DOMAIN_KEY_PATH, null);
+		new AcmeClient(getAcmeConfig(VALID_URI, null, VALID_DOMAIN_KEY_PATH));
 	}
 
 	@Test
 	public void constructor_EmptyAccountKeyPath() throws Exception {
 		expectedException.expect(AcmeCaException.class);
-		expectedException.expectMessage("The account key file path must be valid.");
+		expectedException.expectMessage("CWPKI2027E");
+		expectedException.expectMessage(AcmeConstants.ACCOUNT_TYPE);
 
-		new AcmeClient(VALID_URI, "", VALID_DOMAIN_KEY_PATH, null);
+		new AcmeClient(getAcmeConfig(VALID_URI, "", VALID_DOMAIN_KEY_PATH));
 	}
 
 	@Test
 	public void constructor_NullDomainKeyPath() throws Exception {
 		expectedException.expect(AcmeCaException.class);
-		expectedException.expectMessage("The domain key file path must be valid.");
+		expectedException.expectMessage("CWPKI2027E");
+		expectedException.expectMessage(AcmeConstants.DOMAIN_TYPE);
 
-		new AcmeClient(VALID_URI, VALID_DOMAIN_KEY_PATH, null, null);
+		new AcmeClient(getAcmeConfig(VALID_URI, VALID_DOMAIN_KEY_PATH, null));
 	}
 
 	@Test
 	public void constructor_EmptyDomainKeyPath() throws Exception {
 		expectedException.expect(AcmeCaException.class);
-		expectedException.expectMessage("The domain key file path must be valid.");
+		expectedException.expectMessage("CWPKI2027E");
+		expectedException.expectMessage(AcmeConstants.DOMAIN_TYPE);
 
-		new AcmeClient(VALID_URI, VALID_DOMAIN_KEY_PATH, "", null);
+		new AcmeClient(getAcmeConfig(VALID_URI, VALID_DOMAIN_KEY_PATH, ""));
+	}
+
+	private static AcmeConfig getAcmeConfig(String acmeDirectoryURI, String accountFile, String domainFile)
+			throws AcmeCaException {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put(AcmeConstants.DOMAIN, new String[] { "domain.com" });
+		properties.put(AcmeConstants.DIR_URI, acmeDirectoryURI);
+		properties.put(AcmeConstants.ACCOUNT_KEY_FILE, accountFile);
+		properties.put(AcmeConstants.DOMAIN_KEY_FILE, domainFile);
+		return new AcmeConfig(properties);
 	}
 }

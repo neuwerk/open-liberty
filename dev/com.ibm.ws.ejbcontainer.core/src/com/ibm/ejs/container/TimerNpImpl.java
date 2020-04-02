@@ -280,6 +280,10 @@ public final class TimerNpImpl implements Timer, PassivatorSerializable {
         return ivDestroyed;
     }
 
+    long getIvExpiration() {
+        return ivExpiration;
+    }
+
     /**
      * Registers the timer with the TimerService (so that it will be found by
      * getTimers) and either schedules the timer for execution or places it
@@ -515,6 +519,18 @@ public final class TimerNpImpl implements Timer, PassivatorSerializable {
                 Tr.debug(tc, "checkIfCancelled: NoSuchObjectLocalException : " + msg);
             throw new NoSuchObjectLocalException(msg);
         }
+
+        // Handle the rather odd scenario where a calendar Timer was created that has
+        // no expirations. If last expiration is non-zero, then timer is currently running,
+        // so still exists until method completes and ivDestroyed is set. The only way both
+        // expiration and last expiration can be 0 is if the timer was created with no
+        // expirations.
+        if (ivExpiration == 0 && ivLastExpiration == 0) {
+            String msg = "Timer with ID " + ivTaskId + " was created with no scheduled timeouts.";
+            if (TraceComponent.isAnyTracingEnabled() && tc.isEntryEnabled())
+                Tr.exit(tc, "checkIfCancelled: NoSuchObjectLocalException : no expirations : " + msg);
+            throw new NoSuchObjectLocalException(msg);
+        }
     }
 
     /**
@@ -712,18 +728,6 @@ public final class TimerNpImpl implements Timer, PassivatorSerializable {
                     if (isTraceOn && tc.isEntryEnabled())
                         Tr.exit(tc, "getNextTimeout: NoMoreTimeoutsException : " + msg);
                     throw new NoMoreTimeoutsException(msg);
-                }
-
-                // Handle the rather odd scenario where a Timer is created that has
-                // no expirations. It exists, but NoMoreTimeoutsException is for
-                // use when called from a timeout callback. Note: If last expiration
-                // is non-zero, then timer is currently running, but not on the current
-                // thread (checked above), so fall through and return last expiration.
-                if (ivLastExpiration == 0) {
-                    String msg = "Timer with ID " + ivTaskId + " was created with no scheduled timeouts.";
-                    if (isTraceOn && tc.isEntryEnabled())
-                        Tr.exit(tc, "getNextTimeout: NoSuchObjectLocalException : no expirations : " + msg);
-                    throw new NoSuchObjectLocalException(msg);
                 }
             }
 

@@ -124,8 +124,9 @@ public class ConfigTest extends FATServletClient {
         originalServerConfig = server.getServerConfiguration().clone();
 
         //Get driver type
-        server.addEnvVar("DB_DRIVER", DatabaseContainerType.valueOf(testContainer).getDriverName());
-        server.addEnvVar("ANON_DRIVER", "driver" + DatabaseContainerType.valueOf(testContainer).ordinal() + ".jar");
+        DatabaseContainerType type = DatabaseContainerType.valueOf(testContainer);
+        server.addEnvVar("DB_DRIVER", type.getDriverName());
+        server.addEnvVar("ANON_DRIVER", type.getAnonymousDriverName());
         server.addEnvVar("DB_USER", testContainer.getUsername());
         server.addEnvVar("DB_PASSWORD", testContainer.getPassword());
 
@@ -370,6 +371,25 @@ public class ConfigTest extends FATServletClient {
             System.out.println(config);
             throw x;
         }
+
+        runTest(basicfat, "setServletInstanceStillActive");
+
+        // Increase maxPoolSize to 2
+        conMgr2.setMaxPoolSize("2");
+
+        try {
+            updateServerConfig(config, EMPTY_EXPR_LIST);
+            // Behavior should now reflect the new setting of 2 for maxPoolSize
+            runTest(basicfat, "testMaxPoolSize2");
+        } catch (Throwable x) {
+            System.out.println("Failure during " + method + " with the following config:");
+            System.out.println(config);
+            throw x;
+        }
+
+        runTest(basicfat, "requireServletInstanceStillActive");
+
+        runTest(basicfat, "resetState");
 
         cleanUpExprs = EMPTY_EXPR_LIST;
     }
@@ -763,6 +783,8 @@ public class ConfigTest extends FATServletClient {
             throw x;
         }
 
+        runTest(basicfat, "setServletInstanceStillActive");
+
         // Modify the nested config after it has been used
         conMgr2.setMaxPoolSize("2");
         conMgr2.setPurgePolicy("ValidateAllConnections"); // just to change the file size
@@ -776,6 +798,9 @@ public class ConfigTest extends FATServletClient {
             System.out.println(config);
             throw x;
         }
+
+        runTest(basicfat, "requireServletInstanceStillActive");
+        runTest(basicfat, "resetState");
 
         // Move the connectionManager back to top level config.
         dsfat2.setConnectionManagerRef("conMgr2");
