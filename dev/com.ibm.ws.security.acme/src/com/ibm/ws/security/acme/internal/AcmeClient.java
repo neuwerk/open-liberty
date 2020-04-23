@@ -22,8 +22,11 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.naming.ldap.Rdn;
 
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AccountBuilder;
@@ -230,8 +233,8 @@ public class AcmeClient {
 		 */
 		OrderBuilder orderBuilder = acct.newOrder();
 		orderBuilder.domains(acmeConfig.getDomains());
-		if (acmeConfig.getValidFor() != null && acmeConfig.getValidFor() > 0) {
-			orderBuilder.notAfter(Instant.now().plusMillis(acmeConfig.getValidFor()));
+		if (acmeConfig.getValidForMs() != null && acmeConfig.getValidForMs() > 0) {
+			orderBuilder.notAfter(Instant.now().plusMillis(acmeConfig.getValidForMs()));
 		}
 		Order order;
 		try {
@@ -256,22 +259,26 @@ public class AcmeClient {
 		csrb.addDomains(acmeConfig.getDomains());
 
 		/*
-		 * Some CA's ignore these options, but set them anyway.
+		 * Add the RDN's for the subjectDN in order.
 		 */
-		if (acmeConfig.getCountry() != null) {
-			csrb.setCountry(acmeConfig.getCountry());
-		}
-		if (acmeConfig.getState() != null) {
-			csrb.setState(acmeConfig.getState());
-		}
-		if (acmeConfig.getLocality() != null) {
-			csrb.setLocality(acmeConfig.getLocality());
-		}
-		if (acmeConfig.getOrganization() != null) {
-			csrb.setOrganization(acmeConfig.getOrganization());
-		}
-		if (acmeConfig.getOrganizationalUnit() != null) {
-			csrb.setOrganizationalUnit(acmeConfig.getOrganizationalUnit());
+		for (Rdn rdn : acmeConfig.getSubjectDN()) {
+			switch (rdn.getType().toLowerCase()) {
+			case "o":
+				csrb.setOrganization((String) rdn.getValue());
+				break;
+			case "ou":
+				csrb.setOrganizationalUnit((String) rdn.getValue());
+				break;
+			case "c":
+				csrb.setCountry((String) rdn.getValue());
+				break;
+			case "st":
+				csrb.setState((String) rdn.getValue());
+				break;
+			case "l":
+				csrb.setLocality((String) rdn.getValue());
+				break;
+			}
 		}
 
 		/*
@@ -346,7 +353,17 @@ public class AcmeClient {
 		 * certificate.
 		 */
 		Certificate certificate = order.getCertificate();
-		return new AcmeCertificate(domainKeyPair, certificate.getCertificate(), certificate.getCertificateChain());
+
+		/*
+		 * Check whether the notBefore time is in the future. This might happen if the
+		 * time on the local system is off.
+		 */
+		X509Certificate x509Cert = certificate.getCertificate();
+		if (x509Cert.getNotBefore().after(Calendar.getInstance().getTime())) {
+			Tr.warning(tc, "CWPKI2045W", x509Cert.getSerialNumber().toString(16), acmeConfig.getDirectoryURI(),
+					x509Cert.getNotBefore().toInstant().toString());
+		}
+		return new AcmeCertificate(domainKeyPair, x509Cert, certificate.getCertificateChain());
 	}
 
 	/**
@@ -399,6 +416,9 @@ public class AcmeClient {
 		 * If there is no existing account, create one.
 		 */
 		if (account == null) {
+			if (tc.isDebugEnabled()) {
+				Tr.debug(tc, "An existing account was not found, requesting terms of service.");
+			}
 			/*
 			 * Get the terms of service from the ACME server.
 			 */
@@ -415,7 +435,9 @@ public class AcmeClient {
 			 * them.
 			 */
 			if (tosURI == null) {
-				Tr.debug(tc, "No terms of service provided");
+				if (tc.isDebugEnabled()) {
+					Tr.debug(tc, "No terms of service provided");
+				}
 			} else {
 				Tr.audit(tc, "CWPKI2006I", acmeConfig.getDirectoryURI(), tosURI);
 			}
@@ -677,6 +699,10 @@ public class AcmeClient {
 	@FFDCIgnore(AcmeException.class)
 	public void revoke(X509Certificate certificate) throws AcmeCaException {
 
+		if (certificate == null) {
+			return;
+		}
+
 		/*
 		 * Load the account key file.
 		 */
@@ -701,7 +727,7 @@ public class AcmeClient {
 			 */
 			Login login = new Login(acct.getLocation(), accountKeyPair, session);
 			try {
-				Certificate.revoke(login, certificate, RevocationReason.UNSPECIFIED);
+				Certificate.revoke(login, certificate, RevocationReason.SUPERSEDED);
 			} catch (AcmeException e) {
 				throw new AcmeCaException(Tr.formatMessage(tc, "CWPKI2024E", acmeConfig.getDirectoryURI(),
 						certificate.getSerialNumber().toString(16), e.getMessage()), e);
