@@ -12,10 +12,14 @@
 package com.ibm.ws.security.acme.internal;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -59,6 +63,10 @@ public class AcmeConfig {
 	private String trustStore = null;
 	private SerializableProtectedString trustStorePassword = null;
 	private String trustStoreType = null;
+	
+	// Renew configuration options
+	private Long renewBeforeExpirationMs = AcmeConstants.RENEW_DEFAULT_MS;
+	private boolean autoRenewOnExpiration = true;
 
 	/**
 	 * Create a new {@link AcmeConfig} instance.
@@ -124,6 +132,8 @@ public class AcmeConfig {
 					AcmeConstants.TRANSPORT_TRUST_STORE_PASSWORD);
 			trustStoreType = getStringValue(transportProps, AcmeConstants.TRANSPORT_TRUST_STORE_TYPE);
 		}
+		
+		setRenewBeforeExpirationMs(getLongValue(properties, AcmeConstants.RENEW_BEFORE_EXPIRATION), true);
 	}
 
 	/**
@@ -438,6 +448,37 @@ public class AcmeConfig {
 			}
 		}
 	}
+	
+	/**
+	 * Set the amount of time before certificate expiration to renew the certificate
+	 * 
+	 * @param retries
+	 *            The number of time to try to update a challenge.
+	 */
+	@Trivial
+	protected void setRenewBeforeExpirationMs(Long ms, boolean printWarning) {
+		autoRenewOnExpiration = true;
+		if (ms != null) {
+			if (ms <= 0) { // disable auto renew
+				this.renewBeforeExpirationMs = 0L;
+				autoRenewOnExpiration = false;
+				if (tc.isDebugEnabled()) {
+					Tr.debug(tc, "Auto renewal of the certificate is disabled, renewBeforeExpirationMs was configured to " + ms);
+				}
+			} else if (ms < AcmeConstants.RENEW_CERT_MIN) { // too low of a timeout, reset to the min rewew allowed
+				this.renewBeforeExpirationMs = AcmeConstants.RENEW_CERT_MIN;
+				Tr.warning(tc, "CWPKI2051W", ms  +"ms", AcmeConstants.RENEW_CERT_MIN +"ms");
+			} else { 
+				this.renewBeforeExpirationMs = ms;
+				
+				if (printWarning) {
+					if (ms < AcmeConstants.RENEW_CERT_MIN_WARN_LEVEL) { // we have a really low time configured. Allow it, but print a general warning.
+						Tr.warning(tc, "CWPKI2055W", renewBeforeExpirationMs +"ms");
+					}
+				}
+			}
+		}
+	}
 
 	/**
 	 * Set the number of times to try to update a challenge before failing.
@@ -506,6 +547,21 @@ public class AcmeConfig {
 			this.validForMs = validForMs;
 		}
 	}
+	
+	/**
+	 * @return the renewBeforeExpirationMs
+	 */
+	public Long getRenewBeforeExpirationMs() {
+		return renewBeforeExpirationMs;
+	}
+	
+	/**
+	 * If renewBeforeExpiration is set to zero or less, automatic renewal on
+	 * certificate expiration is disabled.
+	 */
+	public boolean isAutoRenewOnExpiration() {
+		return autoRenewOnExpiration;
+	}
 
 	/**
 	 * Validate the key file path is usable.
@@ -530,11 +586,17 @@ public class AcmeConfig {
 			throw new AcmeCaException(Tr.formatMessage(tc, messageId, path, cause));
 		}
 
-		File parentDir = file.getParentFile();
-		if (!file.exists() && parentDir != null && !parentDir.canWrite()) {
-			String messageId = AcmeConstants.DOMAIN_TYPE.equals(type) ? "CWPKI2022E" : "CWPKI2023E";
-			String cause = Tr.formatMessage(tc, "FILE_NOT_WRITABLE");
-			throw new AcmeCaException(Tr.formatMessage(tc, messageId, path, cause));
+		if (!file.exists()) {
+			File parentFile = file;
+			while ((parentFile = parentFile.getParentFile()) != null) {
+				if (parentFile.exists() && !parentFile.canWrite()) {
+					String messageId = AcmeConstants.DOMAIN_TYPE.equals(type) ? "CWPKI2022E" : "CWPKI2023E";
+					String cause = Tr.formatMessage(tc, "FILE_NOT_WRITABLE");
+					throw new AcmeCaException(Tr.formatMessage(tc, messageId, path, cause));
+				} else if (parentFile.exists()) {
+					break;
+				}
+			}
 		}
 	}
 }
