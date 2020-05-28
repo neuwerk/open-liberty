@@ -59,12 +59,12 @@ public class ServerAsset implements Comparable<ServerAsset> {
         requiredFeatures = new HashSet<String>();
     }
 
-    public File getServerDirectory() {
-        return serverInfo.getParentFile();
-    }
-
     public File getServerXmlFile(){
         return serverInfo;
+    }
+
+    public File getServerDirectory() {
+        return serverInfo.getParentFile();
     }
 
     private static String determineServerName(File serverXMLFile) throws InstallException, IOException {

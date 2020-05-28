@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Writer;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
@@ -666,18 +667,26 @@ public class InstallUtils {
         return null;
     }
 
-
-
-    public static Set<String> getFeatures(Path serverXml, String xml, List<String> visitedServerXmls) throws IOException {
-        Path realServerXml = serverXml.normalize();
-        logger.log(Level.FINE, "Processing server: " + realServerXml);
+    public static Set<String> getFeatures(String serverXml, String xml, Set<String> visitedServerXmls) throws IOException {
         Set<String> features = new HashSet<String>();
         List<String> newLocations = new ArrayList<>();
+        boolean isUrl = false;
+        HttpURLConnection conn = null;
+        Path realServerXml = null;
+        try {
+            // todo more networking support? proxy, port etc
+            URL url = new URL(serverXml);
+            conn = (HttpURLConnection) url.openConnection();
+            isUrl = true;
 
-        if(visitedServerXmls.contains(realServerXml.toString())) {
-            return features;
+        } catch(MalformedURLException malf){
+            realServerXml = Paths.get(serverXml).normalize();
+            if(visitedServerXmls.contains(realServerXml.toString())) {
+                return features;
+            }
         }
-        try (InputStream is = Files.newInputStream(realServerXml)){
+
+        try (InputStream is =  isUrl ? conn.getInputStream() : Files.newInputStream(realServerXml)){
             Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
             Element element = doc.getDocumentElement();
             NodeList childs = doc.getChildNodes();
@@ -693,7 +702,6 @@ public class InstallUtils {
                 }
 
             }
-
             NodeList fmList = element.getElementsByTagName("featureManager");
             for (int i = 0; i < fmList.getLength(); i++) {
                 Node fm = fmList.item(i);
@@ -707,10 +715,10 @@ public class InstallUtils {
         } catch (Exception e) {
             logger.log(Level.FINE, Messages.INSTALL_KERNEL_MESSAGES.getLogMessage("ERROR_INVALID_SERVER_XML", xml, e.getMessage()));
         }
-        visitedServerXmls.add(realServerXml.toString());
+        visitedServerXmls.add(isUrl ? serverXml : realServerXml.toString());
         for(String filepath : newLocations){
             Path path = Paths.get(filepath);
-            features.addAll(getFeatures(path, path.getFileName().toString(), visitedServerXmls));
+            features.addAll(getFeatures(path.toString(), path.getFileName().toString(), visitedServerXmls));
         }
 
         return features;
