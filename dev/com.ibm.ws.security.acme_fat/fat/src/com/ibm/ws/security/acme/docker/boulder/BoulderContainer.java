@@ -67,20 +67,11 @@ public class BoulderContainer extends CAContainer {
 	 * Container that runs the hardware security module. Use the same Docker
 	 * Image as the base container.
 	 */
-	public final GenericContainer<?> bhsm = new GenericContainer<>(DOCKER_IMAGE)
-			.withEnv("PKCS11_DAEMON_SOCKET", "tcp://0.0.0.0:5657").withExposedPorts(5657).withNetwork(bluenet)
-			.withNetworkAliases("boulder-hsm")
-			.withCommand("/usr/local/bin/pkcs11-daemon /usr/lib/softhsm/libsofthsm2.so")
-			.withLogConsumer(o -> System.out.print("[HSM] " + o.getUtf8String()));
-
+	public GenericContainer<?> bhsm = null;
 	/**
 	 * Container that runs MariaDB
 	 */
-	public final GenericContainer<?> bmysql = new GenericContainer<>("mariadb:10.3").withNetwork(bluenet).withNetworkMode("host")
-			.withExposedPorts(3306).withNetworkAliases("boulder-mysql").withEnv("MYSQL_ALLOW_EMPTY_PASSWORD", "yes")
-			.withCommand(
-					"mysqld --bind-address=0.0.0.0 --slow-query-log --log-output=TABLE --log-queries-not-using-indexes=ON")
-			.withLogConsumer(o -> System.out.print("[SQL] " + o.getUtf8String()));
+	public GenericContainer<?> bmysql = null;
 
 	/**
 	 * Docker image that contains all the files from boulder-tools-go.
@@ -162,33 +153,21 @@ public class BoulderContainer extends CAContainer {
 		 * We need to start up the containers in an orderly fashion so that we
 		 * can pass the IP address of the DNS server to the Boulder server.
 		 */
-		bmysql.withStartupAttempts(WITH_STARTUP_ATTEMPTS);
+		initSQL();
 		
-		for (int i = 1; i < NUM_RESTART_ATTEMPTS_ON_EXCEPTION + 1; i ++) {
+		for (int i = 1; i < NUM_RESTART_ATTEMPTS_ON_EXCEPTION + 1; i++) {
 			try {
 				bmysql.start();
 				break;
 			} catch (Throwable t) {
 				Log.info(BoulderContainer.class, "start", "Failed to start bmysql, try again. " + t);
 				bmysql.stop();
-				Throwable cause = t.getCause();
-				while (cause != null) {
-					if (t instanceof DockerException) {
-						Log.info(BoulderContainer.class, "start", "Hit a Docker exception, trying a long sleep and retry");
-						try {
-							Thread.sleep(120000);
-						} catch (InterruptedException e) {
-						}
-						break;
-					}
-					cause = cause.getCause();
-				}
+				initSQL();
 
-				if (cause == null) { // do a short sleep and retry
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-					}
+				Log.error(BoulderContainer.class, "start", t, "Hit an exception, trying a long sleep and retry");
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException e) {
 				}
 			}
 		}
@@ -196,7 +175,8 @@ public class BoulderContainer extends CAContainer {
 			bmysql.start();
 		}
 		
-		bhsm.withStartupAttempts(WITH_STARTUP_ATTEMPTS);
+		initSM();
+
 		for (int i = 1; i < NUM_RESTART_ATTEMPTS_ON_EXCEPTION + 1; i ++) {
 			try {
 				bhsm.start();
@@ -204,6 +184,7 @@ public class BoulderContainer extends CAContainer {
 			} catch (Throwable t) {
 				Log.info(BoulderContainer.class, "start", "Failed to start bhsm, try again. " + t);
 				bhsm.stop();
+				initSM();
 				Throwable cause = t.getCause();
 				while (cause != null) {
 					if (t instanceof DockerException) {
@@ -269,8 +250,13 @@ public class BoulderContainer extends CAContainer {
 		/*
 		 * Stop all the containers, the challenge server, and the networks.
 		 */
-		bmysql.stop();
-		bhsm.stop();
+		if (bmysql != null) {
+			bmysql.stop();
+		}
+		if (bhsm != null) {
+			bhsm.stop();
+		}
+
 		super.stop();
 		bluenet.close();
 		rednet.close();
@@ -319,5 +305,24 @@ public class BoulderContainer extends CAContainer {
 	public void stopDNSServer() {
 		throw new UnsupportedOperationException(
 				getClass().getSimpleName() + " does not provider support for stopping the DNS server.");
+	}
+
+	private void initSQL() {
+		bmysql = new GenericContainer<>("mariadb:10.3").withNetwork(bluenet).withNetworkMode("host")
+		.withExposedPorts(3306).withNetworkAliases("boulder-mysql").withEnv("MYSQL_ALLOW_EMPTY_PASSWORD", "yes")
+		.withCommand(
+				"mysqld --bind-address=0.0.0.0 --slow-query-log --log-output=TABLE --log-queries-not-using-indexes=ON")
+		.withLogConsumer(o -> System.out.print("[SQL] " + o.getUtf8String()));
+		bmysql.withStartupAttempts(WITH_STARTUP_ATTEMPTS);
+	}
+
+	private void initSM() {
+		bhsm = new GenericContainer<>(DOCKER_IMAGE)
+		.withEnv("PKCS11_DAEMON_SOCKET", "tcp://0.0.0.0:5657").withExposedPorts(5657).withNetwork(bluenet)
+		.withNetworkAliases("boulder-hsm")
+		.withCommand("/usr/local/bin/pkcs11-daemon /usr/lib/softhsm/libsofthsm2.so")
+		.withLogConsumer(o -> System.out.print("[HSM] " + o.getUtf8String()));
+		bhsm.withStartupAttempts(WITH_STARTUP_ATTEMPTS);
+		
 	}
 }
