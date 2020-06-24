@@ -26,9 +26,6 @@ import componenttest.topology.impl.LibertyServerFactory;
                 SimpleTest.class,
                 OnePCDisabledTest.class,
                 XATest.class,
-                XAFlowTest.class,
-                RecoveryTest.class,
-                WaitForRecoveryTest.class,
                 TransactionScopedObserversTest.class
 })
 public class FATSuite {

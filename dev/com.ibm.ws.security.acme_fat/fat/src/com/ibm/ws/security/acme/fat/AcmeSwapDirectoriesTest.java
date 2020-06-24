@@ -37,18 +37,22 @@ import com.ibm.websphere.simplicity.log.Log;
 import com.ibm.ws.security.acme.docker.CAContainer;
 import com.ibm.ws.security.acme.docker.pebble.PebbleContainer;
 import com.ibm.ws.security.acme.internal.AcmeHistory;
+import com.ibm.ws.security.acme.internal.util.AcmeConstants;
 import com.ibm.ws.security.acme.utils.AcmeFatUtils;
 
 import componenttest.annotation.AllowedFFDC;
 import componenttest.annotation.CheckForLeakedPasswords;
 import componenttest.annotation.Server;
 import componenttest.custom.junit.runner.FATRunner;
+import componenttest.custom.junit.runner.Mode;
+import componenttest.custom.junit.runner.Mode.TestMode;
 import componenttest.topology.impl.LibertyServer;
 /**
  * Test for AcmeHistoricalFile. Ensure the file is created, updated, and
  * causes refreshing of certificates.
  */
 @RunWith(FATRunner.class)
+@Mode(TestMode.FULL)
 public class AcmeSwapDirectoriesTest {
 
 	@Server("com.ibm.ws.security.acme.fat.simple")
@@ -56,7 +60,7 @@ public class AcmeSwapDirectoriesTest {
 
 	protected static ServerConfiguration ORIGINAL_CONFIG;
 	
-	private final String acmeFile = "acmeca-history.txt";
+	private final String acmeFile = AcmeConstants.ACME_HISTORY_FILE;
 
 	/*
 	 * Domains that are configured and cleared before and after the class.
@@ -189,7 +193,7 @@ public class AcmeSwapDirectoriesTest {
 			 * 
 			 **********************************************************************/			
 			Log.info(this.getClass(), testName.getMethodName(), "TEST 3: START");
-			server.stopServer();
+			stopServer();
 			AcmeFatUtils.configureAcmeCA(server, caContainer, ORIGINAL_CONFIG, false, false, false, DOMAINS_1);
 			server.startServer();
 			AcmeFatUtils.waitForAcmeAppToStart(server);
@@ -218,7 +222,7 @@ public class AcmeSwapDirectoriesTest {
 			/*
 			 * Stop the server.
 			 */
-			server.stopServer("CWPKI2038W");
+			stopServer("CWPKI2038W");
 		}
 	}
 	/**
@@ -318,7 +322,7 @@ public class AcmeSwapDirectoriesTest {
 			/*
 			 * Stop the server.
 			 */
-			server.stopServer("CWPKI2038W", "CWPKI2072W");
+			stopServer("CWPKI2038W", "CWPKI2072W");
 		}
 	}
 	/**
@@ -393,7 +397,11 @@ public class AcmeSwapDirectoriesTest {
 			/*
 			 * Stop the server.
 			 */
-			server.stopServer("CWPKI2038W");
+			stopServer("CWPKI2038W");
 		}
+	}
+	
+	private void stopServer(String...msgs) throws Exception {
+		AcmeFatUtils.stopServer(server, msgs);
 	}
 }

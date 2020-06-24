@@ -201,7 +201,7 @@ public class AcmeDisableTriggerSimpleTest {
 			/*
 			 * Stop the server.
 			 */
-			server.stopServer();
+			stopServer();
 		}
 	}
 	
@@ -280,7 +280,7 @@ public class AcmeDisableTriggerSimpleTest {
 			AcmeFatUtils.waitForAcmeToCreateCertificate(server);
 			AcmeFatUtils.assertAndGetServerCertificate(server, caContainer);
 		} finally {
-			server.stopServer("CWPKI2001E", "CWPKI0804E", "CWWKO0801E");
+			stopServer("CWPKI2001E", "CWPKI0804E", "CWWKO0801E");
 		}
 	}
 	
@@ -297,7 +297,7 @@ public class AcmeDisableTriggerSimpleTest {
 		configuration.getFeatureManager().getFeatures().remove("acmeCA-2.0");
 		configuration.getFeatureManager().getFeatures().add("transportSecurity-1.0");
 		configuration.getFeatureManager().getFeatures().add("servlet-4.0");
-		configuration.getAcmeCA().setCertCheckerSchedule(AcmeConstants.RENEW_CERT_MIN + "ms");
+		configuration.getAcmeCA().setCertCheckerSchedule(AcmeConstants.RENEW_CERT_MIN_DEFAULT + "ms");
 		AcmeFatUtils.configureAcmeCA(server, caContainer, configuration, false, DOMAINS_1);
 
 		try {
@@ -370,7 +370,7 @@ public class AcmeDisableTriggerSimpleTest {
 			 * Check log for the amount of time it would take to wake up/run the scheduler
 			 */
 			assertNull("Should not have found the cert checker waking up: " + AcmeFatUtils.ACME_CHECKER_TRACE,
-					server.waitForStringInTrace(AcmeFatUtils.ACME_CHECKER_TRACE, AcmeConstants.RENEW_CERT_MIN - timeElapsed + 1000));
+					server.waitForStringInTrace(AcmeFatUtils.ACME_CHECKER_TRACE, configuration.getAcmeCA().getRenewCertMin() - timeElapsed + 1000));
 			
 			Log.info(this.getClass(), testName.getMethodName(), "TEST 2: FINISH");
 
@@ -408,8 +408,11 @@ public class AcmeDisableTriggerSimpleTest {
 			/*
 			 * Stop the server.
 			 */
-			server.stopServer("CWPKI2058W");
+			stopServer("CWPKI2058W");
 		}
 	}
 
+	private void stopServer(String...msgs) throws Exception {
+		AcmeFatUtils.stopServer(server, msgs);
+	}
 }

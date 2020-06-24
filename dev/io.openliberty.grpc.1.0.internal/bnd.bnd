@@ -30,11 +30,11 @@ Import-Package: !sun.*,\
   *
 
 Export-Package: \
-	io.grpc.servlet,\
-	io.openliberty.grpc.internal.config,\
-	io.openliberty.grpc.internal.servlet
-
-Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+  io.grpc.servlet,\
+  io.openliberty.grpc.internal,\
+  io.openliberty.grpc.internal.config,\
+  io.openliberty.grpc.internal.resources,\
+  io.openliberty.grpc.internal.servlet
 
 Include-Resource: \
   OSGI-INF=resources/OSGI-INF, \

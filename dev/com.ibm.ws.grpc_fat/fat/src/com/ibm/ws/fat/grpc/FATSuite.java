@@ -18,6 +18,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
                 HelloWorldTest.class,
                 ServiceSupportTests.class,
+                StoreServicesTests.class
 
 })
 

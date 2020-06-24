@@ -135,7 +135,7 @@ public class AcmeCaRestHandlerTest {
 		/*
 		 * Stop the server.
 		 */
-		server.stopServer("CWPKI2058W");
+		AcmeFatUtils.stopServer(server, "CWPKI2058W");
 	}
 
 	@Test
@@ -815,9 +815,12 @@ public class AcmeCaRestHandlerTest {
 			
 			/*
 			 * Do back to back renew requests, we should be blocked from renewing
+			 * 
+			 * Only do 2 repeats, if we do too many repeats, we can get successful requests again as we'll exceed the min
+			 * renew time.
 			 */
 			
-			for (int i=1; i< 4; i++) {
+			for (int i=1; i< 2; i++) {
 				
 				Log.info(this.getClass(), testName.getMethodName(), "Renew round " + i);
 				
@@ -839,9 +842,9 @@ public class AcmeCaRestHandlerTest {
 			}
 			
 			/*
-			 * Allow the minimum time to expire, next reqeust should be successful
+			 * Allow the minimum time to expire, next request should be successful
 			 */
-			Thread.sleep(AcmeConstants.RENEW_CERT_MIN + 2000);
+			Thread.sleep(clone.getAcmeCA().getRenewCertMin() + 2000);
 			
 			startingCertificateChain = AcmeFatUtils.assertAndGetServerCertificate(server, pebble);
 
