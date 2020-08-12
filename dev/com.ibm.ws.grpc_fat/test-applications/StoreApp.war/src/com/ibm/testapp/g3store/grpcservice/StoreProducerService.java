@@ -27,6 +27,8 @@ import com.ibm.test.g3store.grpc.DeleteResponse;
 import com.ibm.test.g3store.grpc.MultiCreateResponse;
 import com.ibm.test.g3store.grpc.RetailApp;
 import com.ibm.test.g3store.grpc.RetailApp.Builder;
+import com.ibm.test.g3store.grpc.StreamReplyA;
+import com.ibm.test.g3store.grpc.StreamRequestA;
 import com.ibm.testapp.g3store.cache.AppCache;
 import com.ibm.testapp.g3store.cache.AppCacheFactory;
 import com.ibm.testapp.g3store.exception.InvalidArgException;
@@ -400,6 +402,113 @@ public class StoreProducerService extends AppProducerServiceGrpc.AppProducerServ
 
         };
         return requestObserver;
+    }
+
+    String lastClientMessage = "Nothing yet";
+    private static String responseString = "Response from Server: ";
+
+    @Override
+    public StreamObserver<StreamRequestA> clientStreamA(final StreamObserver<StreamReplyA> responseObserver) {
+
+        log.info("clientStreamA: Service Entry --------------------------------------------------");
+
+        // two way streaming, maybe return new StreamObserver<StreamRequest> requestObserver =
+        //      new StreamObserver<StreamRequest>() {
+        return new StreamObserver<StreamRequestA>() {
+
+            @Override
+            public void onNext(StreamRequestA request) {
+                String s = request.toString();
+                lastClientMessage = s;
+
+                s = "<br>...(( " + s + " onNext at server called at: " + System.currentTimeMillis() + " ))";
+                // limit string to first 200 characters
+                if (s.length() > 200) {
+                    s = s.substring(0, 200);
+                }
+                responseString = responseString + s;
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                log.log(Level.SEVERE, "Store: clientStreamA: Encountered error in createApps", t);
+            }
+
+            @Override
+            public void onCompleted() {
+                log.info("clientStreamA: onComplete() called");
+                String s = responseString + "...[[time response sent back to Client: " + System.currentTimeMillis() + "]]";
+
+                int maxStringLength = 32768 - lastClientMessage.length() - 1;
+                // limit response string to 32K, make sure the last message concatentated at the end
+                if (s.length() > maxStringLength) {
+                    s = s.substring(0, maxStringLength);
+                    s = s + lastClientMessage;
+                } else {
+                    s = s + lastClientMessage;
+                }
+                log.info("clientStreamA: onComplete() sending string of length: " + s.length());
+
+                StreamReplyA reply = StreamReplyA.newBuilder().setMessage(s).build();
+                responseObserver.onNext(reply);
+                responseObserver.onCompleted();
+
+            }
+        };
+    }
+
+    @Override
+    public void serverStreamA(StreamRequestA req, StreamObserver<StreamReplyA> responseObserver) {
+
+        log.info("serverStreamA: Service Entry ----------------------------------------------------------");
+
+        // server streaming
+        int numberOfMessages = 200;
+        int timeBetweenMessagesMsec = 0;
+        StreamReplyA nextRequest = null;
+
+        String nextMessage = null;
+        String firstMessage = "This is the first Message..."; // don't change, hardcode to match string in ProducerGrpcServiceClientImpl
+        String lastMessage = "And this is the last Message"; // don't change, hardcode to match string in ProducerGrpcServiceClientImpl
+
+        //String s5chars = "12345";
+        String s50chars = "12345678901234567890123456789012345678901234567890";
+        //String s500chars = s50chars + s50chars + s50chars + s50chars + s50chars + s50chars + s50chars + s50chars + s50chars + s50chars;
+        //String s5000chars = s500chars + s500chars + s500chars + s500chars + s500chars + s500chars + s500chars + s500chars + s500chars + s500chars;
+
+        for (int i = 1; i <= numberOfMessages; i++) {
+
+            if (i == 1) {
+                log.info("serverStreamA: sending first message");
+                nextMessage = firstMessage;
+            } else if (i == numberOfMessages) {
+                log.info("serverStreamA: sending last message. number of messages was: " + numberOfMessages);
+                nextMessage = lastMessage;
+            } else {
+                nextMessage = "--Message " + i + " of " + numberOfMessages + " left server at time: " + System.currentTimeMillis() + "--";
+                nextMessage = nextMessage + s50chars;
+            }
+
+            nextRequest = StreamReplyA.newBuilder().setMessage(nextMessage).build();
+            responseObserver.onNext(nextRequest);
+            try {
+                if (timeBetweenMessagesMsec > 0) {
+                    Thread.sleep(timeBetweenMessagesMsec);
+                }
+            } catch (Exception x) {
+                log.info("serverStreamA: caught exception sleeping, ignoring it");
+            }
+        }
+
+        // wait to send onCompleted for now
+        try {
+            Thread.sleep(500);
+        } catch (Exception x) {
+            // do nothing
+        }
+        log.info("serverStreamA: calling onCompleted");
+        responseObserver.onCompleted();
+
     }
 
 }

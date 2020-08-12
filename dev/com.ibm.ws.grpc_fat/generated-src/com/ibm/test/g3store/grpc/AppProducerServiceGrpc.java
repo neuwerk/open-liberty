@@ -154,6 +154,68 @@ public final class AppProducerServiceGrpc {
     return getCreateAppsMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<com.ibm.test.g3store.grpc.StreamRequestA,
+      com.ibm.test.g3store.grpc.StreamReplyA> getClientStreamAMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "clientStreamA",
+      requestType = com.ibm.test.g3store.grpc.StreamRequestA.class,
+      responseType = com.ibm.test.g3store.grpc.StreamReplyA.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING)
+  public static io.grpc.MethodDescriptor<com.ibm.test.g3store.grpc.StreamRequestA,
+      com.ibm.test.g3store.grpc.StreamReplyA> getClientStreamAMethod() {
+    io.grpc.MethodDescriptor<com.ibm.test.g3store.grpc.StreamRequestA, com.ibm.test.g3store.grpc.StreamReplyA> getClientStreamAMethod;
+    if ((getClientStreamAMethod = AppProducerServiceGrpc.getClientStreamAMethod) == null) {
+      synchronized (AppProducerServiceGrpc.class) {
+        if ((getClientStreamAMethod = AppProducerServiceGrpc.getClientStreamAMethod) == null) {
+          AppProducerServiceGrpc.getClientStreamAMethod = getClientStreamAMethod =
+              io.grpc.MethodDescriptor.<com.ibm.test.g3store.grpc.StreamRequestA, com.ibm.test.g3store.grpc.StreamReplyA>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "clientStreamA"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.ibm.test.g3store.grpc.StreamRequestA.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.ibm.test.g3store.grpc.StreamReplyA.getDefaultInstance()))
+              .setSchemaDescriptor(new AppProducerServiceMethodDescriptorSupplier("clientStreamA"))
+              .build();
+        }
+      }
+    }
+    return getClientStreamAMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<com.ibm.test.g3store.grpc.StreamRequestA,
+      com.ibm.test.g3store.grpc.StreamReplyA> getServerStreamAMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "serverStreamA",
+      requestType = com.ibm.test.g3store.grpc.StreamRequestA.class,
+      responseType = com.ibm.test.g3store.grpc.StreamReplyA.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
+  public static io.grpc.MethodDescriptor<com.ibm.test.g3store.grpc.StreamRequestA,
+      com.ibm.test.g3store.grpc.StreamReplyA> getServerStreamAMethod() {
+    io.grpc.MethodDescriptor<com.ibm.test.g3store.grpc.StreamRequestA, com.ibm.test.g3store.grpc.StreamReplyA> getServerStreamAMethod;
+    if ((getServerStreamAMethod = AppProducerServiceGrpc.getServerStreamAMethod) == null) {
+      synchronized (AppProducerServiceGrpc.class) {
+        if ((getServerStreamAMethod = AppProducerServiceGrpc.getServerStreamAMethod) == null) {
+          AppProducerServiceGrpc.getServerStreamAMethod = getServerStreamAMethod =
+              io.grpc.MethodDescriptor.<com.ibm.test.g3store.grpc.StreamRequestA, com.ibm.test.g3store.grpc.StreamReplyA>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "serverStreamA"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.ibm.test.g3store.grpc.StreamRequestA.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.ibm.test.g3store.grpc.StreamReplyA.getDefaultInstance()))
+              .setSchemaDescriptor(new AppProducerServiceMethodDescriptorSupplier("serverStreamA"))
+              .build();
+        }
+      }
+    }
+    return getServerStreamAMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -254,6 +316,26 @@ public final class AppProducerServiceGrpc {
       return asyncUnimplementedStreamingCall(getCreateAppsMethod(), responseObserver);
     }
 
+    /**
+     * <pre>
+     *Client will stream a changing message over and over to the server.  Size and number of messages streamed
+     *can be change in the client code.
+     *At the end the server responses with a message containing some of what was streamed for verification
+     *No security
+     * </pre>
+     */
+    public io.grpc.stub.StreamObserver<com.ibm.test.g3store.grpc.StreamRequestA> clientStreamA(
+        io.grpc.stub.StreamObserver<com.ibm.test.g3store.grpc.StreamReplyA> responseObserver) {
+      return asyncUnimplementedStreamingCall(getClientStreamAMethod(), responseObserver);
+    }
+
+    /**
+     */
+    public void serverStreamA(com.ibm.test.g3store.grpc.StreamRequestA request,
+        io.grpc.stub.StreamObserver<com.ibm.test.g3store.grpc.StreamReplyA> responseObserver) {
+      asyncUnimplementedUnaryCall(getServerStreamAMethod(), responseObserver);
+    }
+
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
@@ -284,6 +366,20 @@ public final class AppProducerServiceGrpc {
                 com.ibm.test.g3store.grpc.AppRequest,
                 com.ibm.test.g3store.grpc.MultiCreateResponse>(
                   this, METHODID_CREATE_APPS)))
+          .addMethod(
+            getClientStreamAMethod(),
+            asyncClientStreamingCall(
+              new MethodHandlers<
+                com.ibm.test.g3store.grpc.StreamRequestA,
+                com.ibm.test.g3store.grpc.StreamReplyA>(
+                  this, METHODID_CLIENT_STREAM_A)))
+          .addMethod(
+            getServerStreamAMethod(),
+            asyncServerStreamingCall(
+              new MethodHandlers<
+                com.ibm.test.g3store.grpc.StreamRequestA,
+                com.ibm.test.g3store.grpc.StreamReplyA>(
+                  this, METHODID_SERVER_STREAM_A)))
           .build();
     }
   }
@@ -357,6 +453,28 @@ public final class AppProducerServiceGrpc {
       return asyncClientStreamingCall(
           getChannel().newCall(getCreateAppsMethod(), getCallOptions()), responseObserver);
     }
+
+    /**
+     * <pre>
+     *Client will stream a changing message over and over to the server.  Size and number of messages streamed
+     *can be change in the client code.
+     *At the end the server responses with a message containing some of what was streamed for verification
+     *No security
+     * </pre>
+     */
+    public io.grpc.stub.StreamObserver<com.ibm.test.g3store.grpc.StreamRequestA> clientStreamA(
+        io.grpc.stub.StreamObserver<com.ibm.test.g3store.grpc.StreamReplyA> responseObserver) {
+      return asyncClientStreamingCall(
+          getChannel().newCall(getClientStreamAMethod(), getCallOptions()), responseObserver);
+    }
+
+    /**
+     */
+    public void serverStreamA(com.ibm.test.g3store.grpc.StreamRequestA request,
+        io.grpc.stub.StreamObserver<com.ibm.test.g3store.grpc.StreamReplyA> responseObserver) {
+      asyncServerStreamingCall(
+          getChannel().newCall(getServerStreamAMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -412,6 +530,14 @@ public final class AppProducerServiceGrpc {
       return blockingServerStreamingCall(
           getChannel(), getDeleteAllAppsMethod(), getCallOptions(), request);
     }
+
+    /**
+     */
+    public java.util.Iterator<com.ibm.test.g3store.grpc.StreamReplyA> serverStreamA(
+        com.ibm.test.g3store.grpc.StreamRequestA request) {
+      return blockingServerStreamingCall(
+          getChannel(), getServerStreamAMethod(), getCallOptions(), request);
+    }
   }
 
   /**
@@ -461,7 +587,9 @@ public final class AppProducerServiceGrpc {
   private static final int METHODID_CREATE_APP = 0;
   private static final int METHODID_DELETE_APP = 1;
   private static final int METHODID_DELETE_ALL_APPS = 2;
-  private static final int METHODID_CREATE_APPS = 3;
+  private static final int METHODID_SERVER_STREAM_A = 3;
+  private static final int METHODID_CREATE_APPS = 4;
+  private static final int METHODID_CLIENT_STREAM_A = 5;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -492,6 +620,10 @@ public final class AppProducerServiceGrpc {
           serviceImpl.deleteAllApps((com.google.protobuf.Empty) request,
               (io.grpc.stub.StreamObserver<com.ibm.test.g3store.grpc.DeleteResponse>) responseObserver);
           break;
+        case METHODID_SERVER_STREAM_A:
+          serviceImpl.serverStreamA((com.ibm.test.g3store.grpc.StreamRequestA) request,
+              (io.grpc.stub.StreamObserver<com.ibm.test.g3store.grpc.StreamReplyA>) responseObserver);
+          break;
         default:
           throw new AssertionError();
       }
@@ -505,6 +637,9 @@ public final class AppProducerServiceGrpc {
         case METHODID_CREATE_APPS:
           return (io.grpc.stub.StreamObserver<Req>) serviceImpl.createApps(
               (io.grpc.stub.StreamObserver<com.ibm.test.g3store.grpc.MultiCreateResponse>) responseObserver);
+        case METHODID_CLIENT_STREAM_A:
+          return (io.grpc.stub.StreamObserver<Req>) serviceImpl.clientStreamA(
+              (io.grpc.stub.StreamObserver<com.ibm.test.g3store.grpc.StreamReplyA>) responseObserver);
         default:
           throw new AssertionError();
       }
@@ -560,6 +695,8 @@ public final class AppProducerServiceGrpc {
               .addMethod(getDeleteAppMethod())
               .addMethod(getDeleteAllAppsMethod())
               .addMethod(getCreateAppsMethod())
+              .addMethod(getClientStreamAMethod())
+              .addMethod(getServerStreamAMethod())
               .build();
         }
       }

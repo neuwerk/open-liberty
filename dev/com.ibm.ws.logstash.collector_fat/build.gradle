@@ -8,12 +8,11 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-
 configurations {
      libs
 }
 dependencies {
-     libs 'logstash:logstash:5.5.0'
+     libs 'com.ibm.ws.logstash:logstash:5.5.0'
   
 }
 task copyJar {

@@ -34,6 +34,7 @@ import com.ibm.ws.http.channel.internal.values.AccessLogResponseSize;
 import com.ibm.ws.http.channel.internal.values.AccessLogStartTime;
 import com.ibm.ws.http.logging.internal.AccessLogRecordDataExt;
 import com.ibm.ws.http.logging.internal.AccessLogger.FormatSegment;
+import com.ibm.ws.logging.collector.CollectorConstants;
 import com.ibm.ws.logging.collector.CollectorJsonHelpers;
 import com.ibm.ws.logging.collector.LogFieldConstants;
 import com.ibm.ws.logging.data.AccessLogConfig;
@@ -318,8 +319,8 @@ public class AccessLogSource implements Source {
                             fieldSetters.add((ald, alrd) -> ald.setResponseHeader((String) data, AccessLogResponseHeaderValue.getHeaderValue(alrd.getResponse(), alrd.getRequest(), data)));
                     } break;
                 case "%r": fieldSetters.add((ald, alrd) -> ald.setRequestFirstLine(AccessLogFirstLine.getFirstLineAsString(alrd.getResponse(), alrd.getRequest(), null))); break;
-                case "%t": fieldSetters.add((ald, alrd) -> ald.setRequestStartTime(AccessLogStartTime.getStartTimeAsStringForJSON(alrd.getResponse(), alrd.getRequest(), null))); break;
-                case "%{t}W": fieldSetters.add((ald, alrd) -> ald.setAccessLogDatetime(AccessLogCurrentTime.getAccessLogCurrentTimeAsString(alrd.getResponse(), alrd.getRequest(), null))); break;
+                case "%t": fieldSetters.add((ald, alrd) -> ald.setRequestStartTime(AccessLogStartTime.getStartTimeAsLongForJSON(alrd.getResponse(), alrd.getRequest(), null))); break;
+                case "%{t}W": fieldSetters.add((ald, alrd) -> ald.setAccessLogDatetime(AccessLogCurrentTime.getAccessLogCurrentTimeAsLong(alrd.getResponse(), alrd.getRequest(), null))); break;
                 case "%u": fieldSetters.add((ald, alrd) -> ald.setRemoteUser(AccessLogRemoteUser.getRemoteUser(alrd.getResponse(), alrd.getRequest(), null))); break;
                 //@formatter:on
             }
@@ -422,15 +423,15 @@ public class AccessLogSource implements Source {
         fieldSetters.add((ald, alrd) -> ald.setDatetime(alrd.getTimestamp()));
 
         if (jsonAccessLogFieldsConfig.equals("default")) {
-            formatters[0] = populateDefaultFormatters(AccessLogData.KEYS_JSON);
+            formatters[0] = populateDefaultFormatters(CollectorConstants.KEYS_JSON);
         } else if (jsonAccessLogFieldsConfig.equals("logFormat")) {
-            formatters[1] = populateCustomFormatters(fieldsToAddJson, AccessLogData.KEYS_JSON);
+            formatters[1] = populateCustomFormatters(fieldsToAddJson, CollectorConstants.KEYS_JSON);
         }
 
         if (jsonAccessLogFieldsLogstashConfig.equals("default")) {
-            formatters[2] = populateDefaultFormatters(AccessLogData.KEYS_LOGSTASH);
+            formatters[2] = populateDefaultFormatters(CollectorConstants.KEYS_LOGSTASH);
         } else if (jsonAccessLogFieldsLogstashConfig.equals("logFormat")) {
-            formatters[3] = populateCustomFormatters(fieldsToAddLogstash, AccessLogData.KEYS_LOGSTASH);
+            formatters[3] = populateCustomFormatters(fieldsToAddLogstash, CollectorConstants.KEYS_LOGSTASH);
         }
         newSF.setSettersAndFormatters(fieldSetters, formatters);
 
@@ -607,13 +608,15 @@ public class AccessLogSource implements Source {
 
     private static JsonFieldAdder addRequestStartTimeField(int format) {
         return (jsonBuilder, ald) -> {
-            return jsonBuilder.addField(AccessLogData.getRequestStartTimeKey(format), ald.getRequestStartTime(), false, true);
+            String startTime = CollectorJsonHelpers.dateFormatTL.get().format(ald.getRequestStartTime());
+            return jsonBuilder.addField(AccessLogData.getRequestStartTimeKey(format), startTime, false, true);
         };
     }
 
     private static JsonFieldAdder addAccessLogDatetimeField(int format) {
         return (jsonBuilder, ald) -> {
-            return jsonBuilder.addField(AccessLogData.getAccessLogDatetimeKey(format), ald.getAccessLogDatetime(), false, true);
+            String accessLogDatetime = CollectorJsonHelpers.dateFormatTL.get().format(ald.getAccessLogDatetime());
+            return jsonBuilder.addField(AccessLogData.getAccessLogDatetimeKey(format), accessLogDatetime, false, true);
         };
     }
 
