@@ -38,8 +38,10 @@ import com.ibm.websphere.kernel.server.ServerInfoMBean;
 import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
 import com.ibm.websphere.ras.annotation.Sensitive;
+import com.ibm.ws.security.common.crypto.KeyAlgorithmChecker;
 import com.ibm.ws.security.common.jwk.impl.JWKProvider;
 import com.ibm.ws.security.jwt.config.JwtConfig;
+import com.ibm.ws.security.jwt.config.JwtConfigUtil;
 import com.ibm.ws.security.jwt.utils.JwtUtils;
 import com.ibm.ws.webcontainer.security.jwk.JSONWebKey;
 
@@ -77,6 +79,10 @@ public class JwtComponent implements JwtConfig {
     private DynamicMBean httpendpointInfoMBean;
 
     private ServerInfoMBean serverInfoMBean;
+
+    private List<String> amrAttributes;
+
+    private final KeyAlgorithmChecker keyAlgChecker = new KeyAlgorithmChecker();
 
     @org.osgi.service.component.annotations.Reference(target = "(jmx.objectname=WebSphere:feature=channelfw,type=endpoint,name=defaultHttpEndpoint)", cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
     protected void setEndPointInfoMBean(DynamicMBean endpointInfoMBean) {
@@ -140,7 +146,7 @@ public class JwtComponent implements JwtConfig {
         jti = (Boolean) props.get(JwtUtils.CFG_KEY_JTI);
         valid = ((Long) props.get(JwtUtils.CFG_KEY_VALID)).longValue();
         expiresInSeconds = ((Long) props.get(JwtUtils.CFG_KEY_EXPIRES_IN_SECONDS)).longValue();
-        sigAlg = JwtUtils.trimIt((String) props.get(JwtUtils.CFG_KEY_SIGNATURE_ALGORITHM));
+        sigAlg = JwtConfigUtil.getSignatureAlgorithm(getId(), props, JwtUtils.CFG_KEY_SIGNATURE_ALGORITHM);
         audiences = JwtUtils.trimIt((String[]) props.get(JwtUtils.CFG_KEY_AUDIENCES));
         scope = JwtUtils.trimIt((String) props.get(JwtUtils.CFG_KEY_SCOPE));
         claims = JwtUtils.trimIt((String[]) props.get(JwtUtils.CFG_KEY_CLAIMS));
@@ -161,6 +167,7 @@ public class JwtComponent implements JwtConfig {
         jwkRotationTime = jwkRotationTime * 60 * 1000;
         jwkSigningKeySize = ((Long) props.get(JwtUtils.CFG_KEY_JWK_SIGNING_KEY_SIZE)).intValue();
         elapsedNbfTime = ((Long) props.get(JwtUtils.CFG_KEY_ELAPSED_NBF)).longValue();
+        amrAttributes = JwtUtils.trimIt((String[]) props.get(JwtUtils.CFG_AMR_ATTR));
 
         if (isJwkCapableSigAlgorithm()) {
             initializeJwkProvider(this);
@@ -178,7 +185,7 @@ public class JwtComponent implements JwtConfig {
         if (sigAlg == null) {
             return false;
         }
-        return sigAlg.matches("[RE]S[0-9]{3,}");
+        return (keyAlgChecker.isRSAlgorithm(sigAlg) || keyAlgChecker.isESAlgorithm(sigAlg));
     }
 
     private void initializeJwkProvider(JwtConfig jwtConfig) {
@@ -350,7 +357,7 @@ public class JwtComponent implements JwtConfig {
         }
         return null;
     }
-    
+
     @Override
     public long getElapsedNbfTime() {
         return elapsedNbfTime;
@@ -400,6 +407,11 @@ public class JwtComponent implements JwtConfig {
             // FFDC it
             return null;
         }
+    }
+
+    @Override
+    public List<String> getAMRAttributes() {
+        return amrAttributes;
     }
 
 }
