@@ -41,9 +41,9 @@ Include-Resource: \
 
 -dsannotations-inherit: true
 -dsannotations: io.openliberty.microprofile.openapi20.ApplicationListener,\
-    io.openliberty.microprofile.openapi20.ApplicationProcessor,\
     io.openliberty.microprofile.openapi20.OLOASFactoryResolverImpl,\
-    io.openliberty.microprofile.openapi20.css.CustomCSSProcessor
+    io.openliberty.microprofile.openapi20.css.CustomCSSProcessor,\
+    io.openliberty.microprofile.openapi20.DefaultHostListener
 
 WS-TraceGroup: MPOPENAPI
 
@@ -69,10 +69,10 @@ WS-TraceGroup: MPOPENAPI
     com.ibm.ws.org.osgi.annotation.versioning;version=latest,\
     com.ibm.ws.webcontainer;version=latest,\
     com.ibm.wsspi.org.osgi.service.component.annotations;version=latest,\
-    com.fasterxml.jackson.core.jackson-core;version=2.9.1,\
-    com.fasterxml.jackson.core.jackson-annotations;version=2.9.1,\
-    com.fasterxml.jackson.core:jackson-databind;version=2.9.1,\
-    com.fasterxml.jackson.dataformat:jackson-dataformat-yaml;version=2.9.1
+    com.fasterxml.jackson.core.jackson-core;version=2.11.2,\
+    com.fasterxml.jackson.core.jackson-annotations;version=2.11.2,\
+    com.fasterxml.jackson.core:jackson-databind;version=2.11.2,\
+    com.fasterxml.jackson.dataformat:jackson-dataformat-yaml;version=2.11.2
 
 -testpath: \
     ../build.sharedResources/lib/junit/old/junit.jar;version=file, \
