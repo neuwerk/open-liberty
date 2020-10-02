@@ -44,7 +44,9 @@ public class ComponentIDTest extends FATServletClient {
         @Override
         protected void failed(Throwable e, Description description) {
             try {
-                server.dumpServer("serverDump");
+                System.runFinalization();
+                System.gc();
+                server.serverDump("heap");
             } catch (Exception e1) {
                 System.out.println("Failed to dump server");
                 e1.printStackTrace();
@@ -82,7 +84,7 @@ public class ComponentIDTest extends FATServletClient {
     @AfterClass
     public static void cleanUp() throws Exception {
         if (server != null && server.isStarted()) {
-            server.stopServer();
+            server.stopServer("CNTR0338W");
         }
     }
 
