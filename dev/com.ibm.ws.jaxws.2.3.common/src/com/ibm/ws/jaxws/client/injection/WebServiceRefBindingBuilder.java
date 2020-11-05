@@ -95,6 +95,7 @@ public class WebServiceRefBindingBuilder {
                     // if we found a non-null port-component-link value, we need to look for the wsdl location 
                     // from the port component of the same module
                     if (pcLinkValue != null) {
+                        Tr.info(tc, "@TJJ in buildJaxWsWebServiceRefBindings and the pcLinkValue = " + pcLinkValue);
                         // the service metadata has processed before the client metadata processing
                         JaxWsModuleMetaData jaxwsModuleMetaData = JaxWsMetaDataManager.getJaxWsModuleMetaData(cnsConfig.getModuleMetaData());
                         Container moduleContainer = jaxwsModuleMetaData.getModuleContainer();
@@ -105,7 +106,10 @@ public class WebServiceRefBindingBuilder {
                         if (jaxWsModuleInfo != null) {
                             for (EndpointInfo endpointInfo : jaxWsModuleInfo.getEndpointInfos()) {
                                 if (pcLinkValue.equals(endpointInfo.getPortComponentName())) {
+
                                     String wsdlLocation = endpointInfo.getWsdlLocation();
+
+                                    Tr.info(tc, "@TJJ in buildJaxWsWebServiceRefBindings and wsdlLocation is = " + wsdlLocation);
                                     if (wsdlLocation != null && !wsdlLocation.isEmpty()) {
                                         wsrInfo.setWsdlLocation(wsdlLocation);
                                     }

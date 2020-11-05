@@ -95,7 +95,6 @@ import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.nio.reactor.IOSession;
 import org.apache.http.nio.util.HeapByteBufferAllocator;
 
-import com.ibm.ws.cxf.client.component.AsyncClientRunnableWrapperManager;
 import com.ibm.ws.ffdc.annotation.FFDCIgnore;
 
 /**
@@ -670,7 +669,7 @@ public class AsyncHTTPConduit extends URLConnectionHTTPConduit {
         }
 
         protected void handleResponseAsync() throws IOException {
-            AsyncClientRunnableWrapperManager.prepare(outMessage); // Liberty change
+            //AsyncClientRunnableWrapperManager.prepare(outMessage); // Liberty change
             isAsync = true;
         }
 

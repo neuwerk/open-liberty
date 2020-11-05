@@ -16,9 +16,7 @@ Bundle-Name: JAX-WS 2.3 Web
 Bundle-SymbolicName: com.ibm.ws.jaxws.2.3.web
 Bundle-Description: IBM JAX-WS 2.3 Web support; version=${bVersion}
 
-
-
--dsannotations: com.ibm.ws.jaxws.web.WebXMLEndpointInfoConfigurator
+-dsannotations: com.ibm.ws.jaxws23.web.WebXMLEndpointInfoConfigurator
 
 Service-Component: \
   com.ibm.ws.jaxws.web.class.list.collaborator; \
@@ -43,7 +41,7 @@ Service-Component: \
      properties:="service.vendor=IBM"
 
 Export-Package: \
-    com.ibm.ws.jaxws23.web
+    com.ibm.ws.jaxws23.web;version="2.3"
 
 Import-Package: \
    !com.ibm.ws.jaxws23.web, \

@@ -38,22 +38,19 @@ import org.apache.cxf.configuration.security.SecureRandomParameters;
 import org.apache.cxf.configuration.security.TrustManagersType;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transport.http.auth.HttpAuthSupplier;
+
+import org.apache.cxf.transport.https.InsecureTrustManager;
 import org.apache.cxf.transports.http.configuration.ConnectionType;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.apache.cxf.transports.http.configuration.ProxyServerType;
 
-import com.ibm.websphere.ras.Tr;
-import com.ibm.websphere.ras.TraceComponent;
-
 /**
  * Applies configuration properties to a HTTPConduit
  */
-public class HttpConduitConfigApplier { //Liberty make public
+public class HttpConduitConfigApplier {
     private static final String SECURE_HTTP_PREFIX = "https";
-    
-    private static final TraceComponent tc = Tr.register(HttpConduitConfigApplier.class);
 
-    HttpConduitConfigApplier() {
+    public HttpConduitConfigApplier() {
     }
 
     void apply(Dictionary<String, String> d, HTTPConduit c, String address) {
@@ -73,6 +70,8 @@ public class HttpConduitConfigApplier { //Liberty make public
         KeyManagersType kmt = null;
         TrustManagersType tmt = null;
         boolean enableRevocation = false;
+        boolean disableTrustVerification = false;
+
         while (keys.hasMoreElements()) {
             String k = keys.nextElement();
             if (k.startsWith("tlsClientParameters.")) {
@@ -126,6 +125,9 @@ public class HttpConduitConfigApplier { //Liberty make public
                     while (st.hasMoreTokens()) {
                         p.getCipherSuites().add(st.nextToken());
                     }
+                } else if ("trustManagers.disableTrustVerification".equals(k)
+                    && Boolean.parseBoolean(v)) {
+                    disableTrustVerification = true;
                 } else if (k.startsWith("trustManagers.")) {
                     tmt = getTrustManagers(tmt,
                                           k.substring("trustManagers.".length()),
@@ -145,7 +147,9 @@ public class HttpConduitConfigApplier { //Liberty make public
             if (kmt != null) {
                 p.setKeyManagers(TLSParameterJaxBUtils.getKeyManagers(kmt));
             }
-            if (tmt != null) {
+            if (disableTrustVerification) {
+                p.setTrustManagers(InsecureTrustManager.getNoOpX509TrustManagers());
+            } else if (tmt != null) {
                 p.setTrustManagers(TLSParameterJaxBUtils.getTrustManagers(tmt, enableRevocation));
             }
         } catch (RuntimeException e) {
@@ -312,7 +316,7 @@ public class HttpConduitConfigApplier { //Liberty make public
     }
 
 
-    public static void applyClientPolicies(Dictionary<String, String> d, HTTPConduit c) { //Liberty make public/static
+    public void applyClientPolicies(Dictionary<String, String> d, HTTPConduit c) {
         Enumeration<String> keys = d.keys();
         HTTPClientPolicy p = c.getClient();
         while (keys.hasMoreElements()) {
@@ -330,16 +334,8 @@ public class HttpConduitConfigApplier { //Liberty make public
                     p.setReceiveTimeout(Long.parseLong(v.trim()));
                 } else if ("AsyncExecuteTimeout".equals(k)) {
                     p.setAsyncExecuteTimeout(Long.parseLong(v.trim()));
-                    
-                    if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-                        Tr.debug(tc, "The Liberty threadpool maximum length is infinite.  The AsyncExecuteTimeout property will be ignored.");
-                    }
                 } else if ("AsyncExecuteTimeoutRejection".equals(k)) {
                     p.setAsyncExecuteTimeoutRejection(Boolean.parseBoolean(v.trim()));
-                    
-                    if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-                        Tr.debug(tc, "The Liberty threadpool maximum length is infinite.  The AsyncExecuteTimeoutRejection property will be ignored.");
-                    }
                 } else if ("AutoRedirect".equals(k)) {
                     p.setAutoRedirect(Boolean.parseBoolean(v.trim()));
                 } else if ("MaxRetransmits".equals(k)) {

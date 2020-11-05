@@ -32,6 +32,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
+import javax.xml.ws.spi.http.HttpContext;
+import javax.xml.ws.spi.http.HttpExchange;
 
 import com.ibm.ws.runtime.metadata.ComponentMetaData;
 import com.ibm.wsspi.webcontainer.collaborator.IWebAppNameSpaceCollaborator;
@@ -48,6 +50,8 @@ public class JaxWsHttpServletRequestAdapter implements HttpServletRequest {
     private final ComponentMetaData componentMetaData;
 
     private final HttpServletRequest request;
+    private HttpExchange exchange;
+    private HttpContext httpContext;
 
     /**
      * @param request

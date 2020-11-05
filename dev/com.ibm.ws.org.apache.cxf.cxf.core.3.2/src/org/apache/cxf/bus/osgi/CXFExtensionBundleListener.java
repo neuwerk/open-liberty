@@ -45,6 +45,8 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.SynchronousBundleListener;
 
+import com.ibm.ws.ffdc.annotation.FFDCIgnore;
+
 public class CXFExtensionBundleListener implements SynchronousBundleListener {
     private static final Logger LOG = LogUtils.getL7dLogger(CXFActivator.class);
     private long id;
@@ -64,12 +66,12 @@ public class CXFExtensionBundleListener implements SynchronousBundleListener {
                 && bundle.getBundleId() != context.getBundle().getBundleId()) {
             	// Start Liberty Change
                 String bundleName = bundle.toString();
-                if(!bundleName.startsWith("com.ibm.ws.org.apache.cxf")) {
+                if(!bundleName.startsWith("com.ibm.ws.org.apache.cxf") && !bundleName.startsWith("com.ibm.ws.wssecurity") && !bundleName.startsWith("com.ibm.ws.jaxws.2.3.common")) {
                     // don't register non-cxf bundles
-                }       
-                else
-                    register(bundle);
-                //    
+                } else {
+                        register(bundle);
+                }
+                
             }
         }
     }
@@ -155,6 +157,8 @@ public class CXFExtensionBundleListener implements SynchronousBundleListener {
             }
             return super.load(cl, b);
         }
+        
+        @FFDCIgnore(PrivilegedActionException.class)
         protected Class<?> tryClass(String name, ClassLoader cl) {
             Class<?> c = null;
             
@@ -169,11 +173,7 @@ public class CXFExtensionBundleListener implements SynchronousBundleListener {
                         }
                     });
                 } catch (PrivilegedActionException e) {
-                    if (e.getException() != null) {
-                        throw e.getException();
-                    } else {
-                        throw e;
-                    }
+  
                 }
                 // End Liberty Change
 
@@ -184,12 +184,12 @@ public class CXFExtensionBundleListener implements SynchronousBundleListener {
                 try {
                     return super.tryClass(name, cl);
                 } catch (ExtensionException ee) {
-                    if (origExc != null) {
-                        throw new ExtensionException(new Message("PROBLEM_LOADING_EXTENSION_CLASS",
-                                                                 Extension.LOG, name),
-                                                     origExc);
-                    }
-                    throw ee;
+//                    if (origExc != null) {
+//                        throw new ExtensionException(new Message("PROBLEM_LOADING_EXTENSION_CLASS",
+//                                                                 Extension.LOG, name),
+//                                                     origExc);
+//                    }
+//                    throw ee;
                 }
             }
             return c;

@@ -39,7 +39,8 @@ DynamicImport-Package: com.ibm.ws.jaxws.client
 
 Export-Package: \
   org.apache.cxf.jaxws.*;version=${cxfVersion},\
-  org.apache.cxf.jaxws22.*;version=${cxfVersion}
+  org.apache.cxf.jaxws22.*;version=${cxfVersion},\
+  org.apache.cxf.transport.http_jaxws_spi;version=${cxfVersion}
 
 app-resources= \
   META-INF/services/javax.xml.ws.spi.Provider

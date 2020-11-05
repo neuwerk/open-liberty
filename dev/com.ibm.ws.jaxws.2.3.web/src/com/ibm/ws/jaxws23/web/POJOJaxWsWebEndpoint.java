@@ -14,15 +14,16 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.xml.ws.Binding;
 
-import org.apache.cxf.Bus;
+import org.apache.cxf.binding.soap.SoapTransportFactory;
 import org.apache.cxf.jaxws.support.JaxWsEndpointImpl;
-import org.apache.cxf.jaxws.support.JaxWsServiceFactoryBean;
 import org.apache.cxf.service.invoker.Invoker;
+import org.apache.cxf.transport.DestinationFactoryManager;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
 
 import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
 import com.ibm.ws.jaxws.ImplBeanCustomizer;
+import com.ibm.ws.jaxws.bus.LibertyApplicationBus;
 import com.ibm.ws.jaxws.endpoint.AbstractJaxWsWebEndpoint;
 import com.ibm.ws.jaxws.endpoint.JaxWsPublisherContext;
 import com.ibm.ws.jaxws.metadata.EndpointInfo;
@@ -44,6 +45,7 @@ public class POJOJaxWsWebEndpoint extends AbstractJaxWsWebEndpoint {
 
     public POJOJaxWsWebEndpoint(EndpointInfo endpointInfo, JaxWsPublisherContext context) {
         super(endpointInfo, context.getModuleMetaData());
+
         this.publisherContext = context;
     }
 
@@ -64,7 +66,23 @@ public class POJOJaxWsWebEndpoint extends AbstractJaxWsWebEndpoint {
             throw new ServletException(e);
         }
 
-        Bus serverBus = jaxWsModuleMetaData.getServerMetaData().getServerBus();
+        LibertyApplicationBus serverBus = jaxWsModuleMetaData.getServerMetaData().getServerBus();
+
+        SoapTransportFactory stf = serverBus.getExtension(SoapTransportFactory.class);
+        if (stf != null) {
+            Tr.info(tc, "@TJJ stf is not null");
+            DestinationFactoryManager dfm = serverBus.getExtension(DestinationFactoryManager.class);
+            if (dfm != null) {
+                Tr.info(tc, "@TJJ dfm is not null");
+                dfm.registerDestinationFactory("http://schemas.xmlsoap.org/wsdl/soap/", stf);
+                dfm.registerDestinationFactory("http://schemas.xmlsoap.org/soap/", stf);
+                dfm.registerDestinationFactory("http://schemas.xmlsoap.org/wsdl/soap/http", stf);
+                dfm.registerDestinationFactory("http://schemas.xmlsoap.org/soap/http", stf);
+                serverBus.setExtension(dfm, DestinationFactoryManager.class);
+            }
+
+            serverBus.setExtension(stf, SoapTransportFactory.class);
+        }
 
         Object implementor = null;
         try {
@@ -86,7 +104,7 @@ public class POJOJaxWsWebEndpoint extends AbstractJaxWsWebEndpoint {
 
         Invoker jaxWsMethodInvoker = new POJOJAXWSMethodInvoker(implementor);
 
-        JaxWsServiceFactoryBean serviceFactory = new LibertyJaxWsServiceFactoryBean(implInfo, publisherContext);
+        LibertyJaxWsServiceFactoryBean serviceFactory = new LibertyJaxWsServiceFactoryBean(implInfo, publisherContext);
 
         LibertyJaxWsServerFactoryBean jaxWsServerFactory = new LibertyJaxWsServerFactoryBean(serviceFactory);
 

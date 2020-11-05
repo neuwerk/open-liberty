@@ -20,29 +20,31 @@ import componenttest.rules.repeater.RepeatTests;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-                WebServiceInWebXMLTest.class,
+//                WebServiceInWebXMLTest.class,
                 WebServiceContextTest.class,
-                HandlerChainTest.class,
-                WebServiceRefTest.class,
-                CatalogFacilityTest.class,
-                WebServiceRefFeaturesTest.class,
-                ServerSideStubClientTest.class,
-                PureCXFTest.class,
-                WsBndServiceRefOverrideTest.class,
-                WsBndEndpointOverrideTest.class,
-                CXFJMXSupportTest.class,
-                WebServiceMonitorTest.class,
-                HttpConduitPropertiesTest.class,
-                EJBServiceRefBndTest.class,
-                PortComponentRefTest.class,
-                EndpointPropertiesTest.class,
-                BindingTypeWsdlMismatchTest.class,
-                MTOMTest.class,
-                HandlerChainWithWebServiceClientTest.class,
-                VirtualHostTest.class
+//                HandlerChainTest.class,
+//                WebServiceRefTest.class,
+//                CatalogFacilityTest.class,
+//                WebServiceRefFeaturesTest.class,
+//                ServerSideStubClientTest.class,
+//                PureCXFTest.class,
+//                WsBndServiceRefOverrideTest.class,
+//                WsBndEndpointOverrideTest.class,
+//                CXFJMXSupportTest.class,
+//                WebServiceMonitorTest.class,
+//                HttpConduitPropertiesTest22.class,
+//                HttpConduitPropertiesTest23.class,
+//                EJBServiceRefBndTest22.class,
+//                EJBServiceRefBndTest23.class,
+//                PortComponentRefTest.class,
+//                EndpointPropertiesTest.class,
+//                BindingTypeWsdlMismatchTest.class,
+//                MTOMTest.class,
+//                HandlerChainWithWebServiceClientTest.class,
+//                VirtualHostTest.class
 })
 public class FATSuite {
     @ClassRule
-    public static RepeatTests r = RepeatTests.withoutModification().andWith(new FeatureReplacementAction().addFeature("jaxws-2.3").removeFeature("jaxws-2.2").removeFeature("jsp-2.2").withID("jaxws-2.3"));
+    public static RepeatTests r = RepeatTests.withoutModification().andWith(new FeatureReplacementAction().addFeature("jaxws-2.3").removeFeature("jaxws-2.2").removeFeature("jsp-2.2").removeFeature("servlet-3.1").removeFeature("jaxwstest-2.2").withID("jaxws-2.3"));
 
 }

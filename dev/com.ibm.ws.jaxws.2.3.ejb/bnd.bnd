@@ -91,8 +91,8 @@ instrument.classesExcludes: com/ibm/ws/jaxws/ejb/internal/resources/*.class
   com.ibm.ws.adaptable.module;version=latest,\
   com.ibm.ws.container.service;version=latest,\
   com.ibm.ws.ejbcontainer;version=latest,\
-  com.ibm.ws.jaxws.common;version=latest,\
-  com.ibm.ws.org.osgi.annotation.versioning;version=latest
+  com.ibm.ws.jaxws.2.3.common;version=latest,\
+  com.ibm.ws.org.osgi.annotation.versioning;version=latest, \
   com.ibm.websphere.javaee.jaxb.2.3;version=latest;boot=true,\
   com.ibm.websphere.javaee.jaxws.2.3;version=latest;boot=true,\
   ${javac.bootclasspath.${javac.source}}

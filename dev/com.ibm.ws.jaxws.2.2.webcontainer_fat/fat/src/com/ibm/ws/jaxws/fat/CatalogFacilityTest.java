@@ -31,7 +31,7 @@ import componenttest.topology.impl.LibertyServer;
 import componenttest.topology.utils.HttpUtils;
 
 @RunWith(FATRunner.class)
-@SkipForRepeat("jaxws-2.3")
+
 public class CatalogFacilityTest {
 
     @Server("CatalogFacilityTestServer")

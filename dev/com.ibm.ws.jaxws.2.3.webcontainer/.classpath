@@ -3,5 +3,26 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="aQute.bnd.classpath.container"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="/com.ibm.ws.org.apache.cxf.cxf.rt.bindings.soap.3.2/generated/com.ibm.ws.org.apache.cxf.cxf.rt.bindings.soap.3.2.jar">
+		<attributes>
+			<attribute name="bsn" value="com.ibm.ws.org.apache.cxf.cxf.rt.bindings.soap.3.2.jar"/>
+			<attribute name="type" value="PROJECT"/>
+			<attribute name="project" value="com.ibm.ws.org.apache.cxf.cxf.rt.bindings.soap.3.2"/>
+			<attribute name="version" value="latest"/>
+			<attribute name="index_location" value="platform:/plugin/bndtools.builder/org/bndtools/builder/classpath/empty.index"/>
+		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="org/apache/cxf/binding/soap/*"/>
+			<accessrule kind="accessible" pattern="org/apache/cxf/binding/soap/blueprint/*"/>
+			<accessrule kind="accessible" pattern="org/apache/cxf/binding/soap/interceptor/*"/>
+			<accessrule kind="accessible" pattern="org/apache/cxf/binding/soap/jms/interceptor/*"/>
+			<accessrule kind="accessible" pattern="org/apache/cxf/binding/soap/model/*"/>
+			<accessrule kind="accessible" pattern="org/apache/cxf/binding/soap/saaj/*"/>
+			<accessrule kind="accessible" pattern="org/apache/cxf/binding/soap/spring/*"/>
+			<accessrule kind="accessible" pattern="org/apache/cxf/binding/soap/wsdl/extensions/*"/>
+			<accessrule kind="accessible" pattern="org/apache/cxf/binding/soap/wsdl11/*"/>
+			<accessrule ignoreifbetter="true" kind="discouraged" pattern="**"/>
+		</accessrules>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.ibm.ws.jaxws.client;
 
+import java.util.Dictionary;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -22,6 +23,8 @@ import org.apache.cxf.phase.Phase;
 import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transport.http.HTTPConduitConfigurer;
+import org.apache.cxf.transport.http.osgi.ConfigAdminHttpConduitConfigurer;
+import org.apache.cxf.transport.http.osgi.HttpConduitConfigApplier;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedServiceFactory;
 
@@ -34,6 +37,7 @@ import com.ibm.ws.jaxws.metadata.ConfigProperties;
 import com.ibm.ws.jaxws.metadata.PortComponentRefInfo;
 import com.ibm.ws.jaxws.metadata.WebServiceRefInfo;
 import com.ibm.ws.jaxws.security.JaxWsSecurityConfigurationService;
+import com.ibm.ws.jaxws23.transport.http.LibertyAysncHTTPConduit;
 
 /**
  * Using the class to process the content in ibm-ws-bnd.xml file at client's side, such as url override, properties and security related stuff.
@@ -43,6 +47,10 @@ public class LibertyCustomizeBindingOutInterceptor extends AbstractPhaseIntercep
 
     private static final String HTTPS_SCHEMA = "https";
 
+    
+
+    //private static ConfigAdminHttpConduitConfigurer configConduitConfigurer = new ConfigAdminHttpConduitConfigurer();
+    
     private final JaxWsSecurityConfigurationService securityConfigService;
     private final Set<ConfigProperties> configPropertiesSet;
 
@@ -226,18 +234,21 @@ public class LibertyCustomizeBindingOutInterceptor extends AbstractPhaseIntercep
         String address = null;
         PortComponentRefInfo portInfo = null;
 
+        Tr.info(tc, "@TJJ in customizePortAddress " + address);
         if (null != wsrInfo) {
             QName portQName = getPortQName(message);
             if (null != portQName) {
                 portInfo = wsrInfo.getPortComponentRefInfo(portQName);
                 address = (null != portInfo && null != portInfo.getAddress()) ? portInfo.getAddress() : wsrInfo.getDefaultPortAddress();
+
+                Tr.info(tc, "@TJJ in customizePortAddress address now equals" + address);
             }
         }
 
         if (null != address) {
             //change the endpoint address if there is a valid one.
             if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-                Tr.debug(tc, "The endpoint address is overriden by " + address);
+                Tr.info(tc, "@TJJ The endpoint address is overriden by " + address);
             }
             message.put(Message.ENDPOINT_ADDRESS, address);
         }
@@ -245,20 +256,52 @@ public class LibertyCustomizeBindingOutInterceptor extends AbstractPhaseIntercep
 
     private void customizeHttpConduitProperties(Message message, Bus bus, ConfigProperties configProps) {
         Conduit conduit = message.getExchange().getConduit(message);
-        HTTPConduitConfigurer conduitConfigurer = bus.getExtension(HTTPConduitConfigurer.class);
+        //HTTPConduitConfigurer conduitConfigurer = bus.getExtension(HTTPConduitConfigurer.class);
 
-        if (conduitConfigurer != null && conduit instanceof HTTPConduit) {
-            HTTPConduit httpConduit = (HTTPConduit) conduit;
+        Dictionary<String, String> cxfClientProps = configProps.getProperties();
+
+        HttpConduitConfigApplier configApplier = new HttpConduitConfigApplier();
+        configApplier.applyClientPolicies(cxfClientProps, (LibertyAysncHTTPConduit) conduit);
+
+        Tr.info(tc, "@Tjj conduit" + conduit.getClass());
+
+        if (conduit instanceof LibertyAysncHTTPConduit) {
+            
+            Tr.info(tc, "@conduit instanceof HTTPConduit");
+        
+            LibertyAysncHTTPConduit httpConduit = (LibertyAysncHTTPConduit) conduit;
             String address = (String) message.get(Message.ENDPOINT_ADDRESS);
-            if (conduitConfigurer instanceof ManagedServiceFactory) {
                 String portQNameStr = getPortQName(message).toString();
-                try {
-                    ((ManagedServiceFactory) conduitConfigurer).updated(portQNameStr, configProps.getProperties());
-                    conduitConfigurer.configure(portQNameStr, address, httpConduit);
-                } catch (ConfigurationException e) {
-                    throw new Fault(e);
-                }
-            }
+
+                    
+                    if(configProps.getProperties().contains("http.conduit.client.ConnectionTimeout")) {
+                        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
+                            Tr.info(tc, "@TJJ the configProps contain the http.conduit.client.ConnectionTimeout property and it's value is " + configProps.getProperties().get("http.conduit.client.ConnectionTimeout"));
+                        }
+                        configProps.getProperties().put("javax.xml.ws.client.connectionTimeout", configProps.getProperties().get("http.conduit.client.ConnectionTimeout"));
+                        
+                        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
+                            Tr.info(tc, "@TJJ the configProps now contain the spec client " + Message.RECEIVE_TIMEOUT + " property and it's value is " + configProps.getProperties().get(Message.CONNECTION_TIMEOUT));
+                        }
+                    }
+                    
+                    
+                    if(configProps.getProperties().contains("http.conduit.client.ReceiveTimeout")) {
+                        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
+                            Tr.info(tc, "@TJJ the configProps contain the http.conduit.client.recieveTimeout property and it's value is " + configProps.getProperties().get("http.conduit.client.RecieveTimeout"));
+                        }
+                        configProps.getProperties().put("javax.xml.ws.client.receiveTimeout", configProps.getProperties().get("http.conduit.client.RecieveTimeout"));
+                        
+                        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
+                            Tr.info(tc, "@TJJ the configProps now contain the spec client " + Message.RECEIVE_TIMEOUT + " property and it's value is " + configProps.getProperties().get(Message.RECEIVE_TIMEOUT));
+                        }
+                    }
+                    
+                    
+                    ((HTTPConduitConfigurer) configApplier).configure(portQNameStr, address, httpConduit);
+                    
+ 
+            
         }
     }
 

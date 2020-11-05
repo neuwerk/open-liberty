@@ -16,7 +16,10 @@
    org/apache/cxf=${bin}/org/apache/cxf,\
    META-INF=resources/META-INF
    
-instrument.classesExcludes: org/apache/cxf/common/jaxb/*.class
+instrument.classesExcludes: org/apache/cxf/common/jaxb/*.class, \
+  org/apache/cxf/common/logging/*.class
+
+instrument.ffdc: false
 
 -buildpath: \
   javax.activation:activation;version=1.1,\

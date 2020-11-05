@@ -72,6 +72,7 @@ public class WebServiceRefInfoBuilder {
 
         String serviceRefName = serviceRef.getName();
         String wsdlLocation = serviceRef.getWsdlFile();
+        Tr.info(tc, "@TJJJ dd serviceRef.getWsdlFile() returns" + serviceRef.getWsdlFile());
         String lookupName = serviceRef.getLookupName();
         if (lookupName != null) {
             lookupName = lookupName.trim();
@@ -104,6 +105,8 @@ public class WebServiceRefInfoBuilder {
             }
         }
 
+
+        Tr.info(tc, "@TJJJ dd wsrInfo.getWsdlLocation() " + wsrInfo.getWsdlLocation());
         // Next, we'll visit our list of PortComponentRefs
         List<PortComponentRef> pcRefs = serviceRef.getPortComponentRefs();
         if (pcRefs != null && !pcRefs.isEmpty()) {
@@ -129,6 +132,8 @@ public class WebServiceRefInfoBuilder {
                     portComponentRefInfo.setPortComponentLink(pcRef.getPortComponentLink());
                 }
 
+
+                Tr.info(tc, "@TJJJ dd portComponentRefInfo.getPortComponentLink() " + portComponentRefInfo.getPortComponentLink() + "  portComponentRefInfo.getAddress() " + portComponentRefInfo.getAddress());
                 // set Features
                 // If any of the MTOM info is set, then add a WebServiceFeature for it.
                 // Note: if either of the values is not set, we'll still retrieve the attribute
@@ -243,6 +248,10 @@ public class WebServiceRefInfoBuilder {
         }
         String className = serviceInterfaceClass.getName();
         String wsdlLocation = webServiceClient.wsdlLocation();
+
+        Tr.info(tc, "@TJJJ dd webServiceClient.wsdlLocation() returns " + webServiceClient.wsdlLocation());
+
+        Tr.info(tc, "@TJJJ dd webServiceClient.toString() " + webServiceClient.toString() + "  webServiceClient " + webServiceClient.getClass().toString());
         QName serviceQName = null;
         String localPart = webServiceClient.name();
         if (localPart != null) {

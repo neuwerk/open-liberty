@@ -12,6 +12,8 @@ package com.ibm.ws.jaxws.client;
 
 import java.io.IOException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,7 +64,7 @@ public class LibertyServiceImpl extends ServiceImpl {
     private final WebServiceRefInfo wsrInfo;
 
     private final JaxWsSecurityConfigurationService securityConfigService;
-
+    
     /**
      * The map contains the port QName to port properties entry
      */
@@ -97,14 +99,14 @@ public class LibertyServiceImpl extends ServiceImpl {
     }
 
     @Override
-    protected <T> T createPort(QName portName, EndpointReferenceType epr, Class<T> serviceEndpointInterface,
+    public <T> T createPort(QName portName, EndpointReferenceType epr, Class<T> serviceEndpointInterface,
                                WebServiceFeature... features) {
 
         if (features == null || features.length == 0) {
             features = getWebServiceFeaturesOnPortComponentRef(serviceEndpointInterface);
         }
 
-        T clientProxy = super.createPort(portName, epr, serviceEndpointInterface, features);
+       T clientProxy = super.createPort(portName, epr, serviceEndpointInterface, features);
 
         Client client = ClientProxy.getClient(clientProxy);
 
@@ -207,6 +209,8 @@ public class LibertyServiceImpl extends ServiceImpl {
      * configure the http conduit properties defined in the custom binding file.
      */
     private void configureClientProperties() throws IOException {
+
+        Tr.info(tc, "@TJJ in configureClientProperties()" );
         Map<String, String> serviceRefProps = wsrInfo.getProperties();
         Iterator<QName> iterator = this.getPorts();//wsrInfo.getBindingPortComponentRefInfoList();
 

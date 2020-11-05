@@ -1,4 +1,3 @@
-org.apache.cxf.transport.http.HTTPTransportFactory::true
 org.apache.cxf.transport.http.HTTPWSDLExtensionLoader::true:true
 org.apache.cxf.transport.http.policy.HTTPClientAssertionBuilder::true:true
 org.apache.cxf.transport.http.policy.HTTPServerAssertionBuilder::true:true

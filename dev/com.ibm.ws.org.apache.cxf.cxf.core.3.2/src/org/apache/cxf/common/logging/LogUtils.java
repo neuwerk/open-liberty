@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 
 import org.apache.cxf.common.i18n.BundleUtils;
 
+import com.ibm.websphere.ras.annotation.Trivial;
 import com.ibm.ws.ffdc.annotation.FFDCIgnore;
 
 /**
@@ -49,7 +50,7 @@ import com.ibm.ws.ffdc.annotation.FFDCIgnore;
  * </ul>
  * CXF provides {@link Log4jLogger} to use log4j instead of java.util.logging.
  */
-
+@Trivial
 public final class LogUtils {
     public static final String KEY = "org.apache.cxf.Logger";
 

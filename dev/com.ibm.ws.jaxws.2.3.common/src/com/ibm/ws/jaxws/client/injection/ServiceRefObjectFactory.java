@@ -65,6 +65,7 @@ import com.ibm.ws.jaxws.metadata.WebServiceRefInfo;
 import com.ibm.ws.jaxws.security.JaxWsSecurityConfigurationService;
 import com.ibm.ws.jaxws.support.JaxWsMetaDataManager;
 import com.ibm.ws.jaxws.utils.JaxWsUtils;
+import com.ibm.ws.jaxws23.transport.http.LibertyAsyncHTTPTransportFactory;
 import com.ibm.ws.runtime.metadata.ComponentMetaData;
 import com.ibm.ws.runtime.metadata.ModuleMetaData;
 import com.ibm.wsspi.adaptable.module.Container;
@@ -110,7 +111,9 @@ public class ServiceRefObjectFactory implements javax.naming.spi.ObjectFactory {
                                                       policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
     protected void setSecurityConfigurationService(ServiceReference<JaxWsSecurityConfigurationService> serviceRef) {
         securityConfigSR.setReference(serviceRef);
+        
         LibertyProviderImpl.setSecurityConfigService(securityConfigSR);
+        LibertyAsyncHTTPTransportFactory.setSecurityConfigService(securityConfigSR);
     }
 
     protected void unsetSecurityConfigurationService(ServiceReference<JaxWsSecurityConfigurationService> serviceRef) {
@@ -434,9 +437,9 @@ public class ServiceRefObjectFactory implements javax.naming.spi.ObjectFactory {
                                 });
                             } catch (PrivilegedActionException e) {
                                 if (e.getException() != null) {
-                                    throw e.getException();
+                                    //throw e.getException();
                                 } else {
-                                    throw e;
+                                    //throw e;
                                 }
                             }
                             break;
@@ -670,6 +673,9 @@ public class ServiceRefObjectFactory implements javax.naming.spi.ObjectFactory {
      * @param wsrInfo
      */
     private void mergeWebServicesBndInfo(WebServiceRefInfo wsrInfo, JaxWsClientMetaData jaxwsClientMetaData) {
+        
+        
+        Tr.info(tc, "@TJJ in mergeWebServicesBNDinfo" + wsrInfo);
 
         WebservicesBnd webServicesBnd = null;
         try {
@@ -711,6 +717,8 @@ public class ServiceRefObjectFactory implements javax.naming.spi.ObjectFactory {
                 wsrInfo.setProperties(serviceRef.getProperties());
 
                 String wsdlOverride = serviceRef.getWsdlLocation();
+
+                Tr.info(tc, "@TJJ in mergeWebServicesBNDinfo wsdlOverride is " + wsdlOverride);
                 if (wsdlOverride != null && !wsdlOverride.isEmpty()) {
                     wsrInfo.setWsdlLocation(wsdlOverride);
                 }

@@ -23,7 +23,6 @@ import java.util.Map;
 import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,26 +31,25 @@ import com.ibm.ws.jaxws.fat.util.ExplodedShrinkHelper;
 import com.ibm.ws.jaxws.fat.util.TestUtils;
 
 import componenttest.annotation.Server;
-import componenttest.annotation.SkipForRepeat;
 import componenttest.custom.junit.runner.FATRunner;
 import componenttest.topology.impl.LibertyServer;
 import componenttest.topology.utils.HttpUtils;
 
 @RunWith(FATRunner.class)
-@SkipForRepeat("jaxws-2.3")
-public class HttpConduitPropertiesTest {
+public class AbstractHttpConduitPropertiesTest {
+
     private static final int CONN_TIMEOUT = 10;
 
     @Server("HttpConduitPropertiesTestServer")
     public static LibertyServer server;
 
-    private static String defaultSimpleEchoServiceEndpointAddr;
-    private static String defaultSimpleEchoServiceEndpointAddr2;
-    private static String defaultHelloServiceEndpointAddr;
-    private static String testServletURL;
-    private static String testServletURL2;
-    private static String testServletURLForHelloService;
-    private static String receiveTimeoutTestServletURL;
+    protected static String defaultSimpleEchoServiceEndpointAddr;
+    protected static String defaultSimpleEchoServiceEndpointAddr2;
+    protected static String defaultHelloServiceEndpointAddr;
+    protected static String testServletURL;
+    protected static String testServletURL2;
+    protected static String testServletURLForHelloService;
+    protected static String receiveTimeoutTestServletURL;
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -85,11 +83,6 @@ public class HttpConduitPropertiesTest {
         testServletURLForHelloService = new StringBuilder().append("http://").append(server.getHostname()).append(":").append(server.getHttpDefaultPort()).append("/httpConduitProperties/TestServlet?target=HelloService").toString();
 
         receiveTimeoutTestServletURL = new StringBuilder().append("http://").append(server.getHostname()).append(":").append(server.getHttpDefaultPort()).append("/httpConduitProperties/ReceiveTimeoutTestServlet").toString();
-    }
-
-    @AfterClass
-    public static void cleanup() throws Exception {
-        server.deleteFileFromLibertyInstallRoot("lib/features/jaxwsTest-2.2.mf");
     }
 
     @After

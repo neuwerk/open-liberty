@@ -30,6 +30,7 @@ import org.apache.cxf.jaxws.support.JaxWsServiceFactoryBean;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.service.Service;
 import org.apache.cxf.service.invoker.Invoker;
+import org.apache.cxf.service.invoker.MethodDispatcher;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
 
@@ -118,8 +119,8 @@ public class EJBJaxWsWebEndpoint extends AbstractJaxWsWebEndpoint {
         } else {
             Service service = serviceFactory.getService();
             org.apache.cxf.service.model.EndpointInfo cxfEndpointInfo = service.getEndpointInfo(endpointInfo.getWsdlPort());
-            //MethodDispatcher methodDispatcher = (MethodDispatcher) service.get(MethodDispatcher.class.getName());
-            JAXWSMethodDispatcher methodDispatcher = (JAXWSMethodDispatcher) service.get(JAXWSMethodDispatcher.class.getName());
+            MethodDispatcher methodDispatcher = (MethodDispatcher) service.get(MethodDispatcher.class.getName());
+            //JAXWSMethodDispatcher methodDispatcher = (JAXWSMethodDispatcher) service.get(JAXWSMethodDispatcher.class.getName());
             List<Method> methods = new ArrayList<Method>(cxfEndpointInfo.getBinding().getOperations().size());
             for (BindingOperationInfo bindingOperationInfo : cxfEndpointInfo.getBinding().getOperations()) {
                 Method method = methodDispatcher.getMethod(bindingOperationInfo);

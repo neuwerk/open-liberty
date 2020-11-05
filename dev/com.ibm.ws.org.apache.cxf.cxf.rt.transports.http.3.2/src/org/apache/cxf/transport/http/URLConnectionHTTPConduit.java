@@ -250,9 +250,9 @@ public class URLConnectionHTTPConduit extends HTTPConduit {
         return address != null ? address.getURI() : connection.getURL().toURI();
     }
     
-    class URLConnectionWrappedOutputStream extends WrappedOutputStream {
+    public class URLConnectionWrappedOutputStream extends WrappedOutputStream {
         HttpURLConnection connection;
-        URLConnectionWrappedOutputStream(Message message, HttpURLConnection connection,
+        public URLConnectionWrappedOutputStream(Message message, HttpURLConnection connection,
                                          boolean needToCacheRequest, boolean isChunking,
                                          int chunkThreshold, String conduitName) throws URISyntaxException {
             super(message, needToCacheRequest, isChunking,

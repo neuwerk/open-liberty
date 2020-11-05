@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import com.ibm.websphere.ras.annotation.Trivial;
 import com.ibm.ws.ffdc.annotation.FFDCIgnore;
 
 /**
@@ -37,6 +38,7 @@ import com.ibm.ws.ffdc.annotation.FFDCIgnore;
  * touch this unless you're a grizzled classloading guru veteran who is going to
  * verify any change on 6 different application servers.
  */
+@Trivial
 public final class ClassLoaderUtils {
     private static final boolean SKIP_SM = System.getSecurityManager() == null;
 

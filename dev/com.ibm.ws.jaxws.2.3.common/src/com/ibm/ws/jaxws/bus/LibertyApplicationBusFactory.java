@@ -14,23 +14,37 @@ import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.cxf.Bus;
+import org.apache.cxf.BusException;
 import org.apache.cxf.BusFactory;
+import org.apache.cxf.binding.BindingFactoryManager;
+import org.apache.cxf.binding.soap.SoapTransportFactory;
 import org.apache.cxf.bus.CXFBusFactory;
 import org.apache.cxf.bus.extension.Extension;
 import org.apache.cxf.bus.extension.ExtensionManager;
 import org.apache.cxf.bus.extension.ExtensionManagerImpl;
+import org.apache.cxf.bus.managers.DestinationFactoryManagerImpl;
 import org.apache.cxf.buslifecycle.BusLifeCycleListener;
 import org.apache.cxf.buslifecycle.BusLifeCycleManager;
+import org.apache.cxf.transport.ConduitInitiatorManager;
+import org.apache.cxf.transport.DestinationFactoryManager;
+import org.apache.cxf.transport.http.HTTPConduitFactory;
+import org.apache.cxf.transport.http.HTTPTransportFactory;
+import org.apache.cxf.transport.http.asyncclient.AsyncHTTPConduitFactory;
+import org.apache.cxf.transport.http.asyncclient.AsyncHttpTransportFactory;
+import org.apache.cxf.transport.http_jaxws_spi.JAXWSHttpSpiTransportFactory;
 
 import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
 import com.ibm.ws.container.service.app.deploy.ModuleInfo;
 import com.ibm.ws.jaxws.metadata.JaxWsModuleMetaData;
+import com.ibm.ws.jaxws23.transport.http.LibertyAsyncHTTPConduitFactory;
+import com.ibm.ws.jaxws23.transport.http.LibertyAsyncHTTPTransportFactory;
 import com.ibm.ws.util.ThreadContextAccessor;
 
 /**
@@ -123,11 +137,59 @@ public class LibertyApplicationBusFactory extends CXFBusFactory {
             }
 
             bus.initialize();
+            DestinationFactoryManager dfm = bus.getExtension(DestinationFactoryManager.class);
+            ConduitInitiatorManager cim = bus.getExtension(org.apache.cxf.transport.ConduitInitiatorManager.class);
+            BindingFactoryManager bfm = bus.getExtension(org.apache.cxf.binding.BindingFactoryManager.class);
+            SoapTransportFactory stf = bus.getExtension(SoapTransportFactory.class);
+  
+            if (null == dfm) {
+                dfm  = new org.apache.cxf.bus.managers.DestinationFactoryManagerImpl(bus);   
+                
+            }
+
+            if (null == cim) {
+                cim = new org.apache.cxf.bus.managers.ConduitInitiatorManagerImpl(bus);
+            }
+
+            if (null == bfm) {
+                bfm = new org.apache.cxf.bus.managers.BindingFactoryManagerImpl(bus);
+            }
+            
+            
+            
+            
+            dfm.registerDestinationFactory("http://schemas.xmlsoap.org/wsdl/soap/", stf);
+            dfm.registerDestinationFactory("http://schemas.xmlsoap.org/soap/", stf);
+            dfm.registerDestinationFactory("http://schemas.xmlsoap.org/wsdl/soap/http", stf);
+            dfm.registerDestinationFactory("http://schemas.xmlsoap.org/soap/http", stf);
+            
+            for(Iterator<String> i = dfm.getRegisteredDestinationFactoryNames().iterator(); i.hasNext();) {
+                Tr.info(tc, "@TJJ dfm registeredDestinationFactoryName: "+ i.next());
+                
+            }
+        
+            bus.setExtension(dfm, DestinationFactoryManager.class);
+            bus.setExtension(cim, ConduitInitiatorManager.class);
+            bus.setExtension(bfm, BindingFactoryManager.class);
+            bus.setExtension(stf, SoapTransportFactory.class);
+
+
+            try {
+                Tr.info(tc, "@TJJ getDestinationFactory: "   + dfm.getDestinationFactory("http://schemas.xmlsoap.org/soap/http"));
+            } catch (BusException e1) {
+                // TODO Auto-generated catch block
+                // Do you need FFDC here? Remember FFDC instrumentation and @FFDCIgnore
+                e1.printStackTrace();
+            }
+   
+            Tr.info(tc, "@TJJ DFM = " + dfm + " CIM = " + cim + " BFM = " + bfm + " stf = " + stf + " registered DestinationFactory: " + dfm.getDestinationFactoryForUri("http://cxf.apache.org/transports/http") + " what is the HTTPTF" );
+            
             return bus;
 
         } finally {
             setThreadDefaultBus(originalBus);
         }
+     
     }
 
     @Override

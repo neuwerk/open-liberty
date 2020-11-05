@@ -46,6 +46,7 @@ public class LibertyJaxWsServlet extends HttpServlet {
 
     public LibertyJaxWsServlet(JaxWsWebEndpoint endpoint, IWebAppNameSpaceCollaborator collaborator) {
         this.endpoint = endpoint;
+
         this.collaborator = collaborator;
     }
 

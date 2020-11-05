@@ -122,7 +122,7 @@ public class AsyncHTTPConduitFactory implements HTTPConduitFactory {
     volatile PoolingNHttpClientConnectionManager connectionManager;
     volatile CloseableHttpAsyncClient client;
 
-    boolean isShutdown;
+    protected boolean isShutdown;
     UseAsyncPolicy policy;
     int maxConnections = 5000;
     int maxPerRoute = 1000;
@@ -138,7 +138,7 @@ public class AsyncHTTPConduitFactory implements HTTPConduitFactory {
     boolean tcpNoDelay = true;
 
 
-    AsyncHTTPConduitFactory() {
+    protected AsyncHTTPConduitFactory() {
         super();
     }
 
@@ -174,7 +174,7 @@ public class AsyncHTTPConduitFactory implements HTTPConduitFactory {
     }
 
 
-    private boolean setProperties(Map<String, Object> s) {
+    protected boolean setProperties(Map<String, Object> s) {
         //properties that can be updated "live"
         if (s == null) {
             return false;
@@ -291,7 +291,7 @@ public class AsyncHTTPConduitFactory implements HTTPConduitFactory {
     }
 
 
-    private void addListener(Bus b) {
+    protected void addListener(Bus b) {
         BusLifeCycleManager manager = b.getExtension(BusLifeCycleManager.class);
         if (manager != null) {
 

@@ -36,7 +36,10 @@ fat.project: true
 # These features get added programmatically
 tested.features: \
   jaxws-2.2,\
-  ejb-3.2
+  ejb-3.2, \
+  servlet-4.0, \
+  jaxb-2.3, \
+  jaxws-2.3
 
 -buildpath: \
 	com.ibm.websphere.javaee.jaxws.2.2;version=latest,\

@@ -18,25 +18,29 @@ Bundle-Description: IBM JAX-WS 2.3 Common; version=${bVersion}
 Bundle-Activator: org.apache.cxf.bus.osgi.CXFActivator
 
 
+instrument.classesExcludes: com/ibm/ws/jaxws/internal/resources/*.class
 
+-includeresource: \
+   META-INF=resources/META-INF
 
 # in cxf-rt-frontend-jaxws-3.2 bundle, we exposed:
 # META-INF/services/javax.xml.ws.spi.Provider = com.ibm.ws.jaxws.client.LibertyProviderImpl
 # so we need make com.ibm.ws.jaxws.client;thread-context=true
 Export-Package: \
-    com.ibm.ws.jaxws, \
-    com.ibm.ws.jaxws.bus, \
-    com.ibm.ws.jaxws.client;thread-context=true, \
+    com.ibm.ws.jaxws;version="2.3", \
+    com.ibm.ws.jaxws.bus;version="2.3", \
+    com.ibm.ws.jaxws.client;version="2.3";thread-context=true, \
     com.ibm.ws.jaxws.client.injection, \
-    com.ibm.ws.jaxws.metadata, \
-    com.ibm.ws.jaxws.metadata.builder, \
-    com.ibm.ws.jaxws.security, \
-    com.ibm.ws.jaxws.support, \
-    com.ibm.ws.jaxws.utils, \
-    com.ibm.ws.jaxws.endpoint, \
-    com.ibm.ws.jaxws.threading, \
-    com.ibm.wsspi.jaxws, \
-    com.ibm.ws.jaxws.globalhandler
+    com.ibm.ws.jaxws.metadata;version="2.3", \
+    com.ibm.ws.jaxws.metadata.builder;version="2.3",\
+    com.ibm.ws.jaxws.security;version="2.3", \
+    com.ibm.ws.jaxws.support;version="2.3", \
+    com.ibm.ws.jaxws.utils;version="2.3", \
+    com.ibm.ws.jaxws.endpoint;version="2.3", \
+    com.ibm.ws.jaxws.threading;version="2.3", \
+    com.ibm.ws.jaxws23.transport.http;version="2.3", \
+    com.ibm.wsspi.jaxws;version="2.3", \
+    com.ibm.ws.jaxws.globalhandler;version="2.3"
 
 Import-Package: \
    javax.xml.bind.*;version="[2.3,3)", \
@@ -166,13 +170,22 @@ Service-Component: \
      implementation:=com.ibm.ws.jaxws.catalog.OASISCatalogApplicationBusListener; \
      provide:='com.ibm.ws.jaxws.bus.LibertyApplicationBusListener'; \
      properties:="service.vendor=IBM", \
+  com.ibm.ws.jaxws.http.transport.factory.provider; \
+     configuration-policy:=optional; \
+     implementation:=com.ibm.ws.jaxws23.transport.http.LibertyHTTPTransportFactoryProvider; \
+     provide:='com.ibm.ws.jaxws.bus.ExtensionProvider'; \
+     properties:="service.vendor=IBM", \
   com.ibm.ws.jaxws.policy.PolicyAttachmentApplicationBusListener; \
      configuration-policy:=optional; \
      implementation:=com.ibm.ws.jaxws.policy.PolicyAttachmentApplicationBusListener; \
      provide:='com.ibm.ws.jaxws.bus.LibertyApplicationBusListener'; \
-     properties:="service.vendor=IBM"
+     properties:="service.vendor=IBM", \
+  com.ibm.ws.jaxws.2.3.common.ResourceProvider; \
+    implementation:=com.ibm.wsspi.classloading.ResourceProvider; \
+    provide:=com.ibm.wsspi.classloading.ResourceProvider; \
+    configuration-policy:=optional; \
+    properties:="resources=META-INF/cxf/bus-extensions.txt"
 
-instrument.classesExcludes: com/ibm/ws/jaxws/internal/resources/*.class
 
 -buildpath: \
 	com.ibm.websphere.javaee.annotation.1.2;version=latest,\
@@ -202,6 +215,7 @@ instrument.classesExcludes: com/ibm/ws/jaxws/internal/resources/*.class
 	com.ibm.ws.org.apache.cxf.cxf.rt.frontend.simple.3.2;version=latest,\
 	com.ibm.ws.org.apache.cxf.cxf.rt.management.3.2;version=latest,\
 	com.ibm.ws.org.apache.cxf.cxf.rt.transports.http.3.2;version=latest,\
+	com.ibm.ws.org.apache.cxf.cxf.rt.transports.http.hc.3.2;version=latest,\
 	com.ibm.ws.org.apache.cxf.cxf.rt.ws.policy.3.2;version=latest,\
 	com.ibm.ws.org.apache.cxf.cxf.rt.wsdl.3.2;version=latest,\
 	com.ibm.websphere.javaee.wsdl4j.1.2;version=latest,\
