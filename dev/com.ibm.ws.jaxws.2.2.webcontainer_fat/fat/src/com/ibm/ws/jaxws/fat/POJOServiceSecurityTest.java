@@ -1,14 +1,13 @@
-/*
- * IBM Confidential
+/*******************************************************************************
+ * Copyright (c) 2021 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  *
- * OCO Source Materials
- *
- * Copyright IBM Corp. 2013
- *
- * The source code for this program is not published or otherwise divested
- * of its trade secrets, irrespective of what has been deposited with the
- * U.S. Copyright Office.
- */
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *******************************************************************************/
 package com.ibm.ws.jaxws.fat;
 
 import static org.junit.Assert.assertFalse;
@@ -76,11 +75,11 @@ public class POJOServiceSecurityTest {
     @Test
     @AllowedFFDC({ "java.rmi.AccessException" })
     public void test_pojows_security_with_bndfile() throws Exception {
-        //runTest("user1", "user2pwd", "SayHelloServiceOne", "Hello user1 from SayHelloServiceOne.", false);
+        runTest("user1", "user2pwd", "SayHelloServiceOne", "Hello user1 from SayHelloServiceOne.", false);
         runTest("user1", "user1pwd", "SayHelloServiceOne", "Hello user1 from SayHelloServiceOne.", true);
-        //runTest("user2", "user2pwd", "SayHelloServiceOne", "Hello user2 from SayHelloServiceOne.", false);
-        //runTest("user3", "user3pwd", "SayHelloServiceOne", "Hello user3 from SayHelloServiceOne.", false);
-        //runTest("user4", "user4pwd", "SayHelloServiceOne", "Hello user4 from SayHelloServiceOne.", false);
+        runTest("user2", "user2pwd", "SayHelloServiceOne", "Hello user2 from SayHelloServiceOne.", false);
+        runTest("user3", "user3pwd", "SayHelloServiceOne", "Hello user3 from SayHelloServiceOne.", false);
+        runTest("user4", "user4pwd", "SayHelloServiceOne", "Hello user4 from SayHelloServiceOne.", false);
     }
 
     @Test
