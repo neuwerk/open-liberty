@@ -574,7 +574,7 @@
     <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-util</artifactId>
-      <version>0.30.0</version>
+      <version>0.33.0</version>
     </dependency>
     <dependency>
       <groupId>io.projectreactor</groupId>
@@ -3399,7 +3399,7 @@
     <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-util</artifactId>
-      <version>0.31.0</version>
+      <version>0.33.0</version>
     </dependency>
     <dependency>
       <groupId>io.opentracing</groupId>
