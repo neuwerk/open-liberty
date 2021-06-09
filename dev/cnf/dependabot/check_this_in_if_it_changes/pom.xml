@@ -2329,7 +2329,7 @@
     <dependency>
       <groupId>org.jboss.arquillian.container</groupId>
       <artifactId>arquillian-container-test-spi</artifactId>
-      <version>1.3.0.Final</version>
+      <version>1.6.0.Final</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.arquillian.core</groupId>
