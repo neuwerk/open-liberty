@@ -869,17 +869,17 @@
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
-      <version>2.2.12-b140109.1041</version>
+      <version>2.4.0-b180830.0359</version>
     </dependency>
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
-      <version>2.2.7</version>
+      <version>2.4.0-b180830.0359</version>
     </dependency>
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
-      <version>2.3.0</version>
+      <version>2.4.0-b180830.0359</version>
     </dependency>
     <dependency>
       <groupId>javax.xml.ws</groupId>
