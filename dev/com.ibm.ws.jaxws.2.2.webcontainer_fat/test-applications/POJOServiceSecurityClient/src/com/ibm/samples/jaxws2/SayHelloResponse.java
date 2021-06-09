@@ -1,13 +1,4 @@
-/*******************************************************************************
- * Copyright (c) 2021 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+
 package com.ibm.samples.jaxws2;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -15,11 +6,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+
 /**
  * <p>Java class for sayHelloResponse complex type.
- *
+ * 
  * <p>The following schema fragment specifies the expected content contained within this class.
- *
+ * 
  * <pre>
  * &lt;complexType name="sayHelloResponse">
  *   &lt;complexContent>
@@ -31,12 +23,12 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- *
- *
+ * 
+ * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "sayHelloResponse", propOrder = {
-                                                  "_return"
+    "_return"
 })
 public class SayHelloResponse {
 
@@ -45,11 +37,11 @@ public class SayHelloResponse {
 
     /**
      * Gets the value of the return property.
-     *
-     * @return
-     *         possible object is
-     *         {@link String }
      * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getReturn() {
         return _return;
@@ -57,11 +49,11 @@ public class SayHelloResponse {
 
     /**
      * Sets the value of the return property.
-     *
-     * @param value
-     *                  allowed object is
-     *                  {@link String }
      * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setReturn(String value) {
         this._return = value;
