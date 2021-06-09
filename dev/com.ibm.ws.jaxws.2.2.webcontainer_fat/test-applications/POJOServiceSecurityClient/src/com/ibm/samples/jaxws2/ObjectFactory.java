@@ -1,13 +1,4 @@
-/*******************************************************************************
- * Copyright (c) 2021 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+
 package com.ibm.samples.jaxws2;
 
 import javax.xml.bind.JAXBElement;
@@ -15,19 +6,20 @@ import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
 import javax.xml.namespace.QName;
 
+
 /**
- * This object contains factory methods for each
- * Java content interface and Java element interface
- * generated in the com.ibm.samples.jaxws2 package.
- * <p>An ObjectFactory allows you to programatically
- * construct new instances of the Java representation
- * for XML content. The Java representation of XML
- * content can consist of schema derived interfaces
- * and classes representing the binding of schema
- * type definitions, element declarations and model
- * groups. Factory methods for each of these are
+ * This object contains factory methods for each 
+ * Java content interface and Java element interface 
+ * generated in the com.ibm.samples.jaxws2 package. 
+ * <p>An ObjectFactory allows you to programatically 
+ * construct new instances of the Java representation 
+ * for XML content. The Java representation of XML 
+ * content can consist of schema derived interfaces 
+ * and classes representing the binding of schema 
+ * type definitions, element declarations and model 
+ * groups.  Factory methods for each of these are 
  * provided in this class.
- *
+ * 
  */
 @XmlRegistry
 public class ObjectFactory {
@@ -37,14 +29,14 @@ public class ObjectFactory {
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: com.ibm.samples.jaxws2
-     *
+     * 
      */
     public ObjectFactory() {
     }
 
     /**
      * Create an instance of {@link SayHelloResponse }
-     *
+     * 
      */
     public SayHelloResponse createSayHelloResponse() {
         return new SayHelloResponse();
@@ -52,7 +44,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SayHello_Type }
-     *
+     * 
      */
     public SayHello_Type createSayHello_Type() {
         return new SayHello_Type();
@@ -60,7 +52,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link SayHello_Type }{@code >}}
-     *
+     * 
      */
     @XmlElementDecl(namespace = "http://jaxws2.samples.ibm.com", name = "sayHello")
     public JAXBElement<SayHello_Type> createSayHello(SayHello_Type value) {
@@ -69,7 +61,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link SayHelloResponse }{@code >}}
-     *
+     * 
      */
     @XmlElementDecl(namespace = "http://jaxws2.samples.ibm.com", name = "sayHelloResponse")
     public JAXBElement<SayHelloResponse> createSayHelloResponse(SayHelloResponse value) {
