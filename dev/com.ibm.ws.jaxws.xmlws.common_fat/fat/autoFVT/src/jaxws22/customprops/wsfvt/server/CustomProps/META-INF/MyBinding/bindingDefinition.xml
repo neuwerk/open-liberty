@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<BindingDefinition xmlns="http://www.ibm.com/xmlns/prod/websphere/200711/bindingdefinition" version="7.0.0.0" description="" type="provider">
-    <Domain name="global"/>
-</BindingDefinition>

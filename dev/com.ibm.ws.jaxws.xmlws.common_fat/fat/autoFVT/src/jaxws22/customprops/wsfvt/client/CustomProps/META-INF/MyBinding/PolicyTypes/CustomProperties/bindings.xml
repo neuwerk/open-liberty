@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<customPropertiesBinding xmlns="http://www.ibm.com/xmlns/prod/websphere/201007/customPropertiesBinding">
-    <customProperty name="javax.xml.ws.service.endpoint.address" value ="http://@REPLACE_WITH_HOST_NAME@:@REPLACE_WITH_PORT_NUM@/CustomProps/CustomPropsService_WRONG_NAME"/>
-</customPropertiesBinding>

@@ -1,2 +1,0 @@
-$AdminApp uninstall jaxws.badprovider.WSProvider
-$AdminConfig save
