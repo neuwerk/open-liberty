@@ -1,0 +1,181 @@
+<?xml version="1.0"?>
+
+<!-- autoFVT/src/annotations/webresult/buildTest.xml, WAS.websvcs.fvt, WASX.FVT, gg0832.60
+
+     Description: Build file for the WAS annotation tests.
+
+
+     Date        Author       Feature/Defect          Description
+     06/15/2006  btiffany     LIDB3296-31.01          New File
+     09/26/2007 btiffany                                            remove runsetups target - happens during junit
+     09/11/2008  whsu                                64bit flag 
+
+
+     To run this standalone, set WAS_HOME, ANT_HOME, JUNIT_HOME, FVT_TOP
+     and run unittest.bat long enough so that it creates instance.xml
+-->
+<project name="build" default="buildall" basedir=".">
+<import file="../../xmls/common_imports.xml" />
+
+  <!-- This property should match the package name of the test class.  The
+       property is used in the targets.xml file when running any of the
+       component-run* targets for running a single test case class.
+  -->
+  <property name="componentName" value="annotations/webresult"/>
+
+  <!-- a variable to let us largely reuse this file without so many changes.
+       set it to the name of the subdir under annotations
+  -->
+  <property name="anno_subset"  value="webresult" />
+
+
+  <!-- This path id is used in the targets.xml file when running any of
+       the component-run* targets.  This allows setting the classpath
+       for an individual test.
+  -->
+  <path id="componentClasspath">
+    <path refid="thinclientclasspath"/>
+  </path>
+
+  <!-- need junit.jar explicitly in the path for setup to run -->
+  <path id="setupClasspath">
+    <pathelement location="${FVT.base.dir}/common/jars/junit.jar"/>
+    <pathelement location="/util/apache-ant-1.7.0/lib/ant-junit.jar" />
+    <path refid="classpath"/>
+  </path>
+
+
+  <!-- The buildall target will execute all of the targets necessary
+       before installing the test into WebSphere.
+       Note that junit doesn't get invoked here, that happens later
+       in src/build.xml.
+  -->
+  <target name="buildall" depends="setenv, clean, init, test"/>
+
+  <!-- the setenv target is in src/xmls/targets.xml and sets up a the environment -->
+
+
+  <!-- The init target will initialize any directories, properties, etc.
+       that are needed for the test.
+  -->
+  <target name="init" depends="setenv">
+        <!-- component-init comes from targets.xml and makes the main directories
+            used by all tests.
+        -->
+    <antcall target="component-init"/>
+    <mkdir dir="${FVT.build.work.dir}/annotations/${anno_subset}"/>
+	<mkdir dir="${FVT.build.work.dir}/WebResultTestCase/fromjava"/>
+  </target>
+
+
+  <!-- The clean target will clean any files, classes, or directories
+       so that a new copy of the test can be built and run.
+  -->
+  <target name="clean" depends="setenv">
+    <delete dir="${FVT.build.classes.dir}/annotations/${anno_subset}"/>
+    <delete dir="${FVT.build.work.dir}/annotations/${anno_subset}"/>
+    <delete file="${FVT.build.lib.dir}/*${anno_subset}*war"/>
+    <delete file="${FVT.build.installableApps.dir}/${anno_subset}*.ear"/>
+	<delete dir="${FVT.build.work.dir}/WebResultTestCase/fromjava"/>
+  </target>
+
+
+  <!-- The server target will build anything necessary for the server
+       piece of the test.  Typically this target builds the server side
+       EAR.
+  -->
+  <target name="server" depends="setenv">
+  </target>
+
+
+  <!-- The client target will build anything necessary for the client
+       piece of the test.  This could just be compiling the client class
+       or in the case of a managed client, building a client side EAR
+       file.
+  -->
+  <target name="client" depends="setenv">
+  </target>
+
+
+  <!-- The test target will build anything necessary for the test
+       piece of the test.  Often this will just include compiling the
+       the JUnit test case file.
+  -->
+  <target name="test" depends="setenv, client">
+
+    <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/${anno_subset}:${FVT.base.dir}/src/annotations/support"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           listfiles="yes"
+           depend="yes"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+      <exclude name="**/testdata/*"/>
+    </javac>
+	
+	<!-- Move compilation logic into ant scripts for build env ant execution restriction -->
+	<javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/webresult/server"
+           destdir="${FVT.build.work.dir}/WebResultTestCase/fromjava"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           listfiles="yes"
+           depend="yes"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>      
+    </javac>
+	
+  </target>
+
+
+   <!-- Run all the setUp() methods in the tests.
+        These tests were developed self-contained, and have their own setup methods external
+        to ant.  We have to call them when we run inside ant.
+        They will call annotations/support/antSupport.xml and produce wars, ears, etc.
+   -->
+   <target name="runsetups">
+   <property environment="env"/>
+       <property name="syscp" value="${classpath}" />
+	   <echo message="${env.classpath}" />
+       <echo message="annotations setUp target running..." />
+       <java classname="annotations.support.RunSetupMethods" fork="false"  dir="${FVT.base.dir}">
+           <classpath >
+				<path refid="classpath"/>
+			</classpath>
+           <jvmarg line="-DRun_Setup=true ${hp64StafFlag}" />
+           <arg line="${FVT.build.classes.dir}/annotations/${anno_subset}" />
+       </java>
+
+   </target>
+
+
+  <!-- The preinstall target will perform any tasks necessary before the
+       application is installed into WebSphere.  This could include running
+       ejbdeploy or endptenabler for an EAR that contains an EJB.
+  -->
+  <target name="preinstall" depends="setenv">
+  </target>
+
+
+  <!-- The install target will install the server side piece of the test
+       into WebSphere.  This target calls the installTest.xml file for
+       the test.
+  -->
+  <target name="install" depends="setenv">
+     <echo message="nothing to do" />
+  </target>
+
+
+  <!-- The uninstall target will uninstall the server side piece of the test
+       from WebSphere.  This target calls the uninstallTest.xml file for
+       the test.
+  -->
+  <target name="uninstall" depends="setenv">
+     <echo message="nothing to do" />
+  </target>
+
+</project>

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>                     
+<!--
+ 
+   Description:  install script 
+   Change History:
+   
+   Date       UserId      Defect          Description
+   07/10/10   btiffany                    New File
+-->
+
+<project default="install" basedir=".">
+
+  <!-- use import instead of entity refs -->   
+  <import file="../xmls/common_imports.xml"/>
+
+  <!-- The install target will install the EAR or WAR file into WebSphere.
+  -->
+  <target name="install" depends="setenv">
+  
+      <InstallApp earName="ejbinwar.ear"
+                appName="ejbinwar"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+     </InstallApp>    
+  </target>  
+</project>
+

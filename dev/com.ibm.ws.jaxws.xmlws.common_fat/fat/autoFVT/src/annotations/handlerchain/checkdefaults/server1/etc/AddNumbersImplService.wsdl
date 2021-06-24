@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://server1.checkdefaults.handlerchain.annotations/" name="AddNumbersImplService" xmlns:tns="http://server1.checkdefaults.handlerchain.annotations/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://server1.checkdefaults.handlerchain.annotations/" schemaLocation="AddNumbersImplService_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="addNumbers">
+    <part name="num1" type="xsd:int"/>
+    <part name="num2" type="xsd:int"/>
+  </message>
+  <message name="addNumbersResponse">
+    <part name="return" type="xsd:int"/>
+  </message>
+  <message name="AddNumbersException">
+    <part name="AddNumbersException" element="tns:AddNumbersException"/>
+  </message>
+  <portType name="AddNumbersImpl">
+    <operation name="addNumbers" parameterOrder="num1 num2">
+      <input message="tns:addNumbers"/>
+      <output message="tns:addNumbersResponse"/>
+      <fault name="AddNumbersException" message="tns:AddNumbersException"/>
+    </operation>
+  </portType>
+  <binding name="AddNumbersImplPortBinding" type="tns:AddNumbersImpl">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc"/>
+    <operation name="addNumbers">
+      <soap:operation soapAction="urn:addNumbers"/>
+      <input>
+        <soap:body use="literal" namespace="http://server1.checkdefaults.handlerchain.annotations/"/>
+      </input>
+      <output>
+        <soap:body use="literal" namespace="http://server1.checkdefaults.handlerchain.annotations/"/>
+      </output>
+      <fault name="AddNumbersException">
+        <soap:fault name="AddNumbersException" use="literal"/>
+      </fault>
+    </operation>
+  </binding>
+  <service name="AddNumbersImplService">
+    <port name="AddNumbersImplPort" binding="tns:AddNumbersImplPortBinding">
+      <soap:address location="REPLACE_WITH_ACTUAL_URL"/>
+    </port>
+  </service>
+</definitions>
+

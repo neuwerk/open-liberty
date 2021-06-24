@@ -1,0 +1,126 @@
+<?xml version="1.0"?>                     
+<!--
+
+   Description:  Test JAXWS 2.2 Respect Binding V3 changes 
+   
+   Date        UserId      Defect          Description
+   03/30/2010  nthaker                    new file
+-->
+<project default="install" basedir=".">
+   
+	<property name="componentName" value="jaxws22/RespectBinding"/>
+	<property name="app.name" value="RespectBinding" />
+	<property name="app.location" value="jaxws22/etc/apps" />
+    <import file="../../xmls/common_imports.xml"/>
+
+	<property name="test.base.dir" value="${FVT.base.dir}/src/${componentName}" />
+	
+
+  <!-- The install target will install the EAR or WAR file into WebSphere.
+  
+  -->
+  
+  <target name="install" depends="setenv">  
+     <!-- ******* BEGIN GROUP OF APPS THAT SHOULD NOT START ******** -->
+     
+    <antcall target="subinstallnostart">
+	     <param name="appname" value="jaxws22rb_invalidRequiredAnnoFalseDDTrue.ear"/>
+	 </antcall>   
+      <antcall target="subinstallnostart">
+	     <param name="appname" value="jaxws22rb_invalidRequiredAnnoTrue.ear"/>
+	 </antcall>   
+     <antcall target="subinstallnostart">
+	     <param name="appname" value="jaxws22rb_invalidRequiredAnnoTrueOnInput.ear"/>
+	 </antcall>   
+     <antcall target="subinstallnostart">
+	     <param name="appname" value="jaxws22rb_invalidRequiredAnnoTrueOnOutput.ear"/>
+	 </antcall>     
+    <antcall target="subinstallnostart">
+	     <param name="appname" value="jaxws22rb_invalidRequiredDDTrue.ear"/>
+	 </antcall>   
+    <antcall target="subinstallnostart">
+	     <param name="appname" value="jaxws22rb_invalidRequiredDDTrueOnFault.ear"/>
+	 </antcall>   
+    <antcall target="subinstallnostart">
+	     <param name="appname" value="jaxws22rb_invalidRequiredDDTrueOnOperation.ear"/>
+	 </antcall>   
+     
+     <!-- these are valid, but our plugin which says they're valid may not be installed yet -->
+     <antcall target="subinstallnostart">
+	     <param name="appname" value="jaxws22rb_validRequiredAnnoTrue.ear"/>
+	 </antcall>   	 
+
+     <antcall target="subinstallnostart">
+	     <param name="appname" value="jaxws22rb_validRequiredDDTrue.ear"/>
+	 </antcall>  
+
+	 <!-- ******* END OF APPS THAT SHOULD NOT START ******** -->
+     
+    <antcall target="subinstall">
+	     <param name="appname" value="jaxws22rb_invalidNotRequiredNoFeature.ear"/>
+	 </antcall>   	 	 	 	 	 
+    <antcall target="subinstall">
+	     <param name="appname" value="jaxws22rb_invalidRequiredNoFeature.ear"/>
+	 </antcall>   	 
+    <antcall target="subinstall">
+	     <param name="appname" value="jaxws22rb_invalidRequiredAnnoFalse.ear"/>
+	 </antcall> 
+    <antcall target="subinstall">
+	     <param name="appname" value="jaxws22rb_invalidRequiredAnnoTrueDDFalse.ear"/>
+	 </antcall> 
+    <antcall target="subinstall">
+	     <param name="appname" value="jaxws22rb_invalidRequiredDDFalse.ear"/>
+	 </antcall> 	 	     
+    <antcall target="subinstall">
+	     <param name="appname" value="jaxws22rb_validNotRequiredAnnoTrue.ear"/>
+	 </antcall> 
+    <antcall target="subinstall">
+	     <param name="appname" value="jaxws22rb_validNotRequiredNoFeature.ear"/>
+	 </antcall> 
+    <antcall target="subinstall">
+	     <param name="appname" value="jaxws22rb_validRequiredAnnoTrueDDFalse.ear"/>
+	 </antcall> 
+    <antcall target="subinstall">
+	     <param name="appname" value="jaxws22rb_validRequiredNoFeature.ear"/>
+	 </antcall> 	 	 	 	 
+   
+ 
+    <antcall target="subinstall">
+	     <param name="appname" value="jaxws22rb_invalidNotRequiredDDTrue.ear"/>
+	 </antcall>   
+  </target>
+     
+  
+  <target name="subinstall" depends="setenv">
+     
+     <InstallApp earName="${appname}"
+                appName="${appname}"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.base.dir}/build/installableApps"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}"
+                failOnError="false">
+    </InstallApp>  	
+      
+  </target>
+  
+   <!--
+    this is used so we don't get a buildtestcase failure for apps that do not start.
+    note the logStartupFailures param passed to the install task. 
+   --> 
+   <target name="subinstallnostart" depends="setenv">     
+     <InstallApp earName="${appname}"
+                appName="${appname}"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.base.dir}/build/installableApps"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}"
+                logStartupFailures="false" 
+                failOnError="false">
+    </InstallApp>  	
+      
+  </target>
+  
+</project>

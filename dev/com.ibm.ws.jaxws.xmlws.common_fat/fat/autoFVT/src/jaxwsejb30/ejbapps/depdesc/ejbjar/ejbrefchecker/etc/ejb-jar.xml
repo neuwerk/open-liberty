@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    
+    autoFVT/src/jaxwsejb30/ejbapps/depdesc/ejbjar/ejbrefchecker/etc/ejb-jar.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01
+    
+    Change History:
+    Date       UserId              Feature/Defect          Description
+    ****************************************************************************
+    01/25/2008 samerrel            LIDB4511.45             New File
+    
+-->
+
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+    version="3.0">
+
+    <enterprise-beans>
+        <session id="DepdescSession3">
+            <ejb-name>SvcRefChecker</ejb-name>
+            <session-type>Stateless</session-type>
+            <transaction-type>Container</transaction-type>
+
+            <service-ref>
+                <service-ref-name>service/myHelloRefSupplierSvc</service-ref-name>
+                <service-interface>jaxwsejb30.ejbapps.depdesc.ejbjar.ejbservice.HelloRefSupplierService</service-interface>
+            </service-ref>
+
+            <service-ref>
+                <service-ref-name>service/testWsdl</service-ref-name>
+                <service-interface>jaxwsejb30.ejbapps.depdesc.ejbjar.ejbservice.HelloRefSupplierService</service-interface>
+                <wsdl-file>META-INF/wsdl/HelloRefSupplierService.wsdl</wsdl-file>
+            </service-ref>
+
+            <service-ref>
+                <service-ref-name>service/myWarRefSupplierSvc</service-ref-name>
+                <service-interface>jaxwsejb30.ejbapps.depdesc.ejbjar.warservice.WarRefSupplierService</service-interface>
+                <wsdl-file>META-INF/wsdl/WarRefSupplierService.wsdl</wsdl-file>
+            </service-ref>
+
+        </session>
+    </enterprise-beans>
+</ejb-jar>

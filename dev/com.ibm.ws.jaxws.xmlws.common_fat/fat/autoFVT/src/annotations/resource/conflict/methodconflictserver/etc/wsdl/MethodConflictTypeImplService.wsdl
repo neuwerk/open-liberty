@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://methodconflictserver.conflict.resource.annotations/" name="MethodConflictTypeImplService" xmlns:tns="http://methodconflictserver.conflict.resource.annotations/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://methodconflictserver.conflict.resource.annotations/" schemaLocation="MethodConflictTypeImplService_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="getServletContextName">
+    <part name="parameters" element="tns:getServletContextName"/>
+  </message>
+  <message name="getServletContextNameResponse">
+    <part name="parameters" element="tns:getServletContextNameResponse"/>
+  </message>
+  <portType name="MethodConflictTypeImpl">
+    <operation name="getServletContextName">
+      <input message="tns:getServletContextName"/>
+      <output message="tns:getServletContextNameResponse"/>
+    </operation>
+  </portType>
+  <binding name="MethodConflictTypeImplPortBinding" type="tns:MethodConflictTypeImpl">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="getServletContextName">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="MethodConflictTypeImplService">
+    <port name="MethodConflictTypeImplPort" binding="tns:MethodConflictTypeImplPortBinding">
+      <soap:address location="http://@REPLACE_WITH_HOST_NAME@:@REPLACE_WITH_PORT_NUM@/methodconflicttype/services/MethodConflictTypeImplService"/>
+    </port>
+  </service>
+</definitions>
+

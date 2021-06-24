@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+   autoFVT/src/jaxwsejb30/ejbapps/annotations/wsr/ejbservice/etc/application.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01
+
+   Change History:
+   Date       UserId              Feature/Defect          Description
+   ****************************************************************************
+   01/25/2008 samerrel            LIDB4511.45             New File
+
+-->
+
+<application id="Application_ID" version="5"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd">
+    <display-name>jaxwsejb30.ejbapps.annotations.wsr.ejbservice</display-name>
+    <module id="EjbModule_1">
+        <ejb>jwsejb30-anno-wsr-ejbservice.jar</ejb>
+    </module>
+</application>

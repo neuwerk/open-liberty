@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" targetNamespace="http://server.interfaces.webservice_g2.annotations/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- manually patched to wrap complex types for beta limitation -->
+  <xs:element name="annoIfMethod" >
+     <xs:complexType >
+       <xs:sequence>
+         <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+       </xs:sequence>
+     </xs:complexType>
+  </xs:element>
+
+  <xs:element name="annoIfMethodResponse">
+     <xs:complexType>
+       <xs:sequence>
+         <xs:element name="notreturn" type="xs:string" minOccurs="0"/>
+       </xs:sequence>
+     </xs:complexType>
+  </xs:element>
+
+  <xs:element name="bareIfMethod" >
+     <xs:complexType >
+       <xs:sequence>
+         <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+       </xs:sequence>
+     </xs:complexType>
+  </xs:element>
+
+  <xs:element name="bareIfMethodResponse" >
+     <xs:complexType >
+       <xs:sequence>
+         <xs:element name="notreturn" type="xs:string" minOccurs="0"/>
+       </xs:sequence>
+     </xs:complexType>
+  </xs:element>
+
+  <xs:element name="annoIfExcluded" >
+     <xs:complexType >
+       <xs:sequence>
+         <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+       </xs:sequence>
+     </xs:complexType>
+  </xs:element>
+
+  <xs:element name="annoIfExcludedResponse" >
+     <xs:complexType >
+       <xs:sequence>
+         <xs:element name="notreturn" type="xs:string" minOccurs="0"/>
+       </xs:sequence>
+     </xs:complexType>
+  </xs:element>
+</xs:schema>
+

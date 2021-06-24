@@ -1,0 +1,102 @@
+<?xml version="1.0"?>                     
+
+ <!--
+
+   Description:  Test JAXWS 2.2 Respect Binding V3 changes 
+   
+   Date        UserId      Defect          Description
+   03/30/2010  nthaker                    new file
+-->
+
+
+<project default="uninstall" basedir=".">
+   
+	<property name="componentName" value="jaxws22/RespectBinding"/>
+	<property name="app.name" value="jaxws22rb_validRequiredAnnoTrue.ear" />
+	
+    <import file="../../xmls/common_imports.xml"/>
+
+
+  <!-- The uninstall target will uninstall the EAR or WAR file from
+       WebSphere.
+  -->
+  <target name="uninstall" depends="setenv">
+	 
+	    <!-- these apps should not start -->
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidRequiredAnnoFalseDDTrue.ear"/>
+		 </antcall>   
+	      <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidRequiredAnnoTrue.ear"/>
+		 </antcall>   
+	     <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidRequiredAnnoTrueOnInput.ear"/>
+		 </antcall>   
+	     <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidRequiredAnnoTrueOnOutput.ear"/>
+		 </antcall>     
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidRequiredDDTrue.ear"/>
+		 </antcall>   
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidRequiredDDTrueOnFault.ear"/>
+		 </antcall>   
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidRequiredDDTrueOnOperation.ear"/>
+		 </antcall>  	
+		 <!-- ******* END OF APPS THAT SHOULD NOT START ******** -->
+	
+	
+	
+	     <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_validRequiredAnnoTrue.ear"/>
+		 </antcall>   	 
+
+	     <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_validRequiredDDTrue.ear"/>
+		 </antcall>  
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidNotRequiredNoFeature.ear"/>
+		 </antcall>   	 	 	 	 	 
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidRequiredNoFeature.ear"/>
+		 </antcall>   	 
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidRequiredAnnoFalse.ear"/>
+		 </antcall> 
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidRequiredAnnoTrueDDFalse.ear"/>
+		 </antcall> 
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidRequiredDDFalse.ear"/>
+		 </antcall> 	 	     
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_validNotRequiredAnnoTrue.ear"/>
+		 </antcall> 
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_validNotRequiredNoFeature.ear"/>
+		 </antcall> 
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_validRequiredAnnoTrueDDFalse.ear"/>
+		 </antcall> 
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_validRequiredNoFeature.ear"/>
+		 </antcall> 	 	 	 	 
+	   
+	 
+	    <antcall target="subuninstall">
+		     <param name="appname" value="jaxws22rb_invalidNotRequiredDDTrue.ear"/>
+		 </antcall>   
+	  </target>
+	     
+
+  <target name="subuninstall" >
+	   <echo message="Uninstalling ${appname}..." />
+	    <UninstallApp appName="${appname}"
+	                  fvtRootLocation="${FVT.base.dir}"
+	                  uninstallMode="${uninstall.mode}"
+	                  localInstall="${conn.type}">
+	    </UninstallApp>  	
+  </target>
+  
+</project>

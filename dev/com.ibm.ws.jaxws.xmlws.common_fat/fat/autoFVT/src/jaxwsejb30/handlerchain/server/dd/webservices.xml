@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<webservices xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/javaee_web_services_1_2.xsd" version="1.2">
+	<webservice-description>
+		<webservice-description-name>EchoService</webservice-description-name>
+		<port-component>
+		    <!-- for WAS, name needs to match @Webservice.name  or it's default, the simple class name -->
+		    <!-- jsr109 does not say anything about this that I can tell. -->
+	        <port-component-name>WarEchoAnnoImpl</port-component-name>	
+
+			<handler-chains>
+				<handler-chain>
+					<handler>
+						<display-name>Service Logical Test Handler</display-name>
+						<handler-name>ServiceLogicalTestHandler</handler-name>
+						<handler-class>jaxwsejb30.handlerchain.server.AnotherHandler</handler-class>
+					</handler>
+				</handler-chain>
+	         </handler-chains>
+	         
+
+  			<service-impl-bean>
+				<servlet-link>		
+				  <!-- see web.xml, this has to match -->
+				   WarEchoAnnoImplService
+				</servlet-link>
+			</service-impl-bean>
+	      </port-component>
+	</webservice-description>
+</webservices>

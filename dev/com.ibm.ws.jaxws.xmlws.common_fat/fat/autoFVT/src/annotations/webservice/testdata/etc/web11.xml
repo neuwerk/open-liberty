@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <web-app id="WebApp_websvcanno11"
+   xmlns="http://java.sun.com/xml/ns/j2ee"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+   version="2.4">
+
+   <display-name>websvcanno11</display-name>
+   <servlet id="websvcanno11">
+         <servlet-name>annotations.webservice.testdata.WebServiceRuntimeImpl</servlet-name>
+         <servlet-class>annotations.webservice.testdata.WebServiceRuntimeImpl</servlet-class>
+         <load-on-startup>1</load-on-startup>
+   </servlet>
+   <servlet-mapping>
+         <servlet-name>annotations.webservice.testdata.WebServiceRuntimeImpl</servlet-name>
+         <url-pattern>/services/Valid1</url-pattern>
+   </servlet-mapping>
+</web-app> 

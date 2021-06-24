@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<bindings
+    wsdlLocation="AddNumbers.wsdl"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns="http://java.sun.com/xml/ns/jaxws">
+    
+    
+    <bindings node="wsdl:definitions/wsdl:portType[@name='AddNumbers']/wsdl:operation[@name='addNumbers']/wsdl:fault[@name='AddNumbersException']">
+        <class name="NewNameAddNumbersException">
+	    <javadoc>Exception generated during computation</javadoc>
+        </class>
+    </bindings>
+	
+    
+    <bindings node="wsdl:definitions/wsdl:portType[@name='AddNumbers']/wsdl:operation[@name='addNegatives']/wsdl:fault[@name='AddNegativesException']">
+        <class name="NewNameAddNegativesException">
+	    <javadoc>Exception generated during computation</javadoc>
+        </class>
+    </bindings>
+    
+    
+    <bindings node="wsdl:definitions/wsdl:portType[@name='AddNumbers']/wsdl:operation[@name='useAnno']/wsdl:fault[@name='AnnoException']">
+        <class name="NewNameAnnoException">
+	    <javadoc>Exception generated during computation</javadoc>
+        </class>
+    </bindings>
+    
+</bindings>

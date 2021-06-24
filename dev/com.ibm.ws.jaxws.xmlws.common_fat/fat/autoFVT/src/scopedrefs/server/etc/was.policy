@@ -1,0 +1,8 @@
+/* Date         Author      Defect/Feature     Description                 */
+/* 12/08/2010   btiffany                       New File                    */
+/* we want to be able to read wsdl's anywhere in the local file system.    */
+
+grant codeBase "file:${application}" {
+  permission java.lang.RuntimePermission "getClassLoader";
+  permission java.io.FilePermission  "<<ALL FILES>>", "read";
+};

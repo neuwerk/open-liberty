@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<application id="Application_ID" version="6.0"
+ xmlns="http://java.sun.com/xml/ns/javaee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee 
+  http://java.sun.com/xml/ns/javaee/application_6.xsd">
+  
+  <display-name>scopedrefslaunchclientapp</display-name>
+  
+  <module id="javaModule_1051197333245">
+    <java>scopedrefslaunchclientapp.jar</java>
+  </module>
+</application>

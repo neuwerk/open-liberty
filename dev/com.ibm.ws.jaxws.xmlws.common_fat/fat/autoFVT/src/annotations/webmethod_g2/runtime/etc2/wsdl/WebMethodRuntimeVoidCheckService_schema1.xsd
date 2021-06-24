@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" targetNamespace="http://server2.runtime.webmethod_g2.annotations" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="echoInt" type="ns1:echoInt" xmlns:ns1="http://server2.runtime.webmethod_g2.annotations"/>
+
+  <xs:complexType name="echoInt">
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:int"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="echoIntResponse" type="ns2:echoIntResponse" xmlns:ns2="http://server2.runtime.webmethod_g2.annotations"/>
+
+  <xs:complexType name="echoIntResponse">
+    <xs:sequence>
+      <xs:element name="return" type="xs:int"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="echo" type="ns3:echo" xmlns:ns3="http://server2.runtime.webmethod_g2.annotations"/>
+
+  <xs:complexType name="echo">
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="echoResponse" type="ns4:echoResponse" xmlns:ns4="http://server2.runtime.webmethod_g2.annotations"/>
+
+  <xs:complexType name="echoResponse">
+    <xs:sequence>
+      <xs:element name="return" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="voidReturnMethod" type="ns5:voidReturnMethod" xmlns:ns5="http://server2.runtime.webmethod_g2.annotations"/>
+
+  <xs:complexType name="voidReturnMethod">
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="voidReturnMethodResponse" type="ns6:voidReturnMethodResponse" xmlns:ns6="http://server2.runtime.webmethod_g2.annotations"/>
+
+  <xs:complexType name="voidReturnMethodResponse"/>
+
+  <xs:element name="echoModified" type="ns7:echoModified" xmlns:ns7="http://server2.runtime.webmethod_g2.annotations"/>
+
+  <xs:complexType name="echoModified">
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="echoModifiedResponse" type="ns8:echoModifiedResponse" xmlns:ns8="http://server2.runtime.webmethod_g2.annotations"/>
+
+  <xs:complexType name="echoModifiedResponse">
+    <xs:sequence>
+      <xs:element name="return" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+

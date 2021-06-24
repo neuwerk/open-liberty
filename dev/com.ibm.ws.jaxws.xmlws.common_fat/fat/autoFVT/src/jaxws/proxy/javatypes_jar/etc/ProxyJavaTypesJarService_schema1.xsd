@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" targetNamespace="http://javatypesjar.wsfvt.javatypesjar.proxy.jaxws" xmlns:tns="http://javatypesjar.wsfvt.javatypesjar.proxy.jaxws" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="pingInt" type="tns:pingInt"/>
+
+  <xs:element name="pingIntResponse" type="tns:pingIntResponse"/>
+
+  <xs:element name="pingJavaBean" type="tns:pingJavaBean"/>
+
+  <xs:element name="pingJavaBeanResponse" type="tns:pingJavaBeanResponse"/>
+
+  <xs:element name="pingString" type="tns:pingString"/>
+
+  <xs:element name="pingStringResponse" type="tns:pingStringResponse"/>
+
+  <xs:complexType name="pingJavaBean">
+    <xs:sequence>
+      <xs:element name="arg0" type="tns:customComplexType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="customComplexType">
+    <xs:sequence>
+      <xs:element name="firstName" type="xs:string" minOccurs="0"/>
+      <xs:element name="id" type="xs:int"/>
+      <xs:element name="lastName" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="pingJavaBeanResponse">
+    <xs:sequence>
+      <xs:element name="return" type="tns:customComplexType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="pingInt">
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:int"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="pingIntResponse">
+    <xs:sequence>
+      <xs:element name="return" type="xs:int"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="pingString">
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="pingStringResponse">
+    <xs:sequence>
+      <xs:element name="return" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+

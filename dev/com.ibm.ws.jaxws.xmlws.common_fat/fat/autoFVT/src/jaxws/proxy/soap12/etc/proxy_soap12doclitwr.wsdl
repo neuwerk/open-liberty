@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"	
+	xmlns:tns="http://soap12doclit.wsfvt.soap12.proxy.jaxws"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="proxy.multi"
+	targetNamespace="http://soap12doclit.wsfvt.soap12.proxy.jaxws">
+	
+	<wsdl:types>
+		<xsd:schema
+			xmlns="http://www.w3.org/2001/XMLSchema"
+			xmlns:tns="http://soap12doclit.wsfvt.soap12.proxy.jaxws"
+			targetNamespace="http://soap12doclit.wsfvt.soap12.proxy.jaxws">
+
+		<element name="ping" >
+			<complexType>
+				<sequence>
+					<element name="message_in" type="xsd:string" />
+				</sequence>
+			</complexType>
+		</element>
+
+		<element name="pingResponse" >
+			<complexType>
+				<sequence>
+					<element name="message_out" type="xsd:string" />
+				</sequence>
+			</complexType>
+		</element>
+
+		</xsd:schema>
+	</wsdl:types>	
+	
+	<wsdl:message name="PingRequest">
+		<wsdl:part name="request" element="tns:ping" />	
+	</wsdl:message>		
+	
+	<wsdl:message name="PingResponse">
+		<wsdl:part name="reply" element="tns:pingResponse" />	
+	</wsdl:message>					
+	
+	<wsdl:portType name="ProxySOAP12Doc">
+		
+		<wsdl:operation name="ping">
+			<wsdl:input message="tns:PingRequest" />
+			<wsdl:output message="tns:PingResponse" />
+		</wsdl:operation>
+		
+	</wsdl:portType>
+		
+	<wsdl:binding name="ProxySOAP12Binding" type="tns:ProxySOAP12Doc">
+		<soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+		
+		<wsdl:operation name="ping">
+			<soap12:operation soapAction="http://soap12doclit.wsfvt.soap12.proxy.jaxws/ping" />
+			<wsdl:input>
+				<soap12:body use="literal"  />
+			</wsdl:input>
+			<wsdl:output>
+				<soap12:body use="literal"  />
+			</wsdl:output>
+		</wsdl:operation>		
+
+	</wsdl:binding>	
+	
+	<wsdl:service name="ProxySOAP12DocLitWrService">
+	
+		<wsdl:port binding="tns:ProxySOAP12Binding" name="ProxySOAP12DocLitWrPort">
+			<soap12:address location="http://@HOST@:@PORT@/jwpr.soap12y/services/ProxySOAP12DocLitWrService" />
+		</wsdl:port>
+			
+	</wsdl:service>
+	
+</wsdl:definitions>
+	

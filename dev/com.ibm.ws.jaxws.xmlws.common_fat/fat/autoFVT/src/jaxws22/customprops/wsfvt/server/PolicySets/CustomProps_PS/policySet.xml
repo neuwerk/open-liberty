@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ps:PolicySet xmlns:ps="http://www.ibm.com/xmlns/prod/websphere/200605/policyset" xmlns:psa="http://www.ibm.com/xmlns/prod/websphere/200605/policysetattachment" default="false" description="Application Policy Set with 2 policy types:  WS-security and Custom Properties" name="CustomProps_PS" type="application" version="7.0.0.0" createdVersion="8.5.0.0">
+    <ps:PolicyType enabled="true" provides="" type="CustomProperties"></ps:PolicyType>
+  <!--  <ps:PolicyType enabled="true" provides="" type="WSSecurity"></ps:PolicyType>-->
+</ps:PolicySet>

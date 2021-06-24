@@ -1,0 +1,7 @@
+This is not an important annotation and it is only applicable
+in the wsdl2java scenario. It is specified on a generated service
+class (by wsimport). In its absence, client does not compile saying
+"XXXX is not an interface".
+
+This test case only checks if the annotation is specified correctly
+on a generated service class.

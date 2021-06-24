@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	template web.xml file for bad proxy tests
+-->
+<web-app id="WebApp_ID"
+	xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+	version="2.4">
+  <display-name>@base-test-name@.@test-name@</display-name>
+
+  <servlet>
+    <servlet-name>@endpoint-impl-class@</servlet-name>
+    <servlet-class>@endpoint-impl-class@</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>@endpoint-impl-class@</servlet-name>
+    <url-pattern>/services/@test-name@Service</url-pattern>
+  </servlet-mapping>  
+  
+  <session-config>
+    <session-timeout>60</session-timeout>
+  </session-config>
+</web-app>

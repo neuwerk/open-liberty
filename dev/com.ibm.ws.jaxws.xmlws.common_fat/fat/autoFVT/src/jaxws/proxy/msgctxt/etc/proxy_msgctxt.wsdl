@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:tns="http://msgctxt.wsfvt.msgctxt.proxy.jaxws"
+	targetNamespace="http://msgctxt.wsfvt.msgctxt.proxy.jaxws">
+
+	<wsdl:types>
+		<xsd:schema
+			targetNamespace="http://msgctxt.wsfvt.msgctxt.proxy.jaxws"
+			xmlns:tns="http://msgctxt.wsfvt.msgctxt.proxy.jaxws"
+			xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+			<!-- Check for availability of context via @Resource -->
+			<xsd:element name="atResourceAvailable" >
+				<xsd:complexType>
+					<xsd:sequence />
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="atResourceAvailableResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="isAvailable" type="xsd:boolean" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- Check for availability of context via @PostConstruct -->
+			<xsd:element name="atPostConstructAvailable" >
+				<xsd:complexType>
+					<xsd:sequence />
+				</xsd:complexType>
+			</xsd:element>
+			
+			<xsd:element name="atPostConstructAvailableResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="isAvailable" type="xsd:boolean" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- read the value of a property -->
+			<xsd:element name="wsContextPropRead">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="propertyName" type="xsd:string" />
+						<xsd:element name="value" type="xsd:string" />
+						<xsd:element name="type" type="xsd:string" />
+						<xsd:element name="isFound" type="xsd:boolean" />						
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="wsContextPropReadResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="propertyName" type="xsd:string" />					
+						<xsd:element name="value" type="xsd:string" />
+						<xsd:element name="type" type="xsd:string" />
+						<xsd:element name="isFound" type="xsd:boolean" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+		</xsd:schema>
+	</wsdl:types>
+
+	<wsdl:message name="atResourceAvailableRequest">
+		<wsdl:part name="request" element="tns:atResourceAvailable" />
+	</wsdl:message>
+
+	<wsdl:message name="atResourceAvailableResponse">
+		<wsdl:part name="response" element="tns:atResourceAvailableResponse" />
+	</wsdl:message>
+
+	<wsdl:message name="atPostConstructAvailableRequest">
+		<wsdl:part name="request" element="tns:atPostConstructAvailable" />
+	</wsdl:message>
+
+	<wsdl:message name="atPostConstructAvailableResponse">
+		<wsdl:part name="response" element="tns:atPostConstructAvailableResponse" />
+	</wsdl:message>
+
+	<wsdl:message name="wsContextPropReadRequest">
+		<wsdl:part name="request" element="tns:wsContextPropRead" />
+	</wsdl:message>
+
+	<wsdl:message name="wsContextPropReadResponse">
+		<wsdl:part name="response" element="tns:wsContextPropReadResponse" />
+	</wsdl:message>
+
+	<wsdl:portType name="MessageContextProxy">
+
+		<wsdl:operation name="atResourceAvailable">
+			<wsdl:input message="tns:atResourceAvailableRequest" />
+			<wsdl:output message="tns:atResourceAvailableResponse" />
+		</wsdl:operation>
+
+		<wsdl:operation name="atPostConstructAvailable">
+			<wsdl:input message="tns:atPostConstructAvailableRequest" />
+			<wsdl:output message="tns:atPostConstructAvailableResponse" />
+		</wsdl:operation>
+		
+		<wsdl:operation name="wsContextPropRead">
+			<wsdl:input message="tns:wsContextPropReadRequest" />
+			<wsdl:output message="tns:wsContextPropReadResponse" />
+		</wsdl:operation>		
+
+	</wsdl:portType>
+
+	<wsdl:binding name="MsgCtxtSOAP11" type="tns:MessageContextProxy">
+		<soap:binding style="document"
+			transport="http://schemas.xmlsoap.org/soap/http" />
+
+		<wsdl:operation name="atResourceAvailable">
+			<soap:operation
+				soapAction="http://msgctxt.wsfvt.msgctxt.proxy.jaxws/atResourceAvailable" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="atPostConstructAvailable">
+			<soap:operation
+				soapAction="http://msgctxt.wsfvt.msgctxt.proxy.jaxws/atPostConstructAvailable" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		
+		<wsdl:operation name="wsContextPropRead">
+			<soap:operation
+				soapAction="http://msgctxt.wsfvt.msgctxt.proxy.jaxws/wsContextPropRead" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>		
+
+	</wsdl:binding>
+
+	<wsdl:service name="MsgCtxtService"> 
+		<wsdl:port binding="tns:MsgCtxtSOAP11" name="MsgCtxtPort">
+			<soap:address location="http://@HOST@:@PORT@/jwpr.msgctxt/services/ProxyMsgCtxtService" />
+		</wsdl:port>
+	</wsdl:service>
+
+</wsdl:definitions>

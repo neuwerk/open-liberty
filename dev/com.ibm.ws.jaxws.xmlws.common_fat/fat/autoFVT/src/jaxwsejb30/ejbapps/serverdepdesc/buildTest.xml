@@ -1,0 +1,425 @@
+<?xml version="1.0"?>
+
+<!--
+    autoFVT/src/jaxwsejb30/ejbapps/serverdepdesc/buildTest.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01
+    
+    Change History:
+    Date       UserId              Feature/Defect          Description
+    ***************************************************************************
+    06/28/2008 samerrel            LIDB4511.45.01          New File
+    07/31/2008 samerrel            538865                  Fixed wsdl location problems
+    08/26/2010 lizet               F1149.1-32025           update tests for java endorsed dir.
+-->
+
+<project default="buildall" basedir=".">
+    <import file="../../../xmls/common_imports.xml" />
+
+    <!--
+        This property should match the package name of the test class.  The
+        property is used in the targets.xml file when running any of the
+        component-run* targets for running a single test case class.
+    -->
+    <property name="componentName"
+              value="jaxwsejb30/ejbapps/serverdepdesc/test" />
+
+    <!-- 
+        This path id is used in the targets.xml file when running any of
+        the component-run* targets.  This allows setting the classpath 
+        for an individual test.
+    -->
+    <path id="componentClasspath">
+        <path refid="thinclientclasspath" />
+    </path>
+
+    <!-- 
+        MY PROPERTIES
+    -->
+    <property name="subpath" value="jaxwsejb30/ejbapps/serverdepdesc" />
+    <property name="src.dir" value="${FVT.base.dir}/src/${subpath}" />
+    <property name="work.dir" value="${FVT.build.work.dir}/${subpath}" />
+    <property name="ear.name" value="jwsejb30-serverdepdesc" />
+    <property name="verbose.output" value="false" />
+
+    <property name="src.dir.echoejb" value="${src.dir}/server/echoejb" />
+    <property name="work.dir.echoejb" value="${work.dir}/server/echoejb" />
+    <property name="pkg.name.echoejb" value="${ear.name}-echoejb" />
+    <property name="src.dir.echowar" value="${src.dir}/server/echowar" />
+    <property name="work.dir.echowar" value="${work.dir}/server/echowar" />
+    <property name="pkg.name.echowar" value="${ear.name}-echowar" />
+    <property name="src.dir.clientjar" value="${src.dir}/client/jar" />
+    <property name="work.dir.clientjar" value="${work.dir}/client/jar" />
+    <property name="pkg.name.clientjar" value="${ear.name}-clientjar" />
+    <property name="src.dir.test" value="${src.dir}/test" />
+
+
+
+
+
+    <!-- =================================
+          target: init
+         ================================= -->
+    <target name="init"
+            description="--> Creates initial directories needed for tests">
+        <antcall target="component-init" />
+        <mkdir dir="${work.dir}" />
+        <mkdir dir="${work.dir.echoejb}" />
+        <mkdir dir="${work.dir.echowar}" />
+        <mkdir dir="${work.dir.clientjar}" />
+    </target>
+
+    <!-- ================================= 
+          target: clean
+         ================================= -->
+    <target name="clean"
+            description="--> clean any files, classes, or directories
+                           so that a new copy of the test can be built and run">
+        <delete dir="${work.dir}" />
+        <delete file="${FVT.build.lib.dir}/${pkg.name.echoejb}.jar" />
+        <delete file="${FVT.build.lib.dir}/${pkg.name.echowar}.war" />
+        <delete file="${FVT.build.installableApps.dir}/${pkg.name.echoejb}.ear" />
+        <delete file="${FVT.build.installableApps.dir}/${pkg.name.echowar}.ear" />
+        <delete file="${FVT.build.lib.dir}/${pkg.name.clientjar}.jar" />
+    </target>
+
+    <!-- =================================
+          target: buildall
+         ================================= -->
+    <target name="buildall"
+            depends="clean, init, setenv, server, client, test" />
+
+    <!-- ================================= 
+          target: server
+         
+          The server target will build anything necessary for the server
+          piece of the test.  Typically this target builds the server side
+          EAR.
+         ================================= -->
+    <target name="server"
+            depends="setenv, echoejb, echowar"
+            description="--> Build servers">
+
+    </target>
+
+    <!-- ================================= 
+          target: client
+          
+          The client target will build anything necessary for the client
+          piece of the test.  This could just be compiling the client class
+          or in the case of a managed client, building a client side EAR
+          file.
+         ================================= -->
+    <target name="client"
+            depends="setenv"
+            description="--> Build clients">
+
+    </target>
+
+    <!-- ================================= 
+          target: test
+              
+          The test target will build anything necessary for the test
+          piece of the test.  Often this will just include compiling the
+          the JUnit test case file.
+         ================================= -->
+    <target name="test" depends="setenv, test_wsimport" description="--> Build tests">
+        <javac compiler="modern" srcdir="${src.dir.test}"
+               destdir="${FVT.build.classes.dir}"
+               deprecation="${deprecation}"
+               verbose="${verbose.output}"
+               debug="${debug}"
+               source="${build.tests.with.java.level}"
+               target="${build.tests.with.java.level}"
+               failonerror="${failonerror}">
+            <compilerarg line="-endorseddirs ${WAS.base.dir}/runtimes/endorsed"/>
+            <classpath>
+                <pathelement location="${work.dir.clientjar}" />
+            </classpath>
+            <include name="*.java" />
+        </javac>
+
+    </target>
+
+    <!-- ================================= 
+          target: preinstall
+          
+          The preinstall target will perform any tasks necessary before the
+          application is installed into WebSphere.  This could include running
+          ejbdeploy or endptenabler for an EAR that contains an EJB.
+         ================================= -->
+    <target name="preinstall"
+            depends="setenv"
+            description="--> Runs EJB deploy and/or Endpointenabler">
+
+    </target>
+
+    <!-- ================================= 
+          target: install
+          
+          The install target will install the server side piece of the test
+          into WebSphere.  This target calls the installTest.xml file for
+          the test.
+         ================================= -->
+    <target name="install"
+            depends="setenv, preinstall"
+            description="--> Installs the App">
+        <ant antfile="${src.dir}/installTest.xml" dir="${src.dir}">
+            <property name="install.mode" value="${rt.install.mode}" />
+        </ant>
+    </target>
+
+    <!-- ================================= 
+          target: uninstall 
+          
+          The uninstall target will uninstall the server side piece of the test
+          from WebSphere.  This target calls the uninstallTest.xml file for
+          the test.
+             ================================= -->
+    <target name="uninstall"
+            depends="setenv"
+            description="--> Uninstalls the App">
+        <ant antfile="${src.dir}/uninstallTest.xml" dir="${src.dir}">
+            <property name="uninstall.mode" value="${rt.uninstall.mode}" />
+        </ant>
+    </target>
+
+    <!-- 
+        PRIVATE TARGETS
+            These targets are used to break up the build into small chunks that can be run 
+            individually if needed. I find this easier than having to comment out part of 
+            the build process in the server task.
+    -->
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: echoejb                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="echoejb"
+            depends="echoejb_compile, echoejb_wsgen, echoejb_pkg" />
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: echoejb_compile                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="echoejb_compile">
+        <javac compiler="modern" srcdir="${src.dir.echoejb}"
+               destdir="${work.dir.echoejb}"
+               deprecation="${deprecation}"
+               verbose="${verbose.output}"
+               debug="${debug}"
+               source="${build.tests.with.java.level}"
+               target="${build.tests.with.java.level}"
+               failonerror="${failonerror}">
+            <compilerarg line="-endorseddirs ${WAS.base.dir}/runtimes/endorsed"/>
+            <classpath>
+                <pathelement location="${work.dir.echoejb}" />
+                <path refid="classpath" />
+            </classpath>
+        </javac>
+    </target>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: echoejb_wsgen                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="echoejb_wsgen" depends="setenv">
+        <wsgen genwsdl="true"
+               keep="true"
+               verbose="${verbose.output}"
+               destdir="${work.dir.echoejb}"
+               resourcedestdir="${work.dir.echoejb}"
+               sei="jaxwsejb30.ejbapps.serverdepdesc.server.echoejb.EjbEcho">
+            <classpath>
+                <pathelement location="${work.dir.echoejb}" />
+                <path refid="classpath" />
+            </classpath>
+        </wsgen>
+    </target>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: echoejb_pkg                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="echoejb_pkg">
+        <!-- Get the cells config info -->
+        <readCellConfig prefix="server1"
+                        key="defaultServer"
+                        verbose="${verbose.output}" />
+
+        <mkdir dir="${work.dir.echoejb}/wsdl" />
+
+        <!-- Move the wsdl and xsd because I can't seem to get an inline replacement for the url -->
+        <copy todir="${work.dir.echoejb}/wsdl">
+            <fileset dir="${work.dir.echoejb}">
+                <include name="*.wsdl" />
+                <include name="*.xsd" />
+            </fileset>
+            <fileset dir="${src.dir.echoejb}/dd">
+                <include name="EjbEchoService1.wsdl" />
+            </fileset>
+        </copy>
+
+        <replace file="${work.dir.echoejb}/wsdl/EjbEchoService.wsdl"
+                 value="http://${server1.hostName}:${server1.WC_defaulthost}/${pkg.name.echoejb}/EchoEjbSvcService">
+            <replacefilter token="REPLACE_WITH_ACTUAL_URL" />
+        </replace>
+        <replace file="${work.dir.echoejb}/wsdl/EjbEchoService1.wsdl"
+                 value="http://${server1.hostName}:${server1.WC_defaulthost}/${pkg.name.echoejb}/EchoEjbSvcService">
+            <replacefilter token="REPLACE_WITH_ACTUAL_URL" />
+        </replace>
+
+        <jar jarfile="${FVT.build.lib.dir}/${pkg.name.echoejb}.jar">
+            <fileset dir="${work.dir.echoejb}">
+                <include name="**/*.class" />
+                <include name="**/*.java" />
+            </fileset>
+            <zipfileset dir="${src.dir.echoejb}/etc/" prefix="META-INF/">
+                <include name="ejb-jar.xml" />
+                <include name="webservices.xml" />
+            </zipfileset>
+            <zipfileset dir="${work.dir.echoejb}/wsdl" prefix="META-INF/wsdl">
+                <include name="*.wsdl" />
+                <include name="*.xsd" />
+            </zipfileset>
+        </jar>
+
+        <ear earfile="${FVT.build.installableApps.dir}/${pkg.name.echoejb}.ear"
+             appxml="${src.dir.echoejb}/etc/application.xml">
+            <fileset dir="${FVT.build.lib.dir}">
+                <include name="${pkg.name.echoejb}.jar" />
+            </fileset>
+        </ear>
+    </target>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: echoejb_preinstall                      
+         - - - - - - - - - - - - - - - - - -->
+    <!--<target name="echoejb_preinstall">
+        <endpointenable earfile="${FVT.build.installableApps.dir}/${pkg.name.echoejb}.ear" />
+        <ejbdeploy inputEar="${FVT.build.installableApps.dir}/${pkg.name.echoejb}.ear"
+                   workDir="${FVT.build.work.dir}"
+                   outputEar="${FVT.build.installableApps.dir}/${pkg.name.echoejb}.temp.ear">
+        </ejbdeploy>
+        <move file="${FVT.build.installableApps.dir}/${pkg.name.echoejb}.temp.ear"
+              tofile="${FVT.build.installableApps.dir}/${pkg.name.echoejb}.ear"
+              overwrite="yes" />
+    </target>-->
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: echowar                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="echowar"
+            depends="echowar_compile, echowar_wsgen, echowar_pkg" />
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: echowar_compile                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="echowar_compile">
+        <javac compiler="modern" srcdir="${src.dir.echowar}"
+               destdir="${work.dir.echowar}"
+               deprecation="${deprecation}"
+               verbose="${verbose.output}"
+               debug="${debug}"
+               source="${build.tests.with.java.level}"
+               target="${build.tests.with.java.level}"
+               failonerror="${failonerror}">
+            <compilerarg line="-endorseddirs ${WAS.base.dir}/runtimes/endorsed"/>
+            <classpath>
+                <pathelement location="${work.dir.echowar}" />
+                <path refid="classpath" />
+            </classpath>
+        </javac>
+    </target>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: echowar_wsgen                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="echowar_wsgen" depends="setenv">
+        <wsgen genwsdl="true"
+               keep="true"
+               verbose="${verbose.output}"
+               destdir="${work.dir.echowar}"
+               resourcedestdir="${work.dir.echowar}"
+               sei="jaxwsejb30.ejbapps.serverdepdesc.server.echowar.WarEcho">
+            <classpath>
+                <pathelement location="${work.dir.echowar}" />
+                <path refid="classpath" />
+            </classpath>
+        </wsgen>
+    </target>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: echowar_pkg                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="echowar_pkg">
+
+        <!-- Get the cells config info -->
+        <readCellConfig prefix="server1"
+                        key="defaultServer"
+                        verbose="${verbose.output}" />
+
+        <mkdir dir="${work.dir.echowar}/wsdl" />
+
+        <!-- Move the wsdl and xsd because I can't seem to get an inline replacement for the url -->
+        <copy todir="${work.dir.echowar}/wsdl" overwrite="yes">
+            <fileset dir="${work.dir.echowar}">
+                <include name="*.wsdl" />
+                <include name="*.xsd" />
+            </fileset>
+            <fileset dir="${src.dir.echowar}/dd/">
+                <include name="WarEchoService1.wsdl" />
+            </fileset>
+        </copy>
+
+        <replace file="${work.dir.echowar}/wsdl/WarEchoService.wsdl"
+                 value="http://${server1.hostName}:${server1.WC_defaulthost}/${pkg.name.echowar}/WarEchoService">
+            <replacefilter token="REPLACE_WITH_ACTUAL_URL" />
+        </replace>
+        <replace file="${work.dir.echowar}/wsdl/WarEchoService1.wsdl"
+                 value="http://${server1.hostName}:${server1.WC_defaulthost}/${pkg.name.echowar}/WarEchoService">
+            <replacefilter token="REPLACE_WITH_ACTUAL_URL" />
+        </replace>
+
+        <war destfile="${FVT.build.lib.dir}/${pkg.name.echowar}.war"
+             webxml="${src.dir.echowar}/etc/web.xml">
+            <classes dir="${work.dir.echowar}/">
+                <exclude name="**/*.wsdl" />
+                <exclude name="**/*.xsd" />
+                <exclude name="**/wsdl*" />
+            </classes>
+            <zipfileset dir="${work.dir.echowar}/wsdl/" prefix="WEB-INF/wsdl">
+                <include name="*.xsd" />
+                <include name="*.wsdl" />
+            </zipfileset>
+            <zipfileset dir="${src.dir.echowar}/etc" prefix="WEB-INF">
+                <include name="webservices.xml" />
+            </zipfileset>
+        </war>
+
+        <ear earfile="${FVT.build.installableApps.dir}/${pkg.name.echowar}.ear"
+             appxml="${src.dir.echowar}/etc/application.xml">
+            <fileset dir="${FVT.build.lib.dir}">
+                <include name="${pkg.name.echowar}.war" />
+            </fileset>
+        </ear>
+
+    </target>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: test_wsimport                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="test_wsimport">
+        <wsimport keep="true"
+                  verbose="${verbose.output}"
+                  extension="true"
+                  sourcedestdir="${work.dir.clientjar}"
+                  destdir="${FVT.build.classes.dir}"
+                  wsdl="${work.dir.echoejb}/wsdl/EjbEchoService.wsdl"
+                  wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/${pkg.name.echoejb}/EchoEjbSvcService?wsdl">
+        </wsimport>
+        <wsimport keep="true"
+                  verbose="${verbose.output}"
+                  extension="true"
+                  sourcedestdir="${work.dir.clientjar}"
+                  destdir="${FVT.build.classes.dir}"
+                  wsdl="${work.dir.echowar}/wsdl/WarEchoService.wsdl"
+                  wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/${pkg.name.echowar}/WarEchoService?wsdl">
+        </wsimport>
+    </target>
+
+</project>

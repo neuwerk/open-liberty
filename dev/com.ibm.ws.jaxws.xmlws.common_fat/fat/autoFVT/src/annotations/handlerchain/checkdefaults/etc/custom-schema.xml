@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<bindings xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://java.sun.com/xml/ns/jaxb"
+    version="1.0">
+    <bindings
+        schemaLocation="http://localhost:9080/addnumbers1/addnumbers1?xsd=1"
+        node="/xsd:schema">
+        <schemaBindings>
+            <package name="annotations.handlerchain.checkdefaults.server1"/>
+        </schemaBindings>
+    </bindings>
+</bindings>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     1.1, 11/20/09
+    
+    Change History:
+    Date       UserId              Feature/Defect          Description
+    ****************************************************************************
+    11/18/09   jtnguyen            F743-17947-02           New file
+-->
+
+<application id="Application_ID" version="5"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd">
+    <display-name>jaxwsejb31Singleton-Ejb1</display-name>
+    <module id="DDModule_1">
+        <ejb>jaxwsejb31Singleton-Ejb1.jar</ejb>
+    </module>
+</application>

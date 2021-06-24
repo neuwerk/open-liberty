@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+    <!ENTITY instance SYSTEM "../../../../instance.xml"><!-- file:30 -->
+<!ENTITY properties SYSTEM "../../../xmls/properties.xml"><!-- file:28 -->
+<!ENTITY paths SYSTEM "../../../xmls/path_refs.xml"><!-- file:23 -->
+<!ENTITY targets SYSTEM "../../../xmls/targets.xml"><!-- file:25 -->
+<!ENTITY taskdefs SYSTEM "../../../xmls/taskdefs.xml"><!-- file:26 -->
+<!ENTITY taskdefs_post_compile SYSTEM "../../../xmls/taskdefs_post_compile.xml"><!-- file:39 -->
+]>
+
+<!-- 1.5, 2/3/09
+
+        Description: Build file for the handlerchain/provider test.
+
+        Date        Author       Feature/Defect          Description
+        08/16/2006  euzunca      LIDB3296.31.01          new File
+        03/26/2007  btiffany                             update to current practice
+-->
+
+<project name="build" default="buildall" basedir=".">
+
+        &instance;
+        &properties;
+        &paths;
+        &targets;
+        &taskdefs;
+        &taskdefs_post_compile;
+
+        <property name="componentName" value="annotations/handlerchain/provider/test" />
+        <property name="warname" value="HandlerChainProvider" />
+
+        <path id="componentClasspath">
+                <path refid="thinclientclasspath" />
+        </path>
+
+        <!-- <target name="buildall" depends="descope" /> -->
+        <target name="buildall" depends="setenv, clean, init, server, client, test" />
+
+        <target name="descope">
+            <echo message="this function is not active because it has been descoped" />
+        </target>
+
+        <target name="clean" depends="setenv">
+                <delete dir="${FVT.build.classes.dir}/annotations/handlerchain/provider" />
+                <delete dir="${FVT.build.work.dir}/annotations/handlerchain/provider" />
+                <delete  >
+                  <fileset dir="${FVT.build.lib.dir}">
+                     <include name = "*${warname}*war" />
+                  </fileset>
+                </delete >
+                <delete  >
+                  <fileset dir="${FVT.build.installableApps.dir}">
+                     <include name = "*${warname}*ear" />
+                  </fileset>
+                </delete >
+        </target>
+
+        <target name="init" depends="setenv">
+                <antcall target="component-init" />
+                <mkdir dir="${FVT.build.work.dir}/annotations/handlerchain/provider" />
+        </target>
+
+        <target name="server" depends="setenv">
+            <property name="workdir_s" value="${FVT.build.work.dir}/annotations/handlerchain/provider/server" />
+            <delete dir="${workdir_s}"/>
+            <mkdir dir="${workdir_s}" />
+            <javac compiler="modern"
+                    srcdir="${FVT.base.dir}/src/annotations/handlerchain/provider"
+                    destdir="${workdir_s}"
+                    deprecation="${deprecation}"
+                    debug="${debug}"
+                    verbose="false"
+                    source="${build.tests.with.java.level}"
+                    target="${build.tests.with.java.level}"
+                    failonerror="${failonerror}">
+
+                    <include name="**/server/*.java"/>
+                    <include name="**/common/*.java"/>
+                    <classpath refid="classpath" />
+            </javac>
+
+
+            <!-- this is a provider, so we cannot use wsgen, have to supply a wsdl -->
+            <echo message="there is no wsgen for providers" />
+
+
+            <!-- copy in handler config file so it ends up in classpath after war -->
+            <copy todir="${workdir_s}/annotations/handlerchain/provider/server"
+                  verbose="true" overwrite="yes">
+                    <fileset dir="${FVT.base.dir}/src/annotations/handlerchain/provider/etc">
+                            <include name="*handler*.xml" />
+                    </fileset>
+            </copy>
+
+            <war warfile="${FVT.build.lib.dir}/${warname}1.war"
+                    webxml="${FVT.base.dir}/src/annotations/handlerchain/provider/etc/web.xml">
+                    <zipfileset dir="${FVT.base.dir}/src/annotations/handlerchain/provider/etc" prefix="WEB-INF/wsdl">
+                      <include name="*wsdl" />
+                      <include name="*xsd"  />
+                    </zipfileset>
+                    <classes dir="${workdir_s}">
+                            <include name="**/*.class" />
+                            <include name="**/*.java" />
+                            <include name="**/*.xml" />
+                    </classes>
+                    <!-- toss in the src -->
+                    <classes dir="${FVT.base.dir}/src/annotations/handlerchain/provider/server" >
+                            <include name="**/*java" />
+                    </classes>
+                    <classes dir="${FVT.base.dir}/src/annotations/handlerchain/provider/common" >
+                            <include name="**/*java" />
+                    </classes>
+            </war>
+            <ear earfile="${FVT.build.installableApps.dir}/${warname}1.ear"
+                  appxml="${FVT.base.dir}/src/annotations/handlerchain/provider/etc/application.xml">
+                  <fileset dir="${FVT.build.lib.dir}" includes="${warname}1.war"/>
+            </ear>
+        </target>
+
+
+        <target name="client" depends="setenv">
+
+                <wsimport
+                        keep="true"
+                        verbose="true"
+                        destdir="${FVT.build.classes.dir}"
+                        sourcedestdir="${FVT.build.classes.dir}"
+                        wsdl="${FVT.base.dir}/src/annotations/handlerchain/provider/etc/AddNumbersImplService.wsdl">
+                </wsimport>
+
+                <javac compiler="modern"
+                        srcdir="${FVT.base.dir}/src/annotations/handlerchain/provider"
+                        destdir="${FVT.build.classes.dir}"
+                        deprecation="${deprecation}"
+                        debug="${debug}"
+                        source="${build.tests.with.java.level}"
+                        target="${build.tests.with.java.level}"
+                        failonerror="${failonerror}">
+                        <classpath refid="classpath" />
+                        <include name="**/client*/*.java" />
+                </javac>
+
+        </target>
+
+        <target name="test" depends="setenv">
+                <javac compiler="modern"
+                        srcdir="${FVT.base.dir}/src/annotations/handlerchain/provider"
+                        destdir="${FVT.build.classes.dir}"
+                        deprecation="${deprecation}"
+                        debug="${debug}"
+                        source="${build.tests.with.java.level}"
+                        target="${build.tests.with.java.level}"
+                        failonerror="${failonerror}">
+                        <classpath refid="classpath" />
+                        <include name="**/test/*.java" />
+                </javac>
+        </target>
+
+        <target name="preinstall" depends="setenv">
+        </target>
+
+        <target name="install" depends="setenv">
+                <ant antfile="${FVT.base.dir}/src/annotations/handlerchain/provider/installTest.xml"
+                   dir="${FVT.base.dir}/src/annotations/handlerchain/provider">
+                	<property name="install.mode" value="${rt.install.mode}"/>
+                </ant>
+        </target>
+
+        <target name="uninstall" depends="setenv">
+                <ant antfile="${FVT.base.dir}/src/annotations/handlerchain/provider/uninstallTest.xml"
+                   dir="${FVT.base.dir}/src/annotations/handlerchain/provider">
+                	<property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+                </ant>
+        </target>
+</project>

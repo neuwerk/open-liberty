@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://server.reqrespwrappers.annotations/" name="RRNameCheckService" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://server.reqrespwrappers.annotations/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://server.reqrespwrappers.annotations/" schemaLocation="rro.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="echo">
+    <part name="parameters" element="tns:echo"/>
+  </message>
+  <message name="echoResponse">
+    <part name="parameters" element="tns:echoResponse"/>
+  </message>
+  <message name="echo2">
+    <part name="parameters" element="tns:echo2"/>
+  </message>
+  <message name="echo2Response">
+    <part name="parameters" element="tns:echo2Response"/>
+  </message>
+  <portType name="RRNif">
+    <operation name="echo">
+      <input message="tns:echo"/>
+      <output message="tns:echoResponse"/>
+    </operation>
+    <operation name="echo2">
+      <input message="tns:echo2"/>
+      <output message="tns:echo2Response"/>
+    </operation>
+  </portType>
+  <binding name="RRNameCheckPortBinding" type="tns:RRNif">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="echo">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="echo2">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="RRNameCheckService">
+    <port name="RRNameCheckPort" binding="tns:RRNameCheckPortBinding">
+      <soap:address location="REPLACE_WITH_ACTUAL_URL"/>
+    </port>
+  </service>
+</definitions>
+

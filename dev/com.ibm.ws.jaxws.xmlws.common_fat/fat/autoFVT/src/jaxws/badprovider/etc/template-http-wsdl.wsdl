@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+	xmlns:tns="@namespace@"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="provider"
+	xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+	xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/"
+	targetNamespace="@namespace@">
+
+    <wsdl:message name="request">
+        <wsdl:part name="part1" type="xsd:binary"/>
+    </wsdl:message>
+
+    <wsdl:message name="response">
+        <wsdl:part name="part1" type="xsd:binary"/>
+    </wsdl:message>
+
+    <wsdl:portType name="ProviderPortType">
+        <wsdl:operation name="o1">
+           <wsdl:input message="tns:request"/>
+           <wsdl:output message="tns:response"/>
+        </wsdl:operation>
+    </wsdl:portType>
+
+    <wsdl:binding name="ProviderHTTP" type="tns:ProviderPortType">
+        <http:binding verb="POST"/>
+        <wsdl:operation name="invoke">
+           <http:operation location="@base-test-name@.@test-name@/services/@test-name@Service"/>
+           <wsdl:input>
+               <mime:content type="text/xml"/>
+           </wsdl:input>
+           <wsdl:output>
+               <mime:content type="text/xml"/>
+           </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    
+	<wsdl:service name="@test-name@Service">
+		<wsdl:port binding="tns:ProviderHTTP" name="@test-name@Port">
+			<http:address
+				location="http://@HOST@:@PORT@/" />
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

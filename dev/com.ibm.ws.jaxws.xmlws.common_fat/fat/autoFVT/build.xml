@@ -1,0 +1,16 @@
+<project name="websvcs.fvt" default="production" basedir="." xmlns:mantis="antlib:com.ibm.mantis">
+    
+  <!-- Generic targets used by this project -->
+  <import file="${basedir}/src/xmls/build_user_targets.xml"/>
+
+  <dirname property="ws.dir" file=".."/>
+  <property name="imports.dir" value="${ws.dir}/imports"/>
+
+  <!-- mantis properties and standard targets -->
+  <property environment="env"/>
+  <import file="${imports.dir}/initialize.xml"/>
+  <import file="${imports.dir}/check.xml"/>
+
+
+
+</project>

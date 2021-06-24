@@ -1,0 +1,1381 @@
+<?xml version="1.0"?>
+<!--
+   1.40.3.2,  4/11/12
+
+   Description:  This build file drives most of the automated FVT process.
+
+   Change History:
+   Date        UserId         Feature/Defect          Description
+   03/11/2003  ulbricht       D160678                 Customize generated html report
+   03/12/2003  ulbricht       LIDB1270.256.11         Add start/stop IBM Http Server
+   03/14/2003  rsitze         D160767                 Add execAll target
+   04/23/2003  ulbricht       D164100                 Remove installAppTest target
+   05/12/2003  ulbricht       D163811                 Add JMS setup task
+   06/03/2003  ulbricht       D166543                 Add basic auth security test
+   06/04/2003  ulbricht       D168553                 Added JMS support
+   06/30/2003  ulbricht       D170881                 Add imports for install target
+   08/15/2003  ulbricht       D174374                 zOS changes
+   08/20/2003  ulbricht       D174754                 Using too much memory
+   10/07/2003  ulbricht       D178749                 Wrong directory being used in copy
+   10/09/2003  ulbricht       D179331                 Set server trace off as default
+   10/15/2003  danmain        LIDB2714                Added RoleContainer back in
+   10/19/2003  ulbricht       D179331.2               Allow trace to be enabled
+   10/28/2003  ulbricht       D178750                 JMS implementation always present
+   11/13/2003  ulbricht       D179127.20              Test starting with 'Axis' will
+                                                        run w/ Axis 1.1 client classpath
+   11/18/2003  pacific        183165                  checkin testcase for soapelement serialization
+   11/19/2003  ulbricht       D183426                 Only run IHS tests if IHS present
+   12/17/2003  ulbricht       D185501.2               Only run Security and IHS tests when both present
+   01/07/2004  ulbricht       D186584                 Remove copy to WAS installableApps
+   01/13/2004  ulbricht       D187164                 Allow flexibility with user id/password
+   01/21/2004  ulbricht       D187853                 For performance, setup server before apps installed
+   01/25/2004  ulbricht       D188549                 Run setupServer if log file not found
+   03/23/2004  ulbricht       D194965                 Update JMS scripts for v6.0 Milestone 7
+   04/20/2004  ulbricht       D199381                 Update JMS scripts for v6.0 Milestone 8
+   04/21/2004  ulbricht       D198963                 Temporarily exclude test/wsdl/multithread and session
+   04/23/2004  ulbricht       D200087                 Ftp app server logs back to report server
+   05/05/2004  ulbricht       D201847                 Add multithread and session tests back
+   06/28/2004  dcbar          D212257                 Add multiprotocol tests
+   07/09/2004  ulbricht       D215233                 Change dir of server logs
+   07/15/2004  ulbricht       D217923                 Change hostName to cell.name property
+   07/24/2004  ulbricht       D219005                 Add no args conversion for z/OS
+   07/30/2004  ulbricht       D220461                 No args conversion does not work on HP/Sun
+   08/11/2004  ulbricht       D223123                 Global handlers interfering with some tests
+   08/19/2004  ulbricht       D225528                 Run with java.awt.headless true due to attachments
+   10/06/2004  ulbricht       D221507.1               Add test for Java 2 Security
+   11/17/2004  ulbricht       D246124                 Use the foreach fail on error attribute
+   01/29/2005  bothwell       D251688                 zOS create target endpoint
+   02/16/2005  bothwell       D255934                 add transport chain ports
+   02/22/2005  ulbricht       D257111                 Make sure setenv runs during security
+   02/23/2005  ulbricht       D257389                 Allow for running with smaller classpath
+   02/25/2005  ulbricht       D258191                 Allow for batch install/uninstall
+   03/01/2005  loriv          D233869.1               add global handler to mustunderstandheaders test
+   03/03/2005  barrettj       LIDB3525-3.2            Add 101 ClientHandlers tests
+   03/11/2005  barrettj       261038                  Remove the ClientHandlersDisabled.jar before running the remaining tests
+   03/14/2005  ulbricht       D261009                 Add support for diff profiles
+   04/14/2005  ulbricht       D268461                 Change profile.name to profile
+   04/15/2005  ulbricht       D269183                 Changes for iSeries
+   04/26/2005  vgoswami       LIDB3455-4.1            Add ImplicitHeader tests
+   04/27/2005  ulbricht       D269183.4               iSeries needs profileName specified on wsadmin
+   04/27/2005  ulbricht       D269183.3               Add target to change host and port on iSeries
+   04/30/2005  bothwell       D221181                 Add WsServices test case
+   05/02/2005  ulbricht       D272639                 Add jvmarg feature to Foreach task
+   05/19/2005  ulbricht       D273784                 Move Pmi test to run with global handlers
+   06/05/2005  ulbricht       PK05310.1               Temporarily exclude MultiPartWsdl test
+   06/10/2005  ulbricht       D282781                 Allow junit to find wsengine package
+   07/20/2005  ulbricht       292226                  install/uninstall targets needs to setenv
+   07/29/2005  ulbricht       294431                  Add rmi port jvm arg to test calls
+   10/06/2005  ulbricht       308997                  Save and ftp xml log files
+   10/11/2005  ulbricht       311801                  Remove thin client specific targets
+   12/05/2005  ulbricht       328481                  Set up for SSL tests
+   04/14/2006  ulbricht       362889                  Need to set env
+   04/21/2006  ulbricht       364680                  Change how the security tests run
+   04/22/2006  ulbricht       308793.2                Change port config
+   04/30/2006  ulbricht       365687                  Change timing of enabling security
+   05/23/2006  ulbricht       368616                  Changes for WSFP
+   07/17/2006  ulbricht       375601                  Run *TestCase files
+   08/22/2006  ulbricht       385819                  Run JAX-RPC based tests separately
+   08/31/2006  smithd         381622                  Add ND targets
+   10/17/2006  jramos         385341                  Add execPreInstall and runListWebServicesTests
+   10/31/2006  sedov          394989                  WSDM tests should run via their own component-run
+   11/04/2006  sedov          403119                  Fixed WSDM build failures on ND & Base
+   11/27/2006  sedov          408016                  Fxied badproxy/badprovider
+   11/28/2006  sedov          408302                  Added additional WSDM component-run targets
+   12/08/2006  gkuo           410563                  remove routines for SAAJ. SAAJ FVT will run the same way as others.
+   01/17/2007  smithd         415287                  Add CART reporting
+   01/17/2007  jramos         413702                  Add "hot install"
+   01/21/2007  jramos         415986                  Add call to timedWASRestart in runHotInstall
+   01/22/2007  jramos         416174                  Set conn.type and conn.type.value
+   01/23/2007  jramos         416386                  Remove setting of conn.type. This is going in targets.xml
+   02/09/2007  jtnguyen       409169                  Run SOA listWebServices before other tests
+   02/15/2007  ulbricht       421030                  Run wsdlsvcs test
+   02/15/2007  jramos         416386.1                Remove call to log-time-stamp in setupServer
+   03/14/2007  jramos         426382                  Add call to getInstErrLogsTask in batchIOU
+   03/16/2007  jramos         426986                  Run BuildTestCase after all other testa
+   03/20/2007  jramos         424464                  Run ServerTune.jacl after the server is started
+   03/28/2007  jramos         429154                  ServerTune.jacl name and location have changed
+   04/02/2007  ulbricht       430026                  Add copy ws-security logs target
+   04/04/2007  jtnguyen       424464.1                Run testAdminSOA before other tests
+   04/17/2007  jtnguyen       432365                  Fixed install apps in testAdminSOA
+   04/19/2007  sedov          433386                  ftp stdout.log with reports
+   05/07/2007  jtnguyen       435716                  Avoid error when no adminEnhancementsSOA in test
+   05/23/2007  jramos         440922                  Changes for Pyxis
+   06/27/2007  jramos         446691                  Updates for wssecurity
+   06/28/2007  jramos         449017                  Use test.name
+   07/12/2007  jramos         451621                  batchIOU now uses batchedApps.log; start server for install/uninstall
+   07/18/2007  sedov          451691                  ftp fvt.build.level with reports
+   07/20/2007  jramos         453487                  Add target to filter tests based on release filer
+   08/24/2007  mzheng         461093                  Fixed ftp-put AppServer log files
+   09/17/2007  btiffany       467494                  Add timestamping to most targets so we can work on performance
+       "         "              "                     rename runFvtAtOnce -> runFvtTestsAtOnce because of ambiguous name in websvcs.fvt/buildTest.xml
+   09/18/2007  jramos         467003                  add sessioning and fix multiple server starts
+   09/26/2007  btiffany       470118                  fix bug in component-install, apps not started if >= 5 apps
+   11/02/2007  sedov          479154                  Added EnableWSDM script
+   11/14/2007  jtnguyen       483484                  removed all adminEnhancementsSOA references for Pyxis
+   11/19/2007  jramos         484601                  Add </target> for testPreAppInstall target
+   02/05/2008  jramos         495713                  Add performSecurityConfig and performMultiSecDomConfig
+   03/03/2008  sedov          502496                  Add defaultApplication setup in server-setup
+   03/26/2008  sedov          507699                  Add enableSecurity and disableSecurity targets
+   04/02/2008  sedov          509769                  Changed setupJms behavior
+   04/03/2008  btiffany                               add some debug statements for install/start problems
+   04/09/2008  sedov          511631                  Enable JMS during serverTune
+   04/22/2008  btiffany       514880                  modify debug statements
+   05/14/2008  btiffany       520963                  remove spurious echo statement
+   06/12/2008  jramos         524904                  Add migration testing branch
+   06/22/2008  btiffany       527847                  Add junit flag so staf works on hp 64 bit.
+   07/14/2008  nshekar        535184                  create execFvtAtOnceNoSetup, testFvtAtOnceNoSetup, runFvtTestsAtOnceNoSetup
+   9/10/2008  whsu            545966.2 and 545966.2.1  use run.buildtestcase.fork flag, needed for solaris64 
+   11/07/2008  jramos         559143                  Restructure for Simplicity based framework
+   11/11/2008  btiffany       564237                  read ldap server & port from properties.xml
+   11/21/2008  jramos         566458                  Updates for new logs location
+   11/25/2008  btiffany       567451                  add mixed cell test grouping and some things it needs:
+   01/15/2009  jramos         571132                  probe topology at build time
+   02/27/2009  jramos         577180                  start jiiws process at beginning of build phase
+   03/02/2009  jramos         577893                  Use buildTest.xml install/uninstall targets
+   03/04/2009  btiffany       578313                  optionally enable ldap security as part of server setup 
+   03/05/2009  btiffany       578313                  add ReportModifier to run before generating junit reports
+   03/10/2009  bluk           579218                  link to Simplicity and JIIWS Javadoc when generating javadoc
+   03/10/2009  mzheng         579236                  open new session in runHotInstall
+   03/26/2009  bluk           582182                  change soap.client.props in profile/properties dir to increase timeout
+   08/25/2009  jramos         608573                  Pass in value to set framework topology
+   08/18/2010  jtnguyen       PK92392.fvt             Added pk92392_contextroot to run before other tests
+   09/02/2010  jtnguyen       PK92392.fvt.1           Excluded pk92392_contextroot run from target runFvtTests   
+   10/15/2010  jtnguyen       PK92392.fvt.3           Added endorsed directory  
+   12/13/2010  btiffany       670291.1                update endorsed path for sun & hp.
+   04/11/2012  juliam         732764                  remove Kerberos task
+-->
+
+<project default="fvt.liberty" basedir=".">
+	<import file="xmls/common_imports.xml"/>
+	<available file="${basedir}/../../../ant_build/public_imports/internal_imports/standard_macros.xml" property="macros.present" />
+	<if if="macros.present">
+	   <import file="${basedir}/../../../ant_build/public_imports/internal_imports/standard_macros.xml"/>
+	</if>
+	<target name="fvt.liberty" depends="setenv,
+	                              filterTests,
+	                              execFvt.liberty"/>
+
+	<target name="fvt" depends="setenv,
+                              setSession,
+                              setTrace,
+                              filterTests,
+                              uninstallAppsInWAS,
+                              setupServer,
+                              execPreInstall,
+                              execFvt,
+                              stop-server,
+                              ftp-report"/>
+
+	<target name="fvtAtOnce" depends="setenv,
+                                    setSession,
+                                    setTrace,
+                                    filterTests,
+                                    uninstallAppsInWAS,
+                                    setupServer,
+                                    execPreInstall,
+                                    stop-server,
+                                    installAppsInWAS,
+                                    execFvtAtOnce,
+                                    ftp-report">
+		<antcall target="stop-server"/>
+	</target>
+
+	<target name="execFvt" depends="setenv,
+                                  setSession,
+                                  setTrace,
+                                  setupServer,
+                                  filterTests,
+                                  testFvt">
+		<antcall target="genReports"/>
+	</target>
+    <target name="execFvt.liberty" depends="setenv,
+                                  filterTests,
+                                  testFvt">
+		<antcall target="genReports"/>
+	</target>
+
+	<target name="execFvtAtOnce" depends="setenv,
+                                       setSession,
+                                       setTrace,
+                                       setupServer,
+                                       filterTests,
+                                       testFvtAtOnce">
+		<antcall target="genReports"/>
+	</target>
+
+	<target name="execFvtAtOnceNoSetup" depends="setenv,
+	                                       setSession,
+	 	                                   setTrace,
+	                                       filterTests,
+	                                       testFvtAtOnceNoSetup">
+		<antcall target="genReports"/>
+	</target>
+
+
+	<target name="execPreInstall" depends="setenv,
+                                         setSession,
+                                         setTrace,
+                                         setupServer,
+                                         filterTests,
+                                         testPreAppInstall"/>
+
+	<target name="fvtMigration" depends="setenv,
+                                       setSession,
+                                       setTrace,
+                                       filterTests,
+									   startServerIfNeeded,
+                                       uninstallAppsInWAS,
+                                       setupServer,
+                                       testMigration,
+                                       genReports,
+                                       stop-server,
+                                       ftp-report"/>
+	<!-- the mixed cell tests run in cold install mode and try to minimize restarts and setup -->
+	<!-- most of these would work with just the dmgr running, but not all, so we start everything -->
+	<target name="fvtMixedCell" depends="setenv,                                       
+                                       filterTests,
+									   uninstallAppsInWAS,
+									   prepServerForMixedCell,  
+ 									   installAppsInWAS,
+									   start-server, 
+                                       testMixedCell,
+                                       genReports,
+                                       stop-server,
+                                       ftp-report"/>
+
+	<!-- used by fvtMixedCell to minimally tune the server -->
+	<target name="prepServerForMixedCell"	depends="setenv" >
+		<echotime message="prepServer is starting" />
+
+		<manageServerSetup checkservers="true" markservers="false"/>
+		<!-- <echo message="debug: value of server.not.setup is ${server.not.setup} " /> -->
+
+		<property name="server.setup.target" value="setupServer-minimal"/>
+		<antcall target="start-server"/>
+		<antcall target="${server.setup.target}"/>
+		<antcall target="stop-server" />
+		<manageServerSetup checkservers="false" markservers="true"/>
+		<echotime message="prepServer is ending" />
+
+	</target>
+
+	<!-- This target will build all the applications necessary
+       for the Web Services Engine test suite.
+  -->
+	<target name="buildAll" depends="filterTests, setSession">
+
+		<!-- need to start a jiiws process in case anybody calls wsadmin at build time 
+         if jiiws gets newed up in a subbuild, the subbuild may never return.
+         Calling wsadminscript will create the jiiws process if one isn't already present.
+     -->
+		<echo message="creating a wsadmin session for use during build" />
+		<wsadminscript scriptFile="${FVT.base.dir}/src/jython/helloworld.py"
+                   connType="NONE"
+                   lang="jython">
+		</wsadminscript>
+
+		<echotime message="buildall starting"/>
+		<for list="${test.list}"
+         param="test.name.dir"
+         delimiter="${test.name.delimiter}"
+         keepgoing="true"
+         trim="true"
+         failOnError="${failonerror.foreach.fork}"
+         errorLog="${FVT.build.error.log}">
+			<sequential>
+				<for param="file"
+             keepgoing="true"
+             failOnError="${failonerror.foreach.fork}"
+             errorLog="${FVT.build.error.log}">
+					<fileset dir="${FVT.base.dir}">
+						<patternset>
+							<include name="src/@{test.name.dir}/buildTest.xml"/>
+						</patternset>
+					</fileset>
+					<sequential>
+						<subAnt target="component-compile"
+                    fork="${compile.foreach.fork}"
+                    failonerror="false"
+                    inheritall="${ant.inheritAll}"
+                    inheritrefs="${ant.inheritRefs}"
+                    verbose="${verbose.foreach.fork}"
+                    errorLog="${FVT.build.error.log}"
+                    param="file">
+							<fileset file="@{file}"/>
+							<property name="session.id" value="${session.id}"/>
+						</subAnt>
+					</sequential>
+				</for>
+			</sequential>
+		</for>
+		<echotime message="buildall ending"/>
+
+	</target>
+
+	<target name="buildAll.liberty" depends="filterTests">
+		<echotime message="buildall.liberty starting" />
+		<for list="${test.list}" param="test.name.dir" delimiter="${test.name.delimiter}" keepgoing="true" trim="true" failOnError="${failonerror.foreach.fork}" errorLog="${FVT.build.error.log}">
+			<sequential>
+				<for param="file" keepgoing="true" failOnError="${failonerror.foreach.fork}" errorLog="${FVT.build.error.log}">
+					<fileset dir="${FVT.base.dir}">
+						<patternset>
+							<include name="src/@{test.name.dir}/buildTest.xml" />
+						</patternset>
+					</fileset>
+					<sequential>
+						<subAnt target="component-compile" fork="${compile.foreach.fork}" failonerror="false" inheritall="${ant.inheritAll}" inheritrefs="${ant.inheritRefs}" verbose="${verbose.foreach.fork}" errorLog="${FVT.build.error.log}" param="file">
+							<fileset file="@{file}" />							
+						</subAnt>
+					</sequential>
+				</for>
+			</sequential>
+		</for>
+		<echotime message="buildall.liberty ending" />
+	</target>
+
+	<target name="setTopology">
+		<property name="setFrameworkTopology.topology" value="singleAppServer"/>
+		<echo message="Setting up the topology for the framework. The value of setFrameworkTopology.topology is ${setFrameworkTopology.topology}."/>
+		<setFrameworkTopology topology="${setFrameworkTopology.topology}"/>
+	</target>
+
+	<target name="setLibertyTopology">
+		<echo message="Setting up the liberty topology for the framework."/>
+		<setLibertyTopology/>
+	</target>
+
+	<!-- This target will set the trace statement on the server.
+  -->
+	<target name="setTrace" depends="setenv">
+		<echotime message="setTrace starting"/>
+		<EnableTrace trace="${server.trace}"
+                 packageName="${server.trace.package.name}"
+                 serverName="${server.name}"
+                 profile="${profile}"
+                 installRootLocation="${WAS.base.dir}">
+		</EnableTrace>
+		<echotime message="setTrace ending"/>
+	</target>
+
+
+	<!-- This target will install the test applications into WebSphere.
+  -->
+	<target name="installAppsInWAS" depends="setenv">
+
+		<echotime message="installAppsInWas starting" />
+		<delete file="${FVT.install.error.log}" quiet="true"/>
+
+		<echotime  message="installAppsInWas for loop starting"/>
+
+		<for list="${test.list}"
+         param="test.name.dir"
+         delimiter="${test.name.delimiter}"
+         keepgoing="true"
+         trim="true"
+         failOnError="${failonerror.foreach.fork}"
+         errorLog="${FVT.build.error.log}">
+			<sequential>
+				<for param="file"
+             keepgoing="true"
+             failOnError="${failonerror.foreach.fork}"
+             errorLog="${FVT.build.error.log}">
+					<fileset dir="${FVT.base.dir}">
+						<patternset>
+							<include name="src/@{test.name.dir}/buildTest.xml"/>
+						</patternset>
+					</fileset>
+					<sequential>
+						<subAnt target="component-install"
+                    fork="${install.foreach.fork}"
+                    failonerror="false"
+                    inheritall="${ant.inheritAll}"
+                    inheritrefs="${ant.inheritRefs}"
+                    verbose="${verbose.foreach.fork}"
+                    errorLog="${FVT.build.error.log}"
+                    param="file">
+							<fileset file="@{file}"/>
+							<property name="session.id" value="${session.id}"/>
+						</subAnt>
+					</sequential>
+				</for>
+			</sequential>
+		</for>
+
+		<!-- Perhaps we are doing a batch install, so we still need to run
+         the install.py created in this step through wsadmin.
+    -->
+		<echotime message="installAppsInWas for loop ending"/>
+		<echotime message="installAppsInWas ending" />
+	</target>
+
+	<!-- this is used to start the server before app uninstall if it's not already started -->
+	<target name="startServerIfNeeded" depends="setenv" >
+		<session-check
+        sessionid="${session.id}"
+        sessionlog="${framework.session.log}" >
+			<antcall target="start-server"/>
+		</session-check>
+	</target>
+	<!-- This target will uninstall the test applications from WebSphere.
+  -->
+	<target name="uninstallAppsInWAS" depends="setenv">
+
+		<echotime message="uninstallAppsInWas starting" />
+		<delete file="${FVT.uninstall.error.log}" quiet="true"/>
+
+		<echotime message="uninstallAppsInWas for loop starting" />
+		<for list="${test.list}"
+         param="test.name.dir"
+         delimiter="${test.name.delimiter}"
+         keepgoing="true"
+         trim="true"
+         failOnError="${failonerror.foreach.fork}"
+         errorLog="${FVT.build.error.log}">
+			<sequential>
+				<for param="file"
+             keepgoing="true"
+             failOnError="${failonerror.foreach.fork}"
+             errorLog="${FVT.build.error.log}">
+					<fileset dir="${FVT.base.dir}">
+						<patternset>
+							<include name="src/@{test.name.dir}/buildTest.xml"/>
+						</patternset>
+					</fileset>
+					<sequential>
+						<subAnt target="component-uninstall"
+                    fork="${uninstall.foreach.fork}"
+                    failonerror="false"
+                    inheritall="${ant.inheritAll}"
+                    inheritrefs="${ant.inheritRefs}"
+                    verbose="${verbose.foreach.fork}"
+                    errorLog="${FVT.build.error.log}"
+                    param="file">
+							<fileset file="@{file}"/>
+							<property name="session.id" value="${session.id}"/>
+						</subAnt>
+					</sequential>
+				</for>
+			</sequential>
+		</for>
+		<echotime message="uninstallAppsInWas for loop ending" />
+
+		<echo message="uninstallAppsInWas ending"/>
+		<echotime />
+	</target>
+
+	<!-- ............................
+       Server setup definitions
+       ............................
+  -->
+	<target name="setupServer" depends="setenv">
+		<manageServerSetup/>
+		<antcall target="execServerSetup"/>
+		<echotime message="setupServer ending" />
+	</target>
+
+	<target name="execServerSetup" depends="setenv" if="server.not.setup">
+		<antcall target="start-server"/>
+
+		<!--
+  	The server.setup.to.run is defined in the commmon/files/slice.properties version
+  	which will be generated during the FVT build and placed back in as slice.properties
+  	for appropriate setups.
+  	If it is not defined, we're going to setupServer-all.
+  	-->
+		<condition property="server.setup.target" value="${server.setup.to.run}">
+			<isset property="server.setup.to.run"/>
+		</condition>
+
+		<condition property="server.setup.target" value="setupServer-all">
+			<not>
+				<isset property="server.setup.target"/>
+			</not>
+		</condition>
+
+		<!-- execute the setup -->
+		<antcall target="${server.setup.target}"/>
+
+		<!-- enable ltpa security if that's not already in place -->
+		<!-- for backwards behavior consistency we don't turn on unless a property is set -->
+		<!-- for convenience, core bucket sets this property so it can run security tests -->
+		<antcall target="enableLTPASec" />
+
+		<!-- restart the server -->
+		<antcall target="stop-server"/>
+		<antcall target="start-server"/>
+	</target>
+	<target name="enableLTPASec" if="enable.security.during.server.setup" >
+		<!-- wrapped this in a target so we could use an if condition -->
+		<enableLTPASecurity/>
+	</target>
+
+	<!-- Executes setups needed to run all tests -->
+	<target name="setupServer-all" depends="setenv" if="server.not.setup">
+		<!-- Setup JMS -->
+		<antcall target="setupServer-jms" />
+		<!-- Setup Basic -->
+		<session-check
+      sessionid="${session.id}"
+      sessionlog="${FVT.base.dir}/build/work/setupServer-basic.log" >
+			<antcall target="setupServer-basic"/>
+		</session-check>
+
+	</target>
+
+	<!-- The minimal setup needed for basic tests
+       Excludes bucket specific setup
+  -->
+	<target name="setupServer-basic" depends="setenv, setupServer-minimal">
+		<!-- 
+    <echo message="Adding kerberos JAAS login modules...(for defect 540234)" />
+    <AddKerberosJAASConfig/>
+  -->
+
+		<!-- the manageServerSetup task just creates a file, webservices-fvt.log
+         off of the fvt work dir when told to "mark" the servers, so
+         it can remember not do do it again.  When invoked with check-servers,
+         it sets the ant property SERVER_NOT_SETUP if the file isn't found.
+    -->
+		<manageServerSetup checkServers="false" markServers="true"/>
+	</target>
+	<target name="setupServer-minimal" depends="setenv">
+		<!-- The ServerTune.py script contains commands for setting up
+	         the server for running the test suite.  For example, the script
+	         may setup properties for the application server JVM.
+	    -->
+		<wsadminscript
+	      scriptFile="${FVT.base.dir}/src/jython/ServerTune.py"
+	      lang="jython">
+		</wsadminscript>
+
+		<readCellConfig prefix="root" key="root"/>
+		<available file="${root.profileDir}/properties/soap.client.props" property="setupServer.properties.dir.available"/>
+		<antcall target="setupServer-properties"/>
+		<retrievesigners/>
+	</target>
+
+	<target name="setupServer-properties" depends="setenv" if="setupServer.properties.dir.available">
+		<readCellConfig prefix="root" key="root"/>
+		<propertyfile file="${root.profileDir}/properties/soap.client.props">
+			<entry key="com.ibm.SOAP.requestTimeout" value="1200"/>
+		</propertyfile>
+	</target>
+
+	<!--
+      Setup JMS Bus and all related artifacts
+      Prereq: server must be in started state before calling this target
+
+      Create SIBus and populate it with JMS artifacts. This has to run before ServerTune
+      as addSIBusMember will modify JVM initial/maximum heap size and cause server to
+      use ~750mb at startup (see SIB defect 511388)
+		    
+      Also, before running setupJms security has to be enabled (or not)
+  -->
+	<target name="setupServer-jms" depends="setenv">
+		<readCellConfig prefix="root" key="root" verbose="true"/>
+		<readCellConfig prefix="defaultAppServer" key="defaultServer" verbose="true"/>
+
+		<mkdir dir="${FVT.build.work.dir}/jacls"/>
+		<copy todir="${FVT.build.work.dir}/jacls" overwrite="yes">
+			<fileset dir="${FVT.base.dir}/src/jacls">
+				<include name="SecConfigProcs.jacl"/>
+				<include name="SecConfigBatch.jacl"/>
+				<include name="SecConfigProps.properties"/>
+				<include name="SecJ2CSetup.jacl"/>
+			</fileset>
+			<fileset dir="${FVT.base.dir}/src/jython">
+				<include name="setupJms.py"/>
+			</fileset>
+			<filterset id="replace.filter.set">
+				<filter token="REPLACE_WITH_USER_NAME"  value="${root.wasUserName}"/>
+				<filter token="REPLACE_WITH_PASSWORD"  value="${root.wasPassword}"/>
+				<filter token="REPLACE_WITH_PASSWORD"  value="${root.wasPassword}"/>
+				<filter token="REPLACE_WITH_SECURITY_ENABLED"  value="true"/>
+				<filter token="REPLACE_WITH_HOSTNAME"  value="${defaultAppServer.hostName}"/>
+				<filter token="REPLACE_WITH_SIB_ENDPOINT_ADDRESS"  value="${defaultAppServer.SIB_ENDPOINT_ADDRESS}"/>
+				<filter token="REPLACE_WITH_SIB_ENDPOINT_SECURE_ADDRESS"  value="${defaultAppServer.SIB_ENDPOINT_SECURE_ADDRESS}"/>
+
+				<filter token="REPLACE_WITH_CELL_NAME"  value="${defaultAppServer.cellName}"/>
+				<filter token="REPLACE_WITH_NODE_NAME"  value="${defaultAppServer.nodeName}"/>
+				<filter token="REPLACE_WITH_SERVER_NAME"  value="${defaultAppServer.serverName}"/>
+			</filterset>
+		</copy>
+
+		<!--
+        Create the JMS artifacts
+    -->
+		<wsadminscript
+      scriptFile="${FVT.build.work.dir}/jacls/setupJms.py"
+      lang="jython"
+      failOnError="false">
+		</wsadminscript>
+		<session-check
+      sessionid="${session.id}"
+      sessionlog="${FVT.base.dir}/build/work/setupServer-basic.log" >
+			<antcall target="setupServer-basic"/>
+		</session-check>
+	</target>
+
+	<!-- Setup WSDM configuration -->
+	<target name="setupServer-wsdm" depends="setenv">
+		<session-check
+      sessionid="${session.id}"
+      sessionlog="${FVT.base.dir}/build/work/setupServer-basic.log" >
+			<antcall target="setupServer-basic"/>
+		</session-check>
+
+		<!-- By default, websphere-management application is installed as a system
+         application but disabled. This script will enable it
+    -->
+		<wsadminscript
+      scriptFile="${FVT.base.dir}/src/jython/EnableWSDM.py"
+      lang="jython">
+		</wsadminscript>
+
+		<!--
+        WSDM needs DefaultApplication to be properly setup. On base this is done
+        automatically with "default" profile creation. On ND this is done by
+        running configureDefaultApplication.jacl script
+		
+        The script is called from command line with server's node and server name
+    -->
+		<readCellConfig prefix="server1" key="defaultServer" verbose="false"/>
+		<wsadminscript
+      scriptFile="${WAS.base.dir}/profileTemplates/default/actions/scripts/configureDefaultApplication.jacl"
+      failOnError="false"
+      parms="${server1.nodeName} ${server1.serverName}"
+      lang="jacl">
+		</wsadminscript>
+	</target>
+
+	<!-- ............................
+       End Server setup definitions
+       ............................
+  -->
+
+	<target name="startApplications" depends="setenv" if="apps.to.install">
+
+		<echotime message="startApplications starting"  />
+		<startAppsTask/>
+
+		<echotime message="startApplications ending"  />
+	</target>
+
+
+	<!-- This target adds some indirection so that some variables
+       can be set depending on which type of test run we are
+       trying to run.
+
+       This target will send properties to the testFvt target
+       that are used when running against the thin client
+       jar.
+  -->
+	<target name="testFvt">
+		<echotime />
+		<antcall target="runFvtTests">
+			<param name="cp" value="thinclientclasspath"/>
+			<param name="logs.dir" value="${FVT.logs.dir}"/>
+			<param name="reports.dir" value="${FVT.test.reports.dir}"/>
+		</antcall>
+		<echotime />
+	</target>
+
+	<target name="testFvtAtOnce">
+		<echotime />
+		<antcall target="runFvtTestsAtOnce">
+			<param name="cp" value="thinclientclasspath"/>
+			<param name="logs.dir" value="${FVT.logs.dir}"/>
+			<param name="reports.dir" value="${FVT.test.reports.dir}"/>
+		</antcall>
+		<echotime />
+	</target>
+
+	<target name="testFvtAtOnceNoSetup">
+		<echotime />
+		<antcall target="runFvtTestsAtOnceNoSetup">
+			<param name="cp" value="thinclientclasspath"/>
+			<param name="logs.dir" value="${FVT.logs.dir}"/>
+			<param name="reports.dir" value="${FVT.test.reports.dir}"/>
+		</antcall>
+		<echotime />
+	</target>
+
+	<target name="testPreAppInstall">
+		<echotime />
+		<antcall target="runListWebServicesTests">
+			<param name="cp" value="thinclientclasspath"/>
+			<param name="logs.dir" value="${FVT.logs.dir}"/>
+			<param name="reports.dir" value="${FVT.test.reports.dir}"/>
+		</antcall>
+	</target>
+
+	<target name="testMigration">
+		<echotime />
+		<antcall target="runMigrationTests">
+			<param name="cp" value="thinclientclasspath"/>
+			<param name="logs.dir" value="${FVT.logs.dir}"/>
+			<param name="reports.dir" value="${FVT.test.reports.dir}"/>
+		</antcall>
+		<echotime />
+	</target>
+
+	<!--
+  Important!!!
+  Test Case Naming schemes:
+    If a test case uses Axis 1.1 client, start the name of the test with 'Axis'.
+    If a test case uses IHS, start the name of the test case with 'Ihs'.
+    If a test case uses global security, start the name of the test with 'Sec'.
+    If a test case uses IHS and global security, start the name of the test with 'SecIhs'.
+  -->
+	<target name="runFvtTestsAtOnce">
+
+		<echotime message="runFVTTestsAtOnce starting"/>
+
+		<antcall target="start-server"/>
+
+		<antcall target="fvtTestsAtOnce"/>
+
+		<echotime message="runFVTTestsAtOnce ending"/>
+	</target>
+
+	<!-- The only difference between this target and runFvtTestsAtOnce is that the server is not started.
+       It is assumed that the server is already started.
+    -->
+	<target name="runFvtTestsAtOnceNoSetup">
+
+		<echotime message="runFVTTestsAtOnceNoSetup starting"/>
+
+		<antcall target="fvtTestsAtOnce"/>
+
+		<echotime message="runFVTTestsAtOnceNoSetup ending"/>
+	</target>
+
+	<target name="fvtTestsAtOnce">
+		<mkdir dir="${logs.dir}"/>
+		<mkdir dir="${reports.dir}"/>
+
+		<!-- Most of the tests will run from this junit task. Some
+         exceptions are JAX-RPC client based tests because they
+         need a special classpath.
+    -->
+
+		<for list="${test.list}"
+         param="test.name.dir"
+         delimiter="${test.name.delimiter}"
+         keepgoing="true"
+         trim="true"
+         failOnError="${failonerror.foreach.fork}"
+         errorLog="${FVT.build.error.log}">
+			<sequential>
+				<for param="file"
+             keepgoing="true"
+             failOnError="${failonerror.foreach.fork}"
+             errorLog="${FVT.build.error.log}">
+					<fileset dir="${FVT.base.dir}/">
+						<patternset>
+							<include name="src/@{test.name.dir}/buildTest.xml"/>
+							<exclude name="src/adminEnahncements/adminTasks/listWebServices/buildTest.xml"/>
+						</patternset>
+					</fileset>
+					<sequential>
+						<subAnt target="component-run"
+                    fork="${run.foreach.fork}"
+                    failonerror="false"
+                    inheritall="${ant.inheritAll}"
+                    inheritrefs="${ant.inheritRefs}"
+                    verbose="${verbose.foreach.fork}"
+                    errorLog="${FVT.build.error.log}"
+                    param="file">
+							<fileset file="@{file}"/>
+							<property name="release.filter" value="${release.filter}"/>
+							<property name="session.id" value="${session.id}"/>
+						</subAnt>
+					</sequential>
+				</for>
+			</sequential>
+		</for>
+		<!--<echotime message="runFVTTestsAtOnce for loop completed, running **BuildTestCase.class now"/>
+
+		<junit dir="${FVT.build.classes.dir}" printsummary="yes" haltonfailure="no" fork="${run.buildtestcase.fork}" timeout="${test.timeout}">
+			<jvmarg value="${hp64StafFlag}" />
+			<jvmarg value="${junit.jvm.xms}"/>
+			<jvmarg value="${junit.jvm.xmx}"/>
+			<jvmarg value="-DsimplicityConfigProps=${simplicityConfigProps}"/>
+			<jvmarg value="-DbootstrappingPropsFile=${bootstrappingPropsFile}"/>
+			<classpath refid="${cp}" />
+			<formatter type="xml" usefile="yes"/>
+			<batchtest todir="${logs.dir}">
+				<fileset dir="${FVT.build.classes.dir}">
+					<include name="**/BuildTestCase.class"/>
+				</fileset>
+			</batchtest>
+		</junit>-->
+	</target>
+
+
+	<!-- This target is to run the tests using the hot install execution path -->
+	<target name="runFvtTests">
+		<echotime message="runFvtTests starting"/>
+		<condition property="targetgoal" value="runHotInstallWithDebug" else="runHotInstall">
+			<istrue value="${fat.debug}"/>
+		</condition>
+		<echo message="fat.debug=${fat.debug}, targetgoal=${targetgoal}"/>
+		<mkdir dir="${logs.dir}"/>
+		<mkdir dir="${reports.dir}"/>
+
+		<delete file="${FVT.uninstall.error.log}" quiet="true"/>
+		<delete file="${FVT.install.error.log}" quiet="true"/>
+		<delete file="${timed.restart.log}" quiet="true"/>
+
+		<for list="${test.list}"
+         param="test.name.dir"
+         delimiter="${test.name.delimiter}"
+         keepgoing="true"
+         trim="true"
+         failOnError="${failonerror.foreach.fork}"
+         errorLog="${FVT.build.error.log}">
+			<sequential>
+				<for param="file"
+             keepgoing="true"
+             failOnError="${failonerror.foreach.fork}"
+             errorLog="${FVT.build.error.log}">
+					<fileset dir="${FVT.base.dir}">
+						<patternset>
+							<include name="src/@{test.name.dir}/buildTest.xml"/>
+							<exclude name="src/jaxws/pk92392_contextroot/buildTest.xml"/>
+						</patternset>
+					</fileset>
+					<sequential>
+						<antcall target="${targetgoal}">
+							<param name="file" value="@{file}"/>
+						</antcall>
+					</sequential>
+				</for>
+			</sequential>
+		</for>
+
+		<echotime message="for loop completed"/>
+
+		<!--<echotime message="running **BuildTestCase.class" />
+		<junit dir="${FVT.build.classes.dir}" printsummary="yes" haltonfailure="no" fork="${run.buildtestcase.fork}" timeout="${test.timeout}">
+			<jvmarg value="${junit.jvm.xms}"/>
+			<jvmarg value="${junit.jvm.xmx}"/>
+			<jvmarg value="-DsimplicityConfigProps=${simplicityConfigProps}"/>
+			<jvmarg value="-DbootstrappingPropsFile=${bootstrappingPropsFile}"/>
+			<classpath refid="${cp}" />
+			<formatter type="xml" usefile="yes"/>
+			<batchtest todir="${logs.dir}">
+				<fileset dir="${FVT.build.classes.dir}">
+					<include name="**/BuildTestCase.class"/>
+				</fileset>
+			</batchtest>
+		</junit>-->
+
+		<echotime message="runFvtTests starting"/>
+	</target>
+
+	<target name="runHotInstall">
+		<antcall target="killwlp"/>
+		<dirname property="dirName" file="${file}"/>
+		<!-- Restart WAS if needed -->
+		<!--<timedWASRestart interval="${timed.restart.interval}"/>
+
+		<antcall target="setSession"/>
+
+		<manageSession closeSession="true"/>
+		<manageSession openSession="true"/>-->		
+
+		<!-- Install the apps for this component -->
+		<echotime message="runHotInstall install phase starting."/>
+		<echo message="file: ${dirName}/buildTest.xml" />
+		<delete file="${FVT.build.work.dir}/batchedApps"/>
+		<subAnt target="component-install"
+            fork="${install.foreach.fork}"
+            failonerror="false"
+            inheritall="${ant.inheritAll}"
+            inheritrefs="${ant.inheritRefs}"
+            verbose="${verbose.foreach.fork}"
+            errorLog="${FVT.build.error.log}"
+            param="file">
+			<fileset file="${dirName}/buildTest.xml"/>
+			<property name="start.apps" value="true"/>
+			
+		</subAnt>		
+
+		<!-- Run the tests -->
+		<echotime message="runHotInstall component-run phase starting "/>
+		<subAnt target="component-run"
+            fork="${run.foreach.fork}"
+            failonerror="false"
+            inheritall="${ant.inheritAll}"
+            inheritrefs="${ant.inheritRefs}"
+            verbose="${verbose.foreach.fork}"
+            errorLog="${FVT.build.error.log}"
+            param="file">
+			<fileset file="${file}"/>
+			<property name="release.filter" value="${release.filter}"/>
+			
+		</subAnt>
+
+		<echotime message="runHotInstall uninstall phase starting, file: ${dirName}/buildTest.xml"/>
+		<!-- Uninstall the apps -->
+		<delete file="${FVT.build.work.dir}/batchedApps"/>
+		<subAnt target="component-uninstall"
+            fork="${uninstall.foreach.fork}"
+            failonerror="${failonerror.foreach.fork}"
+            inheritall="${ant.inheritAll}"
+            inheritrefs="${ant.inheritRefs}"
+            verbose="${verbose.foreach.fork}"
+            errorLog="${FVT.build.error.log}"
+            param="file">
+			<fileset file="${dirName}/buildTest.xml"/>
+			
+		</subAnt>
+		<antcall target="killwlp"/>
+
+		<echotime message="runHotInstall ending"/>
+	</target>
+	
+	<target name="runHotInstallWithDebug">
+			<dirname property="dirName" file="${file}"/>			
+
+			<!-- Install the apps for this component -->
+			<echotime message="runHotInstallWithDebug install phase starting."/>
+			<echo message="file: ${dirName}/buildTest.xml" />
+			<delete file="${FVT.build.work.dir}/batchedApps"/>
+			<subAnt target="component-install"
+	            fork="${install.foreach.fork}"
+	            failonerror="false"
+	            inheritall="${ant.inheritAll}"
+	            inheritrefs="${ant.inheritRefs}"
+	            verbose="${verbose.foreach.fork}"
+	            errorLog="${FVT.build.error.log}"
+	            param="file">
+				<fileset file="${dirName}/buildTest.xml"/>
+				<property name="start.apps" value="true"/>
+				
+			</subAnt>
+
+			<!-- Run the tests -->
+			<echotime message="runHotInstallWithDebug component-run phase starting "/>
+			<subAnt target="component-run-debug"
+	            fork="${run.foreach.fork}"
+	            failonerror="false"
+	            inheritall="${ant.inheritAll}"
+	            inheritrefs="${ant.inheritRefs}"
+	            verbose="${verbose.foreach.fork}"
+	            errorLog="${FVT.build.error.log}"
+	            param="file">
+				<fileset file="${file}"/>
+				<property name="release.filter" value="${release.filter}"/>
+				
+			</subAnt>
+
+			<echotime message="runHotInstallWithDebug uninstall phase starting, file: ${dirName}/buildTest.xml"/>
+			<!-- Uninstall the apps -->
+			<delete file="${FVT.build.work.dir}/batchedApps"/>
+			<subAnt target="component-uninstall"
+	            fork="${uninstall.foreach.fork}"
+	            failonerror="${failonerror.foreach.fork}"
+	            inheritall="${ant.inheritAll}"
+	            inheritrefs="${ant.inheritRefs}"
+	            verbose="${verbose.foreach.fork}"
+	            errorLog="${FVT.build.error.log}"
+	            param="file">
+				<fileset file="${dirName}/buildTest.xml"/>
+				
+			</subAnt>
+
+			<echotime message="runHotInstallWithDebug ending"/>
+		</target>
+
+	<!-- This target is to run the migration tests -->
+	<target name="runMigrationTests">
+		<echotime message="runMigrationTests starting"/>
+		<mkdir dir="${logs.dir}"/>
+		<mkdir dir="${reports.dir}"/>
+
+		<delete file="${FVT.uninstall.error.log}" quiet="true"/>
+		<delete file="${FVT.install.error.log}" quiet="true"/>
+		<delete file="${timed.restart.log}" quiet="true"/>
+
+		<!-- Pre-migration phase -->
+		<for list="${test.list}"
+         param="test.name.dir"
+         delimiter="${test.name.delimiter}"
+         keepgoing="true"
+         trim="true"
+         failOnError="${failonerror.foreach.fork}"
+         errorLog="${FVT.build.error.log}">
+			<sequential>
+				<for param="file"
+             keepgoing="true"
+             failOnError="${failonerror.foreach.fork}"
+             errorLog="${FVT.build.error.log}">
+					<fileset dir="${FVT.base.dir}">
+						<patternset>
+							<include name="src/@{test.name.dir}/buildTest.xml"/>
+							<exclude name="src/@{test.name.dir}/**postmigration**/buildTest.xml"/>
+						</patternset>
+					</fileset>
+					<sequential>
+						<antcall target="runHotInstall">
+							<param name="file" value="@{file}"/>
+						</antcall>
+					</sequential>
+				</for>
+			</sequential>
+		</for>
+		<echotime message="for loop completed"/>
+
+		<!-- Perform WAS migration -->
+		<echotime message="WAS migration starting"/>
+		<antcall target="stop-server"/>
+		<migrateWAS/>
+		<antcall target="start-server"/>
+		<echotime message="WAS migration ending"/>
+
+		<!-- Post-migration phase -->
+		<for list="${test.list}"
+         param="test.name.dir"
+         delimiter="${test.name.delimiter}"
+         keepgoing="true"
+         trim="true"
+         failOnError="${failonerror.foreach.fork}"
+         errorLog="${FVT.build.error.log}">
+			<sequential>
+				<for param="file"
+             keepgoing="true"
+             failOnError="${failonerror.foreach.fork}"
+             errorLog="${FVT.build.error.log}">
+					<fileset dir="${FVT.base.dir}">
+						<patternset>
+							<include name="src/@{test.name.dir}/buildTest.xml"/>
+							<exclude name="src/@{test.name.dir}/**premigration**/buildTest.xml"/>
+						</patternset>
+					</fileset>
+					<sequential>
+						<antcall target="runHotInstall">
+							<param name="file" value="@{file}"/>
+						</antcall>
+					</sequential>
+				</for>
+			</sequential>
+		</for>
+		<echotime message="for loop completed"/>
+
+		<!--<echotime message="running **BuildTestCase.class" />
+		<junit dir="${FVT.build.classes.dir}" printsummary="yes" haltonfailure="no" fork="${run.buildtestcase.fork}" timeout="${test.timeout}">
+			<jvmarg value="${junit.jvm.xms}"/>
+			<jvmarg value="${junit.jvm.xmx}"/>
+			<jvmarg value="-DsimplicityConfigProps=${simplicityConfigProps}"/>
+			<jvmarg value="-DbootstrappingPropsFile=${bootstrappingPropsFile}"/>
+			<classpath refid="${cp}" />
+			<formatter type="xml" usefile="yes"/>
+			<batchtest todir="${logs.dir}">
+				<fileset dir="${FVT.build.classes.dir}">
+					<include name="**/BuildTestCase.class"/>
+				</fileset>
+			</batchtest>
+		</junit>-->
+
+		<echotime message="runMigrationTests ending"/>
+	</target>
+
+	<target name="runListWebServicesTests">
+
+		<echotime message="runListWebServicesTests starting"/>
+		<mkdir dir="${logs.dir}"/>
+		<mkdir dir="${reports.dir}"/>
+
+		<session-check
+        sessionid="${session.id}"
+        sessionlog="${framework.session.log}" >
+			<antcall target="start-server"/>
+		</session-check>
+
+		<!-- Run the AdminTask listWebServices and pk92392_contextroot tests.  They need to be run prior to the installation
+         of any applications.
+    -->
+		<junit dir="${FVT.build.classes.dir}" printsummary="yes" haltonfailure="no" fork="yes" timeout="${test.timeout}">
+			<jvmarg value="${junit.jvm.xms}"/>
+			<jvmarg value="${junit.jvm.xmx}"/>
+			<jvmarg value="-DFVT.base.dir=${FVT.base.dir}"/>
+			<jvmarg value="-DWAS.base.dir=${WAS.base.dir}"/>
+			<jvmarg value="-Dserver.trace=${server.trace}"/>
+			<jvmarg value="-Dserver.trace.package.name=${server.trace.package.name}"/>
+			<jvmarg value="-DsimplicityConfigProps=${simplicityConfigProps}"/>
+			<jvmarg value="-DbootstrappingPropsFile=${bootstrappingPropsFile}"/>
+			<jvmarg value="-Dprofile=${profile}"/>
+			<jvmarg value="-Dcell.name=${cell.name}"/>
+			<jvmarg value="-Djava.awt.headless=true"/>
+			<jvmarg value="-Dserver=${server.name}"/>
+			<jvmarg value="-Drmi.port=${new.bootstrap.address}"/>
+			<jvmarg value="-Drelease.filter=${release.filter}"/>
+			<jvmarg value="-Djava.endorsed.dirs=${WAS.endorsed.dirs}"/>
+			<classpath refid="${cp}" />
+			<formatter classname="com.ibm.ws.wsfvt.test.framework.FVTJUnitXMLFilteredFormatter"
+          extension=".xml" />
+			<!-- This first batchtest will run most of the tests.  If at all possible, name
+           your test case package so that you will not have to alter this statement.
+      -->
+			<batchtest todir="${logs.dir}">
+				<fileset dir="${FVT.build.classes.dir}">
+					<include name="jaxws/pk92392_contextroot/**/*Test.class"/>
+					<!-- the pk92392_contextroot test will install, run test, and uninstall apps -->
+					<include name="adminEnhancements/adminTasks/listWebServices/**/*Test.class"/>
+				</fileset>
+			</batchtest>
+		</junit>
+
+		<echotime message="runListWebServicesTests ending"/>
+	</target>
+	<!-- run the mixed cell tests, apps should be installed and running already -->
+	<target name="testMixedCell">
+		<echotime />
+		<antcall target="fvtTestsAtOnce">
+			<param name="cp" value="thinclientclasspath"/>
+			<param name="logs.dir" value="${FVT.logs.dir}"/>
+			<param name="reports.dir" value="${FVT.test.reports.dir}"/>
+		</antcall>
+		<echotime />
+	</target>
+
+	<!-- This target will generate the JavaDoc.
+  -->
+	<target name="genjavadoc">
+		<echotime/>
+		<mkdir dir="${FVT.base.dir}/build/javadoc"/>
+		<!-- Exclude packages that cause errors -->
+		<javadoc destdir="${FVT.build.javadoc}"
+             author="false"
+             useexternalfile="yes"
+             version="true"
+             use="true"
+             windowtitle="Web Services Test"
+             overview="${FVT.base.dir}/doc/overview.html"
+             access="public">
+			<classpath refid="thinclientclasspath"/>
+			<fileset dir="${FVT.base.dir}/src" defaultexcludes="yes">
+				<include name="**/*Test*.java"/>
+				<include name="com/**/*.java"/>
+				<include name="common/**/*.java"/>
+				<exclude name="configarchive/**"/>
+			</fileset>
+			<doctitle>
+				<![CDATA[<h1>Web Services Test</h1>]]></doctitle>
+		<bottom>
+			<![CDATA[<i>Copyright &#169; 2006 International Business Machines Corp. All Rights Reserved.</i>]]></bottom>
+	<tag name="testStrategy" scope="all" description="Test Strategy:" />
+	<link href="https://ausgsa.ibm.com/projects/m/moonstone/distributions/sharedlibraries/simplicity/javadoc/" offline="true" packagelistLoc="${FVT.base.dir}/doc/simplicity"/>
+	<link href="http://ausgsa.ibm.com/projects/m/moonstone/distributions/sharedlibraries/jiiws/javadoc/" offline="true" packagelistLoc="${FVT.base.dir}/doc/jiiws"/>
+</javadoc>
+<echotime/>
+</target>
+
+
+<!-- This target will generate the report from a normal WebSphere
+       Application Server test run.
+  -->
+<target name="genReports">
+<echotime />
+<!-- first, filter the reports for known persistent failures -->
+<antcall target="filterJunitXmlFilesForKnownFailures" />
+<junitreport todir="${FVT.logs.dir}">
+	<fileset dir="${FVT.logs.dir}">
+		<include name="TEST-*.xml"/>
+	</fileset>
+	<report format="frames" todir="${FVT.test.reports.dir}" styledir="${FVT.base.dir}/src/xsls"/>
+</junitreport>
+<echotime />
+</target>
+
+<!-- run the ReportsModifier tool to suppress well-understood failures -->
+<target name="filterJunitXmlFilesForKnownFailures">
+<copy file="${FVT.base.dir}/src/com/ibm/ws/wsfvt/build/tools/ReportsModifier.properties"
+          todir="${FVT.logs.dir}"
+          overwrite="true"
+      />
+<java classname="com.ibm.ws.wsfvt.build.tools.ReportsModifier"
+            classpath="${FVT.build.classes.dir}"
+            dir="${FVT.logs.dir}"
+            fork="true"
+       />
+
+</target>
+
+
+<!-- This target will create the directories on the target computer specified
+       in the 'reportServer' variable and then ftp the tests to that computer.
+
+       If the tests have been generated but don't appear on the report server,
+       it is possible that the file permissions on the report server do not
+       allow for creating the directories.
+  -->
+<target name="ftp-report" if="reportServer" depends="setenv,printEnv">
+
+<echotime/>
+<tstamp>
+	<format property="time_stamp" pattern="MM-dd-yyyy-hh:mm"/>
+</tstamp>
+<antcall target="ftp-mkdir">
+	<param name="host" value="${reportServer}"/>
+	<param name="user" value="${reportUser}"/>
+	<param name="passwd" value="${reportPasswd}"/>
+	<param name="dir" value="public_html/tests/${reportRelease}/${reportBuild}/${os.name}/${os.version}-${os.arch}/${time_stamp}/logs"/>
+</antcall>
+<!-- Ftp the HTML test reports directory to the report server.
+    -->
+<antcall target="ftp-put">
+	<param name="host" value="${reportServer}"/>
+	<param name="user" value="${reportUser}"/>
+	<param name="passwd" value="${reportPasswd}"/>
+	<param name="dir" value="public_html/tests/${reportRelease}/${reportBuild}/${os.name}/${os.version}-${os.arch}/${time_stamp}"/>
+	<param name="localdir" value="${FVT.test.reports.dir}"/>
+	<param name="file" value="**"/>
+</antcall>
+<!-- Ftp the application server logs files to the report server.
+    -->
+<readCellConfig prefix="root" key="root" verbose="false"/>
+<antcall target="ftp-put">
+	<param name="host" value="${reportServer}"/>
+	<param name="user" value="${reportUser}"/>
+	<param name="passwd" value="${reportPasswd}"/>
+	<param name="dir" value="public_html/tests/${reportRelease}/${reportBuild}/${os.name}/${os.version}-${os.arch}/${time_stamp}/logs"/>
+	<param name="localdir" value="${root.profileDir}/logs/${root.serverName}"/>
+	<param name="file" value="**"/>
+</antcall>
+<!-- Jar up the log files for audit purposes if needed...
+    -->
+<jar destfile="${FVT.base.dir}/logs/xml_logs.jar">
+	<fileset dir="${FVT.base.dir}/logs">
+		<include name="**/*.xml"/>
+	</fileset>
+</jar>
+<antcall target="ftp-put">
+	<param name="host" value="${reportServer}"/>
+	<param name="user" value="${reportUser}"/>
+	<param name="passwd" value="${reportPasswd}"/>
+	<param name="dir" value="public_html/tests/${reportRelease}/${reportBuild}/${os.name}/${os.version}-${os.arch}/${time_stamp}/logs"/>
+	<param name="localdir" value="${FVT.base.dir}/logs"/>
+	<param name="file" value="xml_logs.jar"/>
+</antcall>
+
+<!-- Ftp the stdout.log so we can analyze the failures if needed
+    -->
+<antcall target="ftp-put">
+	<param name="host" value="${reportServer}"/>
+	<param name="user" value="${reportUser}"/>
+	<param name="passwd" value="${reportPasswd}"/>
+	<param name="dir" value="public_html/tests/${reportRelease}/${reportBuild}/${os.name}/${os.version}-${os.arch}/${time_stamp}"/>
+	<param name="localdir" value="/test/development"/>
+	<param name="file" value="stdout.log"/>
+</antcall>
+
+<!-- Ftp the stdout.log so we can analyze the failures if needed
+    -->
+<antcall target="ftp-put">
+	<param name="host" value="${reportServer}"/>
+	<param name="user" value="${reportUser}"/>
+	<param name="passwd" value="${reportPasswd}"/>
+	<param name="dir" value="public_html/tests/${reportRelease}/${reportBuild}/${os.name}/${os.version}-${os.arch}/${time_stamp}"/>
+	<param name="localdir" value="${FVT.base.dir}"/>
+	<param name="file" value="fvt.build.level"/>
+</antcall>
+
+<!-- Report status to CART -->
+<cartReport build="${reportBuild}"
+                release="${reportRelease}"
+                platform="${os.name}"
+                url="http://${reportServer}:7696/~${reportUser}/tests/${reportRelease}/${reportBuild}/${os.name}/${os.version}-${os.arch}/${time_stamp}/index.html"
+                summaryHTMLFile="${FVT.test.reports.dir}/overview-summary.html">
+</cartReport>
+<echotime/>
+
+</target>
+
+<!-- This target will print the test directories
+  -->
+<target name="listTestDirs">
+<listTestDirs outFile="${FVT.base.dir}/dirList.txt"/>
+</target>
+
+
+<target name="filterTests" depends="setenv">
+<echotime />
+
+<echo message="release.filter: ${release.filter}
+					test.name = ${test.name} excluded: ${excluded.test.name} 
+					not.excluded=${not.excluded}"/>
+
+<filterTests
+          releaseFilter="${release.filter}"
+          includeddirs="${test.name}"
+          excludeddirs="${excluded.test.name}"
+	      notExcludedDirs="${not.excluded}"
+          delimiter="${test.name.delimiter}"/>
+<echotime />
+</target>
+
+
+<!-- this task probably doesn't work work right with simplicty, use enableLTPASecurity task -->
+<target name="enableSecurity" depends="setenv" >
+
+<!-- This script will enable Java 2 security, global security
+	         (user = ${security.user.name}, password = ${security.password}),
+	         and setup a J2C data auth with an alias of ${security.user.name}.
+	    -->
+<echo message="enabling ldap security, ldap host, port = ${ldap.server.hostname} , ${ldap.server.port} "/>
+<wsadminscript
+			   profile="${WAS.base.dir}/bin/LTPA_LDAPSecurityProcs.jacl"
+			   scriptFile="${FVT.base.dir}/src/jacls/wssec.jacl"
+			   lang="jacl"
+			   parms="LTPA_LDAPSecurityOn ${ldap.server.shortname} testuser testuserpwd ${ldap.server.port} ${ldap.server.dns.suffix}">
+</wsadminscript>
+
+<!-- enable security from here on out -->
+<replace file="${FVT.base.dir}/topologyProps.props" 
+	             token="was-cell-1.isSecurityEnabled:false"
+	             value="was-cell-1.isSecurityEnabled:true"/>
+<replace file="${FVT.base.dir}/topologyProps.props" 
+	             token="was-cell-1.WASUsername:"
+	             value="was-cell-1.WASUsername:testuser"/>
+<replace file="${FVT.base.dir}/topologyProps.props" 
+	             token="was-cell-1.WASPassword:"
+	             value="was-cell-1.WASPassword:testuserpwd"/>
+
+</target>
+
+<!-- 
+		Disable security
+		server must be started for this to work properly
+	-->
+<target name="disableSecurity" depends="setenv">
+
+<!-- This script will enable Java 2 security, global security
+	         (user = ${security.user.name}, password = ${security.password}),
+	         and setup a J2C data auth with an alias of ${security.user.name}.
+	    -->
+<wsadminscript
+			   profile="${WAS.base.dir}/bin/LTPA_LDAPSecurityProcs.jacl"
+			   scriptFile="${FVT.base.dir}/src/jacls/wssec.jacl"
+			   lang="jacl"
+			   parms="LTPA_LDAPSecurityOff">
+</wsadminscript>
+
+<!-- disable security from here on out -->
+<replace file="${FVT.base.dir}/topologyProps.props" 
+	             token="was-cell-1.isSecurityEnabled:true"
+	             value="was-cell-1.isSecurityEnabled:false"/>
+</target>
+
+<!-- need this wrapper target to invoke from websvcs.fvt/buildTest.xml -->
+<target name="stopServer" depends="setenv, setTopology">
+<antcall target="stop-server"/>
+</target>
+
+<target name="stopServer.liberty" depends="setenv, setLibertyTopology">
+<antcall target="stop-liberty"/>
+</target>
+
+</project>

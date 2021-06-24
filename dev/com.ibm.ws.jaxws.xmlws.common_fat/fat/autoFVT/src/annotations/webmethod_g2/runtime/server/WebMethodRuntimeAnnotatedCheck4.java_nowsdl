@@ -1,0 +1,21 @@
+package annotations.webmethod_g2.runtime.server;
+import javax.jws.*;
+
+// test redirection through annotation and exclusion through annotation
+@WebService()
+public class WebMethodRuntimeAnnotatedCheck {
+
+	// these two methods should swap...
+	@WebMethod(operationName="annoMethod")
+	public String noAnnoMethod(String s){return "noAnnoMethod returns: "+ s;}	
+	
+	@WebMethod(operationName="noAnnoMethod")
+	public String annoMethod(String s){return "annoMethod returns: "+ s;}
+	
+	@WebMethod	
+	public String annoMethod2(String s){return "annoMethod2 returns: " + s;}
+	
+	// test will search wsdl for this and should not find it. 
+	@WebMethod(exclude = true)
+	public String surprise(String s){return "surprise"; }
+}

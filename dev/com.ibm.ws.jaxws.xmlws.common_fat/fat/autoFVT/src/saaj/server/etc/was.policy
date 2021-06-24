@@ -1,0 +1,17 @@
+/* Date         Author      Defect/Feature     Description                  */
+/* 08/16/2007   gkuo        D460088            Changes for java 2 security  */
+/* 12/04/2007   ulbricht    D468755            More Java 2 security changes */
+
+grant codeBase "file:${application}" {
+  permission java.lang.RuntimePermission "getClassLoader";
+  permission java.lang.RuntimePermission "modifyThread";
+  permission java.lang.RuntimePermission "modifyThreadGroup";
+  permission java.io.FilePermission "${was.install.root}${/}java${/}jre${/}lib${/}jaxp.properties", "read";
+  permission java.io.FilePermission "${was.install.root}${/}java${/}jre${/}lib${/}jaxm.properties", "read";
+  permission java.io.FilePermission "${user.install.root}${/}-", "read, write, delete";
+  permission java.lang.RuntimePermission "accessClassInPackage.sun.beans.infos";
+  permission java.io.FilePermission "${java.io.tmpdir}${/}-", "read, write, delete";
+  permission java.io.FilePermission "${java.io.tmpdir}", "read, write, delete";
+  permission java.io.FilePermission "IBMTmpCD${/}-", "read, write, delete";
+};
+

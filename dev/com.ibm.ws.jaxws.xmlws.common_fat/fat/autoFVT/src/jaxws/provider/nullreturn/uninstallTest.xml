@@ -1,0 +1,20 @@
+<?xml version="1.0"?>                     
+
+<project default="uninstall" basedir=".">
+	
+    <import file="../../../xmls/common_imports.xml" />
+
+  <!-- The uninstall target will uninstall the EAR or WAR file from
+       WebSphere.
+  -->
+  <target name="uninstall" depends="setenv">
+   <echo message="Uninstalling nullprovider.ear ..." />
+    <UninstallApp appName="jaxws.provider.nullreturn"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>
+
+  </target>
+  
+</project>

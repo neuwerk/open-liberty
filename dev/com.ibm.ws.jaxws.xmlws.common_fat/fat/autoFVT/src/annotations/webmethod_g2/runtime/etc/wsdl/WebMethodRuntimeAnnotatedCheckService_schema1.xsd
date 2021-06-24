@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" targetNamespace="http://server.runtime.webmethod_g2.annotations/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="annoMethod2" type="ns1:annoMethod2" xmlns:ns1="http://server.runtime.webmethod_g2.annotations/"/>
+
+  <xs:complexType name="annoMethod2">
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="annoMethod2Response" type="ns2:annoMethod2Response" xmlns:ns2="http://server.runtime.webmethod_g2.annotations/"/>
+
+  <xs:complexType name="annoMethod2Response">
+    <xs:sequence>
+      <xs:element name="return" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="annoMethod" type="ns3:annoMethod" xmlns:ns3="http://server.runtime.webmethod_g2.annotations/"/>
+
+  <xs:complexType name="annoMethod">
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="annoMethodResponse" type="ns4:annoMethodResponse" xmlns:ns4="http://server.runtime.webmethod_g2.annotations/"/>
+
+  <xs:complexType name="annoMethodResponse">
+    <xs:sequence>
+      <xs:element name="return" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="noAnnoMethod" type="ns5:noAnnoMethod" xmlns:ns5="http://server.runtime.webmethod_g2.annotations/"/>
+
+  <xs:complexType name="noAnnoMethod">
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="noAnnoMethodResponse" type="ns6:noAnnoMethodResponse" xmlns:ns6="http://server.runtime.webmethod_g2.annotations/"/>
+
+  <xs:complexType name="noAnnoMethodResponse">
+    <xs:sequence>
+      <xs:element name="return" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+

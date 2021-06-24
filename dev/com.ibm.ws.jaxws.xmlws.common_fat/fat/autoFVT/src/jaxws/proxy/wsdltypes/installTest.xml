@@ -1,0 +1,43 @@
+<?xml version="1.0"?>                     
+
+<!--
+  @(#) 1.2 WautoFVT/src/jaxws/provider/installTest.xml, WAS.websvcs.fvt, WSFPB.WFVT 8/30/06 17:00:26 [8/30/06 18:40:19]
+
+  Description: Build file for the JAX-WS Dispatch API tests
+ 
+  Date        Author       Feature/Defect          Description
+  06/31/06    sedov        LIDB3296.41-01          New File
+-->
+
+<project default="install" basedir=".">
+   
+	<property name="componentName" value="jaxws/proxy/wsdltypes"/>
+	<property name="test.name" value="jwpr.wsdltypes" />
+	
+    <import file="../../jaxws-commons.xml" />
+
+	<property name="test.base.dir" value="${FVT.base.dir}/src/${componentName}" />
+	
+	<path id="componentClasspath">
+	   <path refid="jaxws.classpath"/>
+	</path>	
+
+  <!-- The install target will install the EAR or WAR file into WebSphere.
+  -->
+  <target name="install" depends="setenv">
+  	
+   <echo message="Installing ${test.name}App.ear ..." />
+  	
+    <InstallApp earName="${test.name}App.ear"
+                appName="${test.name}"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>  	
+    	
+  </target>
+  
+</project>
+

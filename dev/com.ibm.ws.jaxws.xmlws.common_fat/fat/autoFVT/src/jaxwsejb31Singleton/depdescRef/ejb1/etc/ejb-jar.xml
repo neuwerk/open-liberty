@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     1.1, 11/20/09
+    
+    Change History:
+    Date       UserId              Feature/Defect          Description
+    ****************************************************************************
+    11/18/09   jtnguyen            F743-17947-02           New file
+-->
+
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd" 
+    version="3.1">
+
+    <enterprise-beans>
+        <session id="DepdescSession3">
+            <ejb-name>jaxwsejb31Singleton-Ejb1</ejb-name>
+            <session-type>Singleton</session-type>
+            <ejb-class>jaxwsejb31Singleton.depdescRef.ejb1.wsfvt.server.Ejb1</ejb-class>
+            <transaction-type>Container</transaction-type>
+            
+            
+            <service-ref>
+                <service-ref-name>service/Ejb2AddSvc</service-ref-name>
+                <service-interface>jaxwsejb31Singleton.depdescRef.ejb2.wsfvt.server.Ejb2AddService</service-interface>
+            </service-ref>
+            
+        </session>
+    </enterprise-beans>
+</ejb-jar>

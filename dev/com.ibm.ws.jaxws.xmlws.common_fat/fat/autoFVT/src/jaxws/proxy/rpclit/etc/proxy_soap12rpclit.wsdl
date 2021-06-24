@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"	
+	xmlns:tns="http://soap12rpclit.wsfvt.rpclit.proxy.jaxws"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="proxy.multi"
+	targetNamespace="http://soap12rpclit.wsfvt.rpclit.proxy.jaxws">
+	
+	<wsdl:types>
+		<xsd:schema
+			xmlns="http://www.w3.org/2001/XMLSchema"
+			xmlns:tns="http://soap12rpclit.wsfvt.rpclit.proxy.jaxws"
+			targetNamespace="http://soap12rpclit.wsfvt.rpclit.proxy.jaxws">
+
+			<complexType name="message">
+				<sequence>
+					<element name="message" type="xsd:string" />
+				</sequence>
+			</complexType>
+
+		</xsd:schema>
+	</wsdl:types>	
+	
+	<wsdl:message name="PingRequest">
+		<wsdl:part name="request1" type="tns:message" />	
+		<wsdl:part name="request2" type="tns:message" />			
+	</wsdl:message>		
+	
+	<wsdl:message name="PingResponse">
+		<wsdl:part name="reply" type="tns:message" />		
+	</wsdl:message>					
+	
+	<wsdl:portType name="ProxySOAP12Rpc">
+		
+		<wsdl:operation name="ping">
+			<wsdl:input message="tns:PingRequest" />
+			<wsdl:output message="tns:PingResponse" />
+		</wsdl:operation>
+		
+	</wsdl:portType>
+		
+	<wsdl:binding name="ProxySOAP12Binding" type="tns:ProxySOAP12Rpc">
+		<soap12:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http" />
+		
+		<wsdl:operation name="ping">
+			<soap12:operation soapAction="http://soap12rpclit.wsfvt.rpclit.proxy.jaxws/ping" />
+			<wsdl:input>
+				<soap12:body use="literal" namespace="http://soap12rpclit.wsfvt.rpclit.proxy.jaxws" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap12:body use="literal" namespace="http://soap12rpclit.wsfvt.rpclit.proxy.jaxws" />
+			</wsdl:output>
+		</wsdl:operation>		
+
+	</wsdl:binding>	
+	
+	<wsdl:service name="ProxySOAP12RpcLitService">
+	
+		<wsdl:port binding="tns:ProxySOAP12Binding" name="ProxySOAP12RpcLitPort">
+			<soap12:address location="http://@HOST@:@PORT@/jwpr.rpclit/services/ProxySOAP12RpcLitService" />
+		</wsdl:port>
+			
+	</wsdl:service>
+	
+</wsdl:definitions>
+	

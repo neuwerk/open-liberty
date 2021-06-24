@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" targetNamespace="http://server.webresult.annotations/" xmlns:ns1="echo222ns" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:import namespace="echo222ns" schemaLocation="WebResultTestImplService_schema2.xsd"/>
+
+  <xs:element name="echo444" nillable="true" type="xs:string"/>
+
+  <xs:element name="echo444InvocationResult" nillable="true" type="xs:string"/>
+
+  <xs:element name="echo111" type="ns2:echo111" xmlns:ns2="http://server.webresult.annotations/"/>
+
+  <xs:complexType name="echo111">
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="echo111Response" type="ns3:echo111Response" xmlns:ns3="http://server.webresult.annotations/"/>
+
+  <xs:complexType name="echo111Response">
+    <xs:sequence>
+      <xs:element name="echo111InvocationResult" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="echo222" type="ns4:echo222" xmlns:ns4="http://server.webresult.annotations/"/>
+
+  <xs:complexType name="echo222">
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="echo222Response" type="ns5:echo222Response" xmlns:ns5="http://server.webresult.annotations/"/>
+
+  <xs:complexType name="echo222Response">
+    <xs:sequence>
+      <xs:element ref="ns1:return" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+

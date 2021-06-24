@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- this wsdl originated from the warfile -->
+<definitions targetNamespace="http://server.runtime.webmethod_g2.annotations/" name="WebMethodRuntimeAnnotatedCheckService" xmlns:tns="http://server.runtime.webmethod_g2.annotations/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://server.runtime.webmethod_g2.annotations/" schemaLocation="WebMethodRuntimeAnnotatedCheckService_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="noAnnoMethod">
+    <part name="parameters" element="tns:noAnnoMethod"/>
+  </message>
+  <message name="noAnnoMethodResponse">
+    <part name="parameters" element="tns:noAnnoMethodResponse"/>
+  </message>
+  <message name="annoMethod">
+    <part name="parameters" element="tns:annoMethod"/>
+  </message>
+  <message name="annoMethodResponse">
+    <part name="parameters" element="tns:annoMethodResponse"/>
+  </message>
+  <message name="annoMethod2">
+    <part name="parameters" element="tns:annoMethod2"/>
+  </message>
+  <message name="annoMethod2Response">
+    <part name="parameters" element="tns:annoMethod2Response"/>
+  </message>
+  <portType name="WebMethodRuntimeAnnotatedCheck">
+    <operation name="noAnnoMethod">
+      <input message="tns:noAnnoMethod"/>
+      <output message="tns:noAnnoMethodResponse"/>
+    </operation>
+    <operation name="annoMethod">
+      <input message="tns:annoMethod"/>
+      <output message="tns:annoMethodResponse"/>
+    </operation>
+    <operation name="annoMethod2">
+      <input message="tns:annoMethod2"/>
+      <output message="tns:annoMethod2Response"/>
+    </operation>
+  </portType>
+  <binding name="WebMethodRuntimeAnnotatedCheckPortBinding" type="tns:WebMethodRuntimeAnnotatedCheck">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="noAnnoMethod">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="annoMethod">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="annoMethod2">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="WebMethodRuntimeAnnotatedCheckService">
+    <port name="WebMethodRuntimeAnnotatedCheckPort" binding="tns:WebMethodRuntimeAnnotatedCheckPortBinding">
+      <soap:address location="REPLACE_WITH_ACTUAL_URL"/>
+    </port>
+  </service>
+</definitions>
+

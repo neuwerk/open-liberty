@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+        <!ENTITY instance SYSTEM "../../../../instance.xml"><!-- file:34 -->
+<!ENTITY properties SYSTEM "../../../xmls/properties.xml"><!-- file:28 -->
+<!ENTITY paths SYSTEM "../../../xmls/path_refs.xml"><!-- file:23 -->
+<!ENTITY targets SYSTEM "../../../xmls/targets.xml"><!-- file:25 -->
+<!ENTITY taskdefs SYSTEM "../../../xmls/taskdefs.xml"><!-- file:26 -->
+<!ENTITY taskdefs_post_compile SYSTEM "../../../xmls/taskdefs_post_compile.xml"><!-- file:39 -->
+]>
+
+<!-- 1.1, 10/24/08
+	
+	Description: a sub-build that we can call to allow wsgen to fail without the whole thing failing.
+    This is used for some negative tests where wsgen should NOT produce a wsdl. 
+    
+	Date        Author       Feature/Defect          Description
+	
+	10/24/2008  btiffany     557194                  new, stripped out of buildTest.xml
+-->
+
+<project name="build" default="wsgen1" basedir=".">
+
+	<!-- These are XML entity refs.  Basically these statements cause the
+		files declared in the DOCTYPE at the top of the file to be imported
+		into this build file. -->
+	  &instance;
+	  &properties;
+	  &paths;
+	  &targets;
+	  &taskdefs;
+	  &taskdefs_post_compile;
+
+	<!-- This property should match the package name of the test class.  The
+		property is used in the targets.xml file when running any of the
+		component-run* targets for running a single test case class. -->
+	<property name="componentName" value="annotations/webfault/nameclash/test" />
+
+
+	<!-- This path id is used in the targets.xml file when running any of
+		the component-run* targets.  This allows setting the classpath 
+		for an individual test. -->
+	<path id="componentClasspath">
+		<path refid="thinclientclasspath" />
+	</path>
+	
+
+
+
+	<target name="wsgen1" depends="setenv">
+
+		<echo message="WSGEN FAILURE IS EXPECTED.  THIS IS NOT A DEFECT" />
+		<wsgen genwsdl="true" keep="true" verbose="true"
+			destdir="${FVT.build.work.dir}"
+			resourcedestdir="${FVT.build.work.dir}/annotations/webfault/nameclash/server1"
+			sei="annotations.webfault.nameclash.server1.WebFaultNameClash1"
+			classpath="${FVT.build.classes.dir}">
+			<classpath refid="classpath" />
+		</wsgen>
+    </target>  
+
+    <target name="wsgen2" depends="setenv">    
+
+		<wsgen genwsdl="true" keep="true" verbose="true"
+			destdir="${FVT.build.work.dir}"
+			resourcedestdir="${FVT.build.work.dir}/annotations/webfault/nameclash/server2"
+			sei="annotations.webfault.nameclash.server2.WebFaultNameClash2"
+			classpath="${FVT.build.classes.dir}">
+			<classpath refid="classpath" />
+		</wsgen>
+    </target>    
+
+    <target name="wsgen3" depends="setenv">    
+		<wsgen genwsdl="true" keep="true" verbose="true"
+			destdir="${FVT.build.work.dir}"
+			resourcedestdir="${FVT.build.work.dir}/annotations/webfault/nameclash/server3"
+			sei="annotations.webfault.nameclash.server3.WebFaultNameClash3"
+			classpath="${FVT.build.classes.dir}">
+			<classpath refid="classpath" />
+		</wsgen>
+
+	</target>
+
+
+</project>
+
+
+
+
+

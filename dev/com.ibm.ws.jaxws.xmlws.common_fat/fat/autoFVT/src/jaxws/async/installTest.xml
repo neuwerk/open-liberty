@@ -1,0 +1,35 @@
+<?xml version="1.0"?>                     
+
+<!--
+  @(#) 1.2 WautoFVT/src/jaxws/async/installTest.xml, WAS.websvcs.fvt, WSFP.WFVT 9/18/06 16:54:41 [11/3/06 09:01:51]
+
+  Description: Build file for the JAX-WS Dispatch API tests
+ 
+  Date        Author       Feature/Defect          Description
+  05/31/06    sedov        LIDB3296.42             New File
+  11/04/06    sedov        D403119                 Added setenv
+-->
+
+<project default="install" basedir=".">
+   
+	<property name="test.name" value="jw.async" />
+	
+    <import file="..\jaxws-commons.xml" />
+
+  <!-- The install target will install the EAR or WAR file into WebSphere.
+  -->
+  <target name="install" depends="setenv">
+   <echo message="Installing ${test.name}App.ear ..." />
+    <InstallApp earName="${test.name}App.ear"
+                appName="${test.name}"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>
+
+  </target>
+  
+</project>
+

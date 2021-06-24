@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://server.webresult.annotations/" name="WebResultTestImplService" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://server.webresult.annotations/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://server.webresult.annotations/" schemaLocation="WebResultTestImplService_schema1.xsd"/>
+    </xsd:schema>
+    <xsd:schema>
+      <xsd:import namespace="echo222ns" schemaLocation="WebResultTestImplService_schema2.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="echo111">
+    <part name="parameters" element="tns:echo111"/>
+  </message>
+  <message name="echo111Response">
+    <part name="parameters" element="tns:echo111Response"/>
+  </message>
+  <message name="echo222">
+    <part name="parameters" element="tns:echo222"/>
+  </message>
+  <message name="echo222Response">
+    <part name="parameters" element="tns:echo222Response"/>
+  </message>
+  <message name="echo444">
+    <part name="echo444" element="tns:echo444"/>
+  </message>
+  <message name="echo444Response">
+    <part name="echo444result" element="tns:echo444InvocationResult"/>
+  </message>
+  <portType name="WebResultTestImpl">
+    <operation name="echo111">
+      <input message="tns:echo111"/>
+      <output message="tns:echo111Response"/>
+    </operation>
+    <operation name="echo222">
+      <input message="tns:echo222"/>
+      <output message="tns:echo222Response"/>
+    </operation>
+    <operation name="echo444">
+      <input message="tns:echo444"/>
+      <output message="tns:echo444Response"/>
+    </operation>
+  </portType>
+  <binding name="WebResultTestImplPortBinding" type="tns:WebResultTestImpl">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="echo111">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="echo222">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="echo444">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="WebResultTestImplService">
+    <port name="WebResultTestImplPort" binding="tns:WebResultTestImplPortBinding">
+      <soap:address location="REPLACE_WITH_ACTUAL_URL"/>
+    </port>
+  </service>
+</definitions>
+

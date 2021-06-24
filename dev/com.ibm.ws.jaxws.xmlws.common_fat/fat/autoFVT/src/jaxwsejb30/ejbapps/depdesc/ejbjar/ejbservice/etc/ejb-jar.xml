@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    
+    autoFVT/src/jaxwsejb30/ejbapps/depdesc/ejbjar/ejbservice/etc/ejb-jar.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01
+    
+    Change History:
+    Date       UserId              Feature/Defect          Description
+    ****************************************************************************
+    01/25/2008 samerrel            LIDB4511.45             New File
+    
+-->
+
+<ejb-jar id="ejb-jar_ID" metadata-complete="false" version="3.0"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd">
+
+    <enterprise-beans>
+        <session id="ResSession1">
+            <ejb-name>HelloRefSupplier</ejb-name>
+            <session-type>Stateless</session-type>
+        </session>
+    </enterprise-beans>
+</ejb-jar>

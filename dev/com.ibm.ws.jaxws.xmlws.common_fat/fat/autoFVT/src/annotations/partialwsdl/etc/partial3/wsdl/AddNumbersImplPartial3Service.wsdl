@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="AddNumbersImplPartial3Service" 
+	targetNamespace="http://serverpartial3.partialwsdl.annotations/" 
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:tns="http://serverpartial3.partialwsdl.annotations/" 
+	xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://serverpartial3.partialwsdl.annotations/" schemaLocation="AddNumbersImplPartial3Service_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+</definitions>

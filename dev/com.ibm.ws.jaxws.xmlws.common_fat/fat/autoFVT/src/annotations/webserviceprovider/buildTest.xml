@@ -1,0 +1,558 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+        <!ENTITY instance SYSTEM "../../../instance.xml"><!-- file:34 -->
+        <!ENTITY properties SYSTEM "../../xmls/properties.xml"><!-- file:36 -->
+        <!ENTITY paths SYSTEM "../../xmls/path_refs.xml"><!-- file:31 -->
+        <!ENTITY targets SYSTEM "../../xmls/targets.xml"><!-- file:33 -->
+        <!ENTITY taskdefs SYSTEM "../../xmls/taskdefs.xml"><!-- file:34 -->
+        <!ENTITY taskdefs_post_compile SYSTEM "../../xmls/taskdefs_post_compile.xml"><!-- file:47 -->
+]>
+
+<!-- 1.4, 8/3/07
+
+     Description: Build file for the WAS annotation tests.
+
+
+     Date        Author       Feature/Defect          Description
+     08/29/2006  btiffany     LIDB3296-31.01          New File
+     09/11/2008  whsu         550219                  64bit flag 
+
+
+     To run this standalone, set WAS_HOME, ANT_HOME, JUNIT_HOME, FVT_TOP
+     and run unittest.bat long enough so that it creates instance.xml
+-->
+<project name="build" default="buildall" basedir=".">
+
+
+  <!-- These are XML entity refs.  Basically these statements cause the
+       files declared in the DOCTYPE at the top of the file to be imported
+       into this build file.
+  -->
+  &instance;
+  &properties;
+  &paths;
+  &targets;
+  &taskdefs;
+  &taskdefs_post_compile;
+
+
+  <!-- This property should match the package name of the test class.  The
+       property is used in the targets.xml file when running any of the
+       component-run* targets for running a single test case class.
+  -->
+  <property name="componentName" value="annotations/webserviceprovider"/>
+
+  <!-- a variable to let us largely reuse this file without so many changes.
+       set it to the name of the subdir under annotations
+  -->
+  <property name="anno_subset"  value="webserviceprovider" />
+
+  <property name="workdir"  value="${FVT.build.work.dir}/annotations/${anno_subset}" />
+
+
+  <!-- This path id is used in the targets.xml file when running any of
+       the component-run* targets.  This allows setting the classpath
+       for an individual test.
+  -->
+  <path id="componentClasspath">
+    <path refid="thinclientclasspath"/>
+  </path>
+
+  <!-- need junit.jar explicitly in the path for setup to run -->
+  <path id="setupClasspath">
+    <pathelement location="${FVT.base.dir}/common/jars/junit.jar"/>
+    <path refid="classpath"/>
+  </path>
+
+
+    <!-- only compile the support classes if not already done -->
+    <uptodate property="supportBuild.notRequired" targetfile="${FVT.base.dir}/build/classes/annotations/support/Support.class" >
+        <srcfiles dir= "${FVT.base.dir}/src/annotations/support" includes="**/*.java"/>
+    </uptodate>
+
+
+  <!-- The buildall target will execute all of the targets necessary
+       before installing the test into WebSphere.
+       Note that junit doesn't get invoked here, that happens later
+       in src/build.xml.
+  -->
+  <target name="buildall" depends="setenv, clean, init, compileSupport, additionalCompile, servers, dispatchclient, proxyclient, test"/>
+  <target name="servers" depends="setenv, server1, server2, server3, server4, server5, server6" />
+
+  <!-- the setenv target is in src/xmls/targets.xml and sets up a the environment -->
+
+
+  <!-- The init target will initialize any directories, properties, etc.
+       that are needed for the test.
+  -->
+  <target name="init" depends="setenv">
+        <!-- component-init comes from targets.xml and makes the main directories
+            used by all tests.
+        -->
+    <antcall target="component-init"/>
+    <mkdir dir="${FVT.build.work.dir}/annotations/${anno_subset}"/>
+  </target>
+
+
+  <!-- The clean target will clean any files, classes, or directories
+       so that a new copy of the test can be built and run.
+  -->
+  <target name="clean" depends="setenv">
+    <delete dir="${FVT.build.classes.dir}/annotations/${anno_subset}"/>
+    <delete dir="${FVT.build.classes.dir}/fq"/>
+    <delete dir="${workdir}"/>
+    <delete file="${FVT.build.lib.dir}/*${anno_subset}*war"/>
+    <delete file="${FVT.build.installableApps.dir}/${anno_subset}*.ear"/>
+  </target>
+
+
+  <!-- The server target will build anything necessary for the server
+       piece of the test.  Typically this target builds the server side
+       EAR.
+
+  -->
+  <target name="server1" depends="setenv">
+
+
+      <javac compiler="modern"
+              srcdir="${FVT.base.dir}/src/annotations/webserviceprovider/server"
+              destdir="${workdir}"
+              deprecation="${deprecation}"
+              debug="${debug}"
+       	      source="${build.tests.with.java.level}"
+       	      target="${build.tests.with.java.level}"
+              failonerror="${failonerror}">
+              <classpath refid="classpath" />
+      </javac>
+
+      <!--
+      <war warfile="${FVT.build.lib.dir}/testprov-sun.war"
+           webxml="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/web-sun.xml">
+        <webinf dir="${FVT.base.dir}/src/annotations/webserviceprovider/etc">
+          <include name="wsdl/ProvService.wsdl"/>
+        </webinf>
+
+        <classes dir="${FVT.build.classes.dir}">
+          <include name="annotations/webserviceprovider/server/**/*c.class"/>
+        </classes>
+        <classes dir="${FVT.base.dir}/src">
+          <include name="annotations/webserviceprovider/server/**/*c.java"/>
+        </classes>
+      </war>
+      -->
+
+
+      <war warfile="${FVT.build.lib.dir}/testprov.war"
+           webxml="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/web.xml">
+        <!--
+        <webinf dir="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd">
+          <exclude name="web*.xml"/>
+          <include name="*.xml"/>
+        </webinf>
+        -->
+        <webinf dir="${FVT.base.dir}/src/annotations/webserviceprovider/etc">
+          <include name="wsdl/ProvService.wsdl"/>
+        </webinf>
+
+        <classes dir="${workdir}">
+          <include name="annotations/webserviceprovider/server/**/*c.class"/>
+        </classes>
+        <classes dir="${FVT.base.dir}/src">
+          <include name="annotations/webserviceprovider/server/**/*c.java"/>
+        </classes>
+      </war>
+
+      <ear earfile="${FVT.build.installableApps.dir}/testprov.ear"
+           appxml="${FVT.base.dir}/src/${componentName}/etc/dd/application_testprov.xml">
+        <fileset dir="${FVT.build.lib.dir}" includes="testprov.war"/>
+      </ear>
+
+   </target>
+
+   <target name="server2" depends="setenv">
+
+      <!-- now the illegal one w @WebService anno -->
+      <!--
+
+      <copy file="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/sun-jaxwsillegal.xml" tofile="${workdir}/sun-jaxws.xml" />
+      <war warfile="${FVT.build.lib.dir}/testprovillegal-sun.war"
+           webxml="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/webillegal-sun.xml">
+        <webinf dir="${workdir}">
+          <include name="*.xml"/>
+        </webinf>
+        <webinf dir="${FVT.base.dir}/src/annotations/webserviceprovider/etc">
+          <include name="wsdl/ProvService.wsdl"/>
+        </webinf>
+
+        <classes dir="${FVT.build.classes.dir}">
+          <include name="annotations/webserviceprovider/server/**/*l.class"/>
+        </classes>
+        <classes dir="${FVT.base.dir}/src">
+          <include name="annotations/webserviceprovider/server/**/*l.java"/>
+        </classes>
+      </war>
+      -->
+
+      <!-- now the illegal one w @WebService anno -->
+      <war warfile="${FVT.build.lib.dir}/testprovillegal.war"
+           webxml="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/web.xml">
+        <webinf dir="${FVT.base.dir}/src/annotations/webserviceprovider/etc">
+          <include name="wsdl/ProvService.wsdl"/>
+        </webinf>
+
+        <classes dir="${workdir}">
+          <include name="annotations/webserviceprovider/server/**/*l.class"/>
+        </classes>
+        <classes dir="${FVT.base.dir}/src">
+          <include name="annotations/webserviceprovider/server/**/*l.java"/>
+        </classes>
+      </war>
+
+
+      <ear earfile="${FVT.build.installableApps.dir}/testprovillegal.ear"
+           appxml="${FVT.base.dir}/src/${componentName}/etc/dd/application_testprovillegal.xml">
+        <fileset dir="${FVT.build.lib.dir}" includes="testprovillegal.war"/>
+      </ear>
+
+   </target>  <!-- end server2 -->
+
+   <target name="server3" depends="setenv" >
+
+      <!-- now the one with all annotation parameters set -->
+
+
+      <!--
+      <copy file="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/sun-jaxwsfq.xml" tofile="${workdir}/sun-jaxws.xml" />
+      <war warfile="${FVT.build.lib.dir}/testprovfq-sun.war"
+           webxml="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/webfq-sun.xml">
+        <webinf dir="${workdir}">
+          <include name="*.xml"/>
+        </webinf>
+        <webinf dir="${FVT.base.dir}/src/annotations/webserviceprovider/etc">
+          <include name="wsdl/ProvFqService.wsdl"/>
+        </webinf>
+
+        <classes dir="${workdir}">
+          <include name="annotations/webserviceprovider/server/**/*q.class"/>
+        </classes>
+        <classes dir="${FVT.base.dir}/src">
+          <include name="annotations/webserviceprovider/server/**/*q.java"/>
+        </classes>
+
+      </war>
+      -->
+
+
+      <war warfile="${FVT.build.lib.dir}/testprovfq.war"
+           webxml="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/web.xml">
+        <webinf dir="${workdir}">
+          <include name="*.xml"/>
+        </webinf>
+        <webinf dir="${FVT.base.dir}/src/annotations/webserviceprovider/etc">
+          <include name="wsdl/ProvFqService.wsdl"/>
+        </webinf>
+
+        <classes dir="${workdir}">
+          <include name="annotations/webserviceprovider/server/**/*q.class"/>
+          <include name="annotations/webserviceprovider/server/**/*s.class"/>
+        </classes>
+        <classes dir="${FVT.base.dir}/src">
+          <include name="annotations/webserviceprovider/server/**/*q.java"/>
+          <include name="annotations/webserviceprovider/server/**/*s.java"/>
+        </classes>
+      </war>
+
+      <ear earfile="${FVT.build.installableApps.dir}/testprovfq.ear"
+           appxml="${FVT.base.dir}/src/${componentName}/etc/dd/application_testprovfq.xml">
+        <fileset dir="${FVT.build.lib.dir}" includes="testprovfq.war"/>
+      </ear>
+
+
+   </target> <!-- end server3 -->
+
+   <target name="server4" depends="setenv" >
+
+
+      <!-- change the op name in the wsdl, should not be able to invoke -->
+      <mkdir dir="${workdir}/wsdl"/>
+      <copy file="${FVT.base.dir}/src/annotations/webserviceprovider/etc/wsdl/ProvFqService_opmismatch.wsdl"
+           tofile="${workdir}/wsdl/ProvFqService.wsdl" overwrite="true" />
+
+      <!--
+      <copy file="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/sun-jaxwsfq_opmismatch.xml"
+           tofile="${workdir}/sun-jaxws.xml" overwrite="true" />
+      <war warfile="${FVT.build.lib.dir}/testprovfq_opmismatch-sun.war"
+           webxml="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/webfq-sun.xml">
+        <webinf dir="${workdir}">
+          <include name="*.xml"/>
+        </webinf>
+        <webinf dir="${workdir}">
+          <include name="wsdl/ProvFqService.wsdl"/>
+        </webinf>
+
+        <classes dir="${FVT.build.classes.dir}">
+          <include name="annotations/webserviceprovider/server/**/*q.class"/>
+        </classes>
+        <classes dir="${FVT.base.dir}/src">
+          <include name="annotations/webserviceprovider/server/**/*q.java"/>
+        </classes>
+      </war>
+      -->
+
+
+      <war warfile="${FVT.build.lib.dir}/testprovfq_opmismatch.war"
+           webxml="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/web.xml">
+        <webinf dir="${workdir}">
+          <include name="*.xml"/>
+        </webinf>
+        <webinf dir="${workdir}">
+          <include name="wsdl/ProvFqService.wsdl"/>
+        </webinf>
+
+        <classes dir="${workdir}">
+          <include name="annotations/webserviceprovider/server/**/*q.class"/>
+          <include name="annotations/webserviceprovider/server/**/*s.class"/>
+        </classes>
+        <classes dir="${FVT.base.dir}/src">
+          <include name="annotations/webserviceprovider/server/**/*q.java"/>
+          <include name="annotations/webserviceprovider/server/**/*s.java"/>
+        </classes>
+      </war>
+
+      <ear earfile="${FVT.build.installableApps.dir}/testprovfq_opmismatch.ear"
+           appxml="${FVT.base.dir}/src/${componentName}/etc/dd/application_opmismatch.xml">
+        <fileset dir="${FVT.build.lib.dir}" includes="testprovfq_opmismatch.war"/>
+      </ear>
+
+   </target> <!-- end server 4 -->
+
+
+   <target name="server5" depends="setenv" >
+      <!-- change the service name in the wsdl, should not be able to invoke -->
+      <mkdir dir="${workdir}/wsdl"/>
+      <copy file="${FVT.base.dir}/src/annotations/webserviceprovider/etc/wsdl/ProvFqService_serviceNameMismatch.wsdl"
+           tofile="${workdir}/wsdl/ProvFqService.wsdl" overwrite="true" />
+
+      <!--
+      <copy file="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/sun-jaxwsfq_serviceNameMismatch.xml"
+           tofile="${workdir}/sun-jaxws.xml" overwrite="true" />
+      <war warfile="${FVT.build.lib.dir}/testprovfq_snmismatch-sun.war"
+           webxml="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/webfq-sun.xml">
+        <webinf dir="${workdir}">
+          <include name="*.xml"/>
+        </webinf>
+        <webinf dir="${workdir}">
+          <include name="wsdl/ProvFqService.wsdl"/>
+        </webinf>
+
+        <classes dir="${workdir}">
+          <include name="annotations/webserviceprovider/server/**/*q.class"/>
+        </classes>
+        <classes dir="${FVT.base.dir}/src">
+          <include name="annotations/webserviceprovider/server/**/*q.java"/>
+        </classes>
+      </war>
+      -->
+
+      <war warfile="${FVT.build.lib.dir}/testprovfq_snmismatch.war"
+           webxml="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/web.xml">
+        <webinf dir="${workdir}">
+          <include name="*.xml"/>
+        </webinf>
+        <webinf dir="${workdir}">
+          <include name="wsdl/ProvFqService.wsdl"/>
+        </webinf>
+
+        <classes dir="${workdir}">
+          <include name="annotations/webserviceprovider/server/**/*q.class"/>
+          <include name="annotations/webserviceprovider/server/**/*s.class"/>
+        </classes>
+        <classes dir="${FVT.base.dir}/src">
+          <include name="annotations/webserviceprovider/server/**/*q.java"/>
+          <include name="annotations/webserviceprovider/server/**/*s.java"/>
+        </classes>
+      </war>
+
+      <ear earfile="${FVT.build.installableApps.dir}/testprovfq_serviceNameMismatch.ear"
+           appxml="${FVT.base.dir}/src/${componentName}/etc/dd/application_serviceNameMismatch.xml">
+        <fileset dir="${FVT.build.lib.dir}" includes="testprovfq_snmismatch.war"/>
+      </ear>
+
+   </target> <!-- end server5 -->
+
+   <target name="server6" depends="setenv" >
+
+
+      <!-- change the service name in the wsdl, should not be able to invoke -->
+      <mkdir dir="${workdir}/wsdl"/>
+      <copy file="${FVT.base.dir}/src/annotations/webserviceprovider/etc/wsdl/ProvFqService_portNameMismatch.wsdl"
+           tofile="${workdir}/wsdl/ProvFqService.wsdl" overwrite="true" />
+
+      <!--
+      <copy file="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/sun-jaxwsfq_portNameMismatch.xml"
+           tofile="${workdir}/sun-jaxws.xml" overwrite="true" />
+      <war warfile="${FVT.build.lib.dir}/testprovfq_portNameMismatch-sun.war"
+           webxml="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/webfq-sun.xml">
+        <webinf dir="${workdir}">
+          <include name="*.xml"/>
+        </webinf>
+        <webinf dir="${workdir}">
+          <include name="wsdl/ProvFqService.wsdl"/>
+        </webinf>
+
+        <classes dir="${workdir}">
+          <include name="annotations/webserviceprovider/server/**/*q.class"/>
+        </classes>
+        <classes dir="${FVT.base.dir}/src">
+          <include name="annotations/webserviceprovider/server/**/*q.java"/>
+        </classes>
+      </war>
+      -->
+
+
+      <war warfile="${FVT.build.lib.dir}/testprovfq_portNameMismatch.war"
+           webxml="${FVT.base.dir}/src/annotations/webserviceprovider/etc/dd/web.xml">
+        <webinf dir="${workdir}">
+          <include name="*.xml"/>
+        </webinf>
+        <webinf dir="${workdir}">
+          <include name="wsdl/ProvFqService.wsdl"/>
+        </webinf>
+
+        <classes dir="${workdir}">
+          <include name="annotations/webserviceprovider/server/**/*q.class"/>
+          <include name="annotations/webserviceprovider/server/**/*s.class"/>
+        </classes>
+        <classes dir="${FVT.base.dir}/src">
+          <include name="annotations/webserviceprovider/server/**/*q.java"/>
+          <include name="annotations/webserviceprovider/server/**/*s.java"/>
+        </classes>
+      </war>
+
+      <ear earfile="${FVT.build.installableApps.dir}/testprovfq_portNameMismatch.ear"
+           appxml="${FVT.base.dir}/src/${componentName}/etc/dd/application_portNameMismatch.xml">
+        <fileset dir="${FVT.build.lib.dir}" includes="testprovfq_portNameMismatch.war"/>
+      </ear>
+
+  </target>  <!-- end servers (whew!) -->
+
+
+  <!-- The client target will build anything necessary for the client
+       piece of the test.  This could just be compiling the client class
+       or in the case of a managed client, building a client side EAR
+       file.
+  -->
+  <target name="dispatchclient" depends="setenv">
+     <echo message="gets compiled as side effect of test target" />
+  </target>
+
+  <target name="proxyclient" depends="setenv">
+        <wsimport keep="true" verbose="true"
+                destdir="${FVT.build.classes.dir}"
+                wsdl="${FVT.base.dir}/src/annotations/webserviceprovider/etc/wsdl/ProvFqService.wsdl">
+        </wsimport>
+        <echo message="client impl gets compiled by test target" />
+  </target>
+
+
+  <!-- The test target will build anything necessary for the test
+       piece of the test.  Often this will just include compiling the
+       the JUnit test case file.
+  -->
+
+  <target name="compileSupport" depends="setenv" unless="supportBuild.notRequired" >
+    <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/support"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+    </javac>
+  </target>
+  
+  <target name="additionalCompile">
+    <!-- Move compilation logic into ant scripts for build env ant execution restriction -->
+    <delete dir="${FVT.build.work.dir}/annotations/WebServiceProvider"/>
+    <mkdir dir="${FVT.build.work.dir}/annotations/WebServiceProvider"/>
+    <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/webserviceprovider/etc/testdata"
+           destdir="${FVT.build.work.dir}/annotations/WebServiceProvider"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+	  <include name="Mismatch.java"/>
+    </javac>
+  </target>
+
+  <target name="test" depends="setenv">
+    <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/${anno_subset}"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath>
+          <path refid="classpath"/>
+          <pathelement path="${FVT.build.classes.dir}" />
+      </classpath>
+    </javac>
+
+  </target>
+
+
+
+   <!-- Run all the setUp() methods in the tests.
+        These tests were developed self-contained, and have their own setup methods external
+        to ant.  We have to call them when we run inside ant.
+        They will call annotations/support/antSupport.xml and produce wars, ears, etc.
+   -->
+   <!--
+   <target name="runsetups">
+       <echo message="annotations setUp target running..." />
+       <java classname="annotations.support.RunSetupMethods" fork="true"  dir="${FVT.base.dir}">
+           <classpath refid="setupClasspath"/>
+           <jvmarg line="-DRun_Setup=true ${hp64StafFlag}" />
+           <arg line="${FVT.build.classes.dir}/annotations/${anno_subset}" />
+       </java>
+
+   </target>
+   -->
+
+
+  <!-- The preinstall target will perform any tasks necessary before the
+       application is installed into WebSphere.  This could include running
+       ejbdeploy or endptenabler for an EAR that contains an EJB.
+  -->
+  <target name="preinstall" depends="setenv">
+  </target>
+
+
+  <!-- The install target will install the server side piece of the test
+       into WebSphere.  This target calls the installTest.xml file for
+       the test.
+  -->
+  <target name="install" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/annotations/${anno_subset}/installTest.xml"
+         dir="${FVT.base.dir}/src/annotations/${anno_subset}">
+      <property name="install.mode" value="${rt.install.mode}"/>
+    </ant>
+  </target>
+
+
+  <!-- The uninstall target will uninstall the server side piece of the test
+       from WebSphere.  This target calls the uninstallTest.xml file for
+       the test.
+  -->
+  <target name="uninstall" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/annotations/${anno_subset}/uninstallTest.xml"
+         dir="${FVT.base.dir}/src/annotations/${anno_subset}">
+      <property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+    </ant>
+  </target>
+
+</project>

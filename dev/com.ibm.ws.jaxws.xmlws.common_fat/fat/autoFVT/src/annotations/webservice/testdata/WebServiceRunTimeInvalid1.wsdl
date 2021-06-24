@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="wsfvt.anno" name="valid1" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="wsfvt.anno" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="wsfvt.anno" schemaLocation="Valid1_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="echo">
+    <part name="parameters" element="tns:echo"/>
+  </message>
+  <message name="echoResponse">
+    <part name="parameters" element="tns:echoResponse"/>
+  </message>
+  <portType name="MyService2">
+    <operation name="echo">
+      <input message="tns:echo"/>
+      <output message="tns:echoResponse"/>
+    </operation>
+  </portType>
+  <binding name="MyService2PortBinding" type="tns:MyService2">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="echo">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="valid1">
+    <port name="MyService2Port" binding="tns:MyService2PortBinding">
+      <soap:address location="tbd"/>
+    </port>
+  </service>
+</definitions>
+

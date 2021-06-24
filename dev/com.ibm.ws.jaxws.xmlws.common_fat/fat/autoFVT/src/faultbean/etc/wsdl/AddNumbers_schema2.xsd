@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" targetNamespace="http://server.wsfvt.faultbean" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ns1="http://server.wsfvt.faultbean/">
+
+  <xs:import namespace="http://server.wsfvt.faultbean/" schemaLocation="AddNumbers_schema1.xsd"/>
+
+  <xs:element name="AnnoException" type="ns1:AnnoException"/>
+
+</xs:schema>
+

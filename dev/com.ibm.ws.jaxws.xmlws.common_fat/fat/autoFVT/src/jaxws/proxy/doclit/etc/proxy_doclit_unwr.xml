@@ -1,0 +1,10 @@
+<bindings 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    wsdlLocation="proxy_doclit_unwr.wsdl"
+    xmlns="http://java.sun.com/xml/ns/jaxws">    
+    <bindings node="wsdl:definitions">
+        <package name="jaxws.proxy.doclit.wsfvt.doclitunwrapped"/>    
+        <enableWrapperStyle>false</enableWrapperStyle>
+    </bindings>    
+</bindings>

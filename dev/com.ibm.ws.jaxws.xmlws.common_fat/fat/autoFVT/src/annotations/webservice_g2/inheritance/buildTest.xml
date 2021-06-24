@@ -1,0 +1,338 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+        <!ENTITY instance SYSTEM "../../../../instance.xml"><!-- file:34 -->
+        <!ENTITY properties SYSTEM "../../../xmls/properties.xml"><!-- file:36 -->
+        <!ENTITY paths SYSTEM "../../../xmls/path_refs.xml"><!-- file:31 -->
+        <!ENTITY targets SYSTEM "../../../xmls/targets.xml"><!-- file:33 -->
+        <!ENTITY taskdefs SYSTEM "../../../xmls/taskdefs.xml"><!-- file:34 -->
+        <!ENTITY taskdefs_post_compile SYSTEM "../../../xmls/taskdefs_post_compile.xml"><!-- file:47 -->
+]>
+
+<!-- 1.1.1.7, 8/3/07
+
+     Description: Build file for webservice annotation test
+
+     Date           Author              Feature/Defect
+     07/19/06       Bruce Tiffany       lidb3296.31.01
+     02/09/07        "                  419306           split into two ears
+-->
+<project name="build" default="buildall" basedir=".">
+
+
+  <!-- These are XML entity refs.  Basically these statements cause the
+       files declared in the DOCTYPE at the top of the file to be imported
+       into this build file.
+  -->
+  &instance;
+  &properties;
+  &paths;
+  &targets;
+  &taskdefs;
+  &taskdefs_post_compile;
+
+
+  <property name="componentPath" value="annotations/webservice_g2/inheritance" />
+
+  <!-- This property should match the package name of the test class.  The
+       property is used in the targets.xml file when running any of the
+       component-run* targets for running a single test case class.
+  -->
+  <property name="componentName" value="${componentPath}/test"/>
+
+  <property name="workdir" value="${FVT.build.work.dir}/webservice_g2_inheritance" />
+  <property name="srcdir" value="${FVT.base.dir}/src/${componentPath}" />
+  <property name="warfile" value="annotationsWebserviceInheritance.war" />
+  <property name="earfile" value="AnnotationsWebServiceInheritance.ear" />
+
+
+  <!-- This path id is used in the targets.xml file when running any of
+       the component-run* targets.  This allows setting the classpath
+       for an individual test.
+  -->
+  <path id="componentClasspath">
+    <path refid="thinclientclasspath"/>
+  </path>
+
+
+  <!-- only compile the support classes if not already done -->
+  <uptodate property="supportBuild.notRequired" targetfile="${FVT.base.dir}/build/classes/annotations/support/Support.class" >
+      <srcfiles dir= "${FVT.base.dir}/src/annotations/support" includes="**/*.java"/>
+  </uptodate>
+
+  <!-- The buildall target will execute all of the targets necessary
+       before installing the test into WebSphere.
+  -->
+  <target name="buildall" depends="setenv, clean, init, compileSupport, server, server2, client, tooling, test, preinstall"/>
+
+  <!-- The init target will initialize any directories, properties, etc.
+       that are needed for the test.
+  -->
+  <target name="init" depends="setenv">
+    <antcall target="component-init"/>
+    <mkdir dir="${workdir}"/>
+  </target>
+
+
+  <!-- The clean target will clean any files, classes, or directories
+       so that a new copy of the test can be built and run.
+  -->
+  <target name="clean" depends="setenv">
+    <delete dir="${FVT.build.classes.dir}/${componentPath}"/>
+    <delete dir="${workdir}"/>
+    <delete file="${FVT.build.lib.dir}/${warfile}"/>
+    <delete file="${FVT.build.installableApps.dir}/${earfile}"/>
+  </target>
+
+
+
+
+  <!-- The server target will build anything necessary for the server
+       piece of the test.  Typically this target builds the server side
+       EAR.
+
+       If we needed to replace parameters in the java, we would copy to build/work/... then compile.
+
+       THIS SHOULD EXPOSE BOTH THE IMPL AND IF -BASED SERVCIES
+  -->
+  <target name="server" depends="setenv" >
+     <javac compiler="modern" srcdir="${FVT.base.dir}/src/${componentPath}"
+            destdir="${workdir}"
+            deprecation="${deprecation}"
+            debug="${debug}"
+            source="${build.tests.with.java.level}"
+            target="${build.tests.with.java.level}"
+            failonerror="${failonerror}">
+       <classpath refid="classpath"/>                <!-- debug: excluding sei service for now -->
+       <include name="**/server/BottomImpl.java"/>
+       <include name="**/server/*Impl1.java"/>
+       <include name="**/server/*Impl2.java"/>
+     </javac>
+
+     <!-- We ned the wsdl to generate the client later -->
+     <echo message="wsgen on BottomImpl" />
+     <wsgen genwsdl="true"
+             keep="true"
+             verbose="true"
+             destdir="${workdir}"
+             resourcedestdir="${workdir}"
+             sei="annotations.webservice_g2.inheritance.server.BottomImpl"
+             >
+             <classpath path="${workdir}"/>
+             <classpath refid="classpath" />
+     </wsgen>
+
+     <!-- debug - excluding for now - we actually weren't using these since both impls had same beans.
+     <echo message=" " />
+     <echo message=" " />
+     <echo message=" " />
+     <echo message="wsgen on BottomImplWithSei" />
+     <mkdir dir="${workdir}/case2" />
+     <wsgen genwsdl="true"
+             keep="true"
+             verbose="true"
+             destdir="${workdir}/case2"
+             resourcedestdir="${workdir}/case2"
+             sei="annotations.webservice_g2.inheritance.server.BottomImplWithSei"
+             >
+             <classpath refid="classpath" />
+             <classpath path="${workdir}"/>
+     </wsgen>
+    ********************************************************************************************** -->
+
+    <war warfile="${FVT.build.lib.dir}/${warfile}"
+         webxml="${FVT.base.dir}/src/annotations/webservice_g2/inheritance/dd/web.xml">
+      <!-- toss in the source too -->
+      <classes dir="${srcdir}/server">
+        <include name="*java" />
+      </classes>
+
+        <!-- pick up generated jaxws classes, skipping the client and tooling -->
+       <classes dir="${workdir}">
+          <include name="**/*.class"/>
+          <include name="**/*.java"/>
+          <exclude name="tooling/**"/>
+          <exclude name="case2/**"/>
+          <exclude name="client/**"/>
+       </classes>
+    </war>
+
+    <ear earfile="${FVT.build.installableApps.dir}/${earfile}"
+         appxml="${FVT.base.dir}/src/${componentPath}/dd/application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="${warfile}"/>
+    </ear>
+  </target>
+
+  <target name="server2" depends="setenv" >  <!-- the SEI inheritance test -->
+     <javac compiler="modern" srcdir="${FVT.base.dir}/src/${componentPath}"
+            destdir="${workdir}"
+            deprecation="${deprecation}"
+            debug="${debug}"
+     	    source="${build.tests.with.java.level}"
+     	    target="${build.tests.with.java.level}"
+            failonerror="${failonerror}">
+       <classpath refid="classpath"/>
+       <include name="**/server/B*Sei*.java"/>
+       <include name="**/server/*If*.java"/>
+     </javac>
+
+    <delete file="${FVT.build.lib.dir}/AnnotationsWebServiceInheritance2.war" />
+    <war warfile="${FVT.build.lib.dir}/AnnotationsWebServiceInheritance2.war"
+         webxml="${FVT.base.dir}/src/annotations/webservice_g2/inheritance/dd/web2.xml">
+      <!-- toss in the source too -->
+      <classes dir="${srcdir}/server">
+        <include name="*java" />
+      </classes>
+
+        <!-- pick up generated jaxws classes, skipping the client and tooling -->
+       <classes dir="${workdir}">
+          <include name="**/*.class"/>
+          <include name="**/*.java"/>
+          <exclude name="tooling/**"/>
+          <exclude name="case2/**"/>
+          <exclude name="client/**"/>
+          <exclude name="**/BottomImpl.class"/>
+          <exclude name="**/Impl1.class*"/>
+          <exclude name="**/Impl2.class*"/>
+       </classes>
+    </war>
+
+    <delete file="${FVT.build.installableApps.dir}/AnnotationsWebServiceInheritance2.ear" />
+    <ear earfile="${FVT.build.installableApps.dir}/AnnotationsWebServiceInheritance2.ear"
+         appxml="${FVT.base.dir}/src/${componentPath}/dd/application2.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="AnnotationsWebServiceInheritance2.war"/>
+    </ear>
+  </target>
+
+
+  <target name="client" depends="setenv" >
+
+     <echo message="wsimport...." />
+     <wsimport
+             keep="true"
+             verbose="true"
+             sourcedestdir="${FVT.build.classes.dir}"
+             destdir="${FVT.build.classes.dir}"
+             wsdl="${workdir}/BottomImplService.wsdl">
+     </wsimport>
+
+
+     <javac compiler="modern" srcdir="${FVT.base.dir}/src/${componentPath}/client"
+            destdir="${FVT.build.classes.dir}"
+            deprecation="${deprecation}"
+            debug="${debug}"
+            source="${build.tests.with.java.level}"
+            target="${build.tests.with.java.level}"
+            failonerror="${failonerror}">
+       <classpath path="${FVT.build.classes.dir}"/>
+       <classpath refid="thinclientclasspath"/>
+       <include name="*lient.java"/>
+     </javac>
+
+  </target>
+
+  <!-- build some files we'll use to examine tooling behavior -->
+  <target name="tooling" depends="setenv">
+     <javac compiler="modern" srcdir="${FVT.base.dir}/src/${componentPath}"
+            destdir="${FVT.build.classes.dir}"
+            deprecation="${deprecation}"
+            debug="${debug}"
+  	        source="${build.tests.with.java.level}"
+  	        target="${build.tests.with.java.level}"
+            failonerror="${failonerror}">
+       <classpath refid="classpath"/>
+       <include name="**/tooling/*.java"/>
+     </javac>
+
+     <mkdir dir="${workdir}/tooling" />
+     <wsgen genwsdl="true"
+             keep="true"
+             verbose="true"
+             destdir="${workdir}/tooling"
+             resourcedestdir="${workdir}/tooling"
+             sei="annotations.webservice_g2.inheritance.tooling.InheritImpl"
+             >
+             <classpath refid="classpath" />
+             <classpath path="${FVT.build.classes.dir}"/>
+     </wsgen>
+
+     <!-- due to wsgen bug (we think), this one fails, so we run it in the testcase
+     <echo message="starting wsgen on impl class with sei" />
+     <wsgen genwsdl="true"
+             keep="true"
+             verbose="true"
+             destdir="${FVT.build.work.dir}/${componentPath}"
+             resourcedestdir="${FVT.build.work.dir}/${componentPath}"
+             sei="annotations.webservice_g2.inheritance.server.InheritSeiImpl"
+             >
+             <classpath refid="classpath" />
+             <classpath path="${FVT.build.classes.dir}"/>
+     </wsgen>
+     -->
+
+  </target>
+
+
+  <target name="compileSupport" depends="setenv" unless="supportBuild.notRequired" >
+    <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/support"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+    </javac>
+  </target>
+
+  <!-- The test target will build anything necessary for the test
+       piece of the test.  Often this will just include compiling the
+       the JUnit test case file.
+  -->
+  <target name="test" depends="setenv, client, compileSupport">
+
+    <javac compiler="modern" srcdir="${FVT.base.dir}/src/${componentPath}"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+       	   source="${build.tests.with.java.level}"
+       	   target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+      <include name="**/test/*.java"/>
+    </javac>
+
+  </target>
+
+
+  <!-- The preinstall target will perform any tasks necessary before the
+       application is installed into WebSphere.  This could include running
+       ejbdeploy or endptenabler for an EAR that contains an EJB.
+  -->
+  <target name="preinstall" depends="setenv">
+  </target>
+
+
+  <!-- The install target will install the server side piece of the test
+       into WebSphere.  This target calls the installTest.xml file for
+       the test.
+  -->
+  <target name="install" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/annotations/webservice_g2/inheritance/installTest.xml"
+         dir="${FVT.base.dir}/src/annotations/webservice_g2/inheritance">
+      <property name="install.mode" value="${rt.install.mode}"/>
+    </ant>
+  </target>
+
+
+  <!-- The uninstall target will uninstall the server side piece of the test
+       from WebSphere.  This target calls the uninstallTest.xml file for
+       the test.
+  -->
+  <target name="uninstall" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/annotations/webservice_g2/inheritance/uninstallTest.xml"
+         dir="${FVT.base.dir}/src/annotations/webservice_g2/inheritance">
+      <property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+    </ant>
+  </target>
+
+</project>

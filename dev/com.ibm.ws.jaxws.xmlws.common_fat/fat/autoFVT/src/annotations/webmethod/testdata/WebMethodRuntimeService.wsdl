@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://testdata.webmethod.annotations/" name="WebMethodRuntimeService" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://testdata.webmethod.annotations/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <!-- imported these types from the .xsd -->
+    <xs:schema version="1.0" targetNamespace="http://testdata.webmethod.annotations/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+        <xs:element name="renamedAnno" type="ns1:renamedAnno" xmlns:ns1="http://testdata.webmethod.annotations/"/>
+
+        <xs:complexType name="renamedAnno">
+          <xs:sequence>
+            <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+
+        <xs:element name="renamedAnnoResponse" type="ns2:renamedAnnoResponse" xmlns:ns2="http://testdata.webmethod.annotations/"/>
+
+        <xs:complexType name="renamedAnnoResponse">
+          <xs:sequence>
+            <xs:element name="return" type="xs:string" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+
+        <xs:element name="Exception" type="ns3:Exception" xmlns:ns3="http://testdata.webmethod.annotations/"/>
+
+        <xs:complexType name="Exception">
+          <xs:sequence>
+            <xs:element name="message" type="xs:string" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+
+        <xs:element name="defaultAnno" type="ns4:defaultAnno" xmlns:ns4="http://testdata.webmethod.annotations/"/>
+
+        <xs:complexType name="defaultAnno">
+          <xs:sequence>
+            <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+
+        <xs:element name="defaultAnnoResponse" type="ns5:defaultAnnoResponse" xmlns:ns5="http://testdata.webmethod.annotations/"/>
+
+        <xs:complexType name="defaultAnnoResponse">
+          <xs:sequence>
+            <xs:element name="return" type="xs:string" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+    </xs:schema>
+  </types>
+  <message name="defaultAnno">
+    <part name="parameters" element="tns:defaultAnno"/>
+  </message>
+  <message name="defaultAnnoResponse">
+    <part name="parameters" element="tns:defaultAnnoResponse"/>
+  </message>
+  <message name="Exception">
+    <part name="fault" element="tns:Exception"/>
+  </message>
+  <message name="renamedAnno">
+    <part name="parameters" element="tns:renamedAnno"/>
+  </message>
+  <message name="renamedAnnoResponse">
+    <part name="parameters" element="tns:renamedAnnoResponse"/>
+  </message>
+  <portType name="WebMethodRuntime">
+    <operation name="defaultAnno">
+      <input message="tns:defaultAnno"/>
+      <output message="tns:defaultAnnoResponse"/>
+      <fault name="Exception" message="tns:Exception"/>
+    </operation>
+    <operation name="renamedAnno">
+      <input message="tns:renamedAnno"/>
+      <output message="tns:renamedAnnoResponse"/>
+      <fault name="Exception" message="tns:Exception"/>
+    </operation>
+  </portType>
+  <binding name="WebMethodRuntimePortBinding" type="tns:WebMethodRuntime">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="defaultAnno">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="Exception">
+        <soap:fault name="Exception" use="literal"/>
+      </fault>
+    </operation>
+    <operation name="renamedAnno">
+      <soap:operation soapAction="idunno"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="Exception">
+        <soap:fault name="Exception" use="literal"/>
+      </fault>
+    </operation>
+  </binding>
+  <service name="WebMethodRuntimeService">
+    <port name="WebMethodRuntimePort" binding="tns:WebMethodRuntimePortBinding">
+      <soap:address location="REPLACE_WITH_ACTUAL_URL"/>
+    </port>
+  </service>
+</definitions>
+

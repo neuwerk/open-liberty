@@ -1,0 +1,18 @@
+<application id="Application_ID" version="5"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd">
+    <display-name>annoOffDDOn</display-name>
+    <module id="DDModule_3">
+        <ejb>annoOnNoDD.jar</ejb>
+    </module>
+    <!-- in ejb land, the url is set up by endpoint enabler:
+       http://host[:port]/<context-root>/(services_if_jax_rpc)/<port-component-name>
+       Which for the annoOffDDOn app works out to:
+       http://localhost:9080/annoOffDDOn/EchoService.
+       
+       Apparently there's some sort of default rule for the context root, like
+       the name of the jar file or something. 
+    -->   
+    
+</application>

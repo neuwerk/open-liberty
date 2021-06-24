@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:tns="http://rpclit.common.wsfvt.provider.jaxws"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="provider"
+	targetNamespace="http://rpclit.common.wsfvt.provider.jaxws">
+	<wsdl:types>
+		<xsd:schema
+			targetNamespace="http://rpclit.common.wsfvt.provider.jaxws"
+			xmlns:tns="http://rpclit.common.wsfvt.provider.jaxws"
+			xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+			
+			<xsd:complexType name="TheInteger">
+				<xsd:sequence>
+					<xsd:element name="value" type="xsd:integer" />
+				</xsd:sequence>
+			</xsd:complexType>
+
+			<xsd:complexType name="TheString">
+				<xsd:sequence>
+					<xsd:element name="value" type="xsd:string" />
+				</xsd:sequence>
+			</xsd:complexType>
+			
+			<!-- an element used for invoking with a non-operation -->
+			<xsd:element name="addFloats">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="num1" type="xsd:float" />
+						<xsd:element name="num2" type="xsd:float" />					
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:schema>
+	</wsdl:types>
+
+	<wsdl:message name="addNumbersRequest">
+		<wsdl:part name="num1" type="tns:TheInteger" />
+		<wsdl:part name="num2" type="tns:TheInteger" />		
+	</wsdl:message>
+	
+	<wsdl:message name="addNumbersResponse">
+		<wsdl:part name="result" type="tns:TheInteger" />
+	</wsdl:message>
+
+	<wsdl:message name="addStringsRequest">
+		<wsdl:part name="str1" type="tns:TheString" />
+		<wsdl:part name="str2" type="tns:TheString" />		
+	</wsdl:message>
+	
+	<wsdl:message name="addStringsResponse">
+		<wsdl:part name="result" type="tns:TheInteger" />
+	</wsdl:message>
+
+	<!-- the primary port type -->
+	
+	<wsdl:portType name="RpcLitPortType">		<wsdl:operation name="addNumbers">
+			<wsdl:input message="tns:addNumbersRequest" />
+			<wsdl:output message="tns:addNumbersResponse" />
+		</wsdl:operation>
+	</wsdl:portType>
+
+	<wsdl:binding name="RpcLitSOAP11Binding" type="tns:RpcLitPortType">
+		<soap:binding style="rpc"
+			transport="http://schemas.xmlsoap.org/soap/http" />		<wsdl:operation name="addNumbers">
+			<soap:operation
+				soapAction="http://rpclit.common.wsfvt.provider.jaxws/addNumbers" />
+			<wsdl:input>
+				<soap:body use="literal" namespace="http://rpclit.common.wsfvt.provider.jaxws" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" namespace="http://rpclit.common.wsfvt.provider.jaxws" />
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	
+	<wsdl:service name="SOAP11RpcLitService">
+		<wsdl:port binding="tns:RpcLitSOAP11Binding" name="SOAP11RpcLitPort">
+			<soap:address
+				location="http://@HOST@:@PORT@/jaxws.provider/services/SOAP11RpcLitService" />
+		</wsdl:port>
+	</wsdl:service>	
+	
+	<!-- the secondary port type -->	
+	
+	<wsdl:portType name="AnotherPortType">
+		<wsdl:operation name="addStrings">
+			<wsdl:input message="tns:addStringsRequest" />
+			<wsdl:output message="tns:addStringsResponse" />
+		</wsdl:operation>
+	</wsdl:portType>		
+	
+	<wsdl:binding name="AnotherBinding" type="tns:AnotherPortType">
+		<soap:binding style="rpc"
+			transport="http://schemas.xmlsoap.org/soap/http" />
+
+		<wsdl:operation name="addStrings">
+			<soap:operation
+				soapAction="http://rpclit.common.wsfvt.provider.jaxws/addStrings" />
+			<wsdl:input>
+				<soap:body use="literal" namespace="http://rpclit.common.wsfvt.provider.jaxws" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" namespace="http://rpclit.common.wsfvt.provider.jaxws" />
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>	
+	
+	<!-- this service/port is never implemented. It is needed to
+	     test for operation name validation
+	-->
+	<wsdl:service name="AnotherService">
+		<wsdl:port binding="tns:AnotherBinding" name="AnotherRpcLitPort">
+			<soap:address
+				location="http://@HOST@:@PORT@/jaxws.provider/services/AnotherService" />
+		</wsdl:port>
+	</wsdl:service>	
+</wsdl:definitions>

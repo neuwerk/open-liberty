@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<bindings 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://java.sun.com/xml/ns/jaxb" version="2.0">
+
+    <bindings schemaLocation="soap11-env.xsd" 
+              node="/xsd:schema"> 
+        <schemaBindings>
+            <package name="jaxws.soapfaults.wsfvt.soap11"/>
+        </schemaBindings>
+    </bindings>
+
+    <bindings schemaLocation="soap12-env.xsd"
+              node="/xsd:schema"> 
+        <schemaBindings>
+            <package name="jaxws.soapfaults.wsfvt.soap12"/>
+        </schemaBindings>
+    </bindings>
+
+</bindings>
+

@@ -1,0 +1,2 @@
+While this annotation is part of jsr224, it is for a javaee5 platform,
+so it is not applicable to wsfp and is not implemented. 

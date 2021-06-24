@@ -1,0 +1,224 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+    <!ENTITY instance SYSTEM "../../../../instance.xml"><!-- file:30 -->
+<!ENTITY properties SYSTEM "../../../xmls/properties.xml"><!-- file:28 -->
+<!ENTITY paths SYSTEM "../../../xmls/path_refs.xml"><!-- file:23 -->
+<!ENTITY targets SYSTEM "../../../xmls/targets.xml"><!-- file:25 -->
+<!ENTITY taskdefs SYSTEM "../../../xmls/taskdefs.xml"><!-- file:26 -->
+<!ENTITY taskdefs_post_compile SYSTEM "../../../xmls/taskdefs_post_compile.xml"><!-- file:39 -->
+]>
+
+<!-- autoFVT/src/annotations/webfault/checkexception/buildTest.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01
+
+        Description: Build file for the webfault/checkexception test.
+
+        Date        Author       Feature/Defect          Description
+        06/26/2006  euzunca      LIDB3296.31.01          new File
+        08/22/2006  euzunca      LIDB3296.31.01          ported to WAS
+        11/10/2006  euzunca      LIDB3296.31.01          added partial wsdl test cases
+        01/17/207   btiffany                             remove wsimport artifacts from war file
+        12/15/2008  btiffany     535887                  remove "exception" from app and file names.
+        
+-->
+
+<project name="build" default="buildall" basedir=".">
+
+        <!-- These are XML entity refs.  Basically these statements cause the
+                files declared in the DOCTYPE at the top of the file to be imported
+                into this build file. -->
+          &instance;
+          &properties;
+          &paths;
+          &targets;
+          &taskdefs;
+          &taskdefs_post_compile;
+
+        <!-- This property should match the package name of the test class.  The
+                property is used in the targets.xml file when running any of the
+                component-run* targets for running a single test case class. -->
+        <property name="componentName" value="annotations/webfault/checkexception/test" />
+        <property name="workdir" value="${FVT.build.work.dir}/webfault_checkexception" />
+
+        <!-- This path id is used in the targets.xml file when running any of
+                the component-run* targets.  This allows setting the classpath
+                for an individual test. -->
+        <path id="componentClasspath">
+                <path refid="thinclientclasspath" />
+        </path>
+
+        <uptodate property="supportBuild.notRequired" targetfile="${FVT.base.dir}/build/classes/annotations/support/Support.class" >
+                <srcfiles dir= "${FVT.base.dir}/src/annotations/support" includes="**/*.java"/>
+        </uptodate>
+
+        <!-- The buildall target will execute all of the targets necessary
+                before installing the test into WebSphere. -->
+        <target name="buildall" depends="setenv, clean, init, compileSupport, server, client, test, preinstall"/>
+
+        <!-- The clean target will clean any files, classes, or directories
+                so that a new copy of the test can be built and run. -->
+        <target name="clean" depends="setenv">
+                <delete dir="${FVT.build.classes.dir}/annotations/webfault/checkexception" />
+                <delete dir="${FVT.build.work.dir}/annotations/webfault/checkexception" />
+                <delete dir="${workdir}" />
+                <delete file="${FVT.build.lib.dir}/WebFaultCheckExc.war" />
+                <delete file="${FVT.build.installableApps.dir}/WebFaultCheckExc.ear" />
+        </target>
+
+        <!-- The init target will initialize any directories, properties, etc.
+                that are needed for the test. -->
+        <target name="init" depends="setenv">
+                <antcall target="component-init" />
+                <mkdir dir="${FVT.build.work.dir}/annotations/webfault/checkexception" />
+        </target>
+
+        <!-- compile annotations/support package -->
+        <target name="compileSupport" depends="setenv" unless="supportBuild.notRequired">
+                <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/support"
+                        destdir="${FVT.build.classes.dir}"
+                        deprecation="${deprecation}"
+                        debug="${debug}"
+                        source="${build.tests.with.java.level}"
+                        target="${build.tests.with.java.level}"
+                        failonerror="${failonerror}">
+                        <classpath refid="classpath" />
+                </javac>
+        </target>
+
+
+       <!-- The server target will build anything necessary for the server
+       piece of the test.  Typically this target builds the server side EAR. -->
+        <target name="server" depends="setenv">
+                <mkdir dir="${FVT.build.work.dir}/annotations/webfault/checkexception/server"/>
+                <mkdir dir="${workdir}"/>
+
+
+
+                <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/webfault/checkexception/server"
+                        destdir="${workdir}"
+                        deprecation="${deprecation}"
+                        debug="${debug}"
+                        source="${build.tests.with.java.level}"
+                        target="${build.tests.with.java.level}"
+                        failonerror="${failonerror}">
+                        <classpath refid="classpath" />
+                        <include name="**/*.java"/>
+                </javac>
+
+
+                <wsgen genwsdl="true" keep="true" verbose="true"
+                        destdir="${workdir}"
+                        resourcedestdir="${workdir}"
+                        sei="annotations.webfault.checkexception.server.AddNumbersImpl"
+                       >
+                        <classpath path="${workdir}"/>
+                        <classpath refid="classpath" />
+                </wsgen>
+
+
+                <war warfile="${FVT.build.lib.dir}/WebFaultCheckExc.war"
+                        webxml="${FVT.base.dir}/src/annotations/webfault/checkexception/etc/web.xml">
+
+                        <!--
+                        <webinf dir="${FVT.base.dir}/src/annotations/webfault/checkexception/etc">
+                                <include name="wsdl/*.wsdl"/>
+                                <include name="wsdl/*.xsd"/>
+                        </webinf>
+                        -->
+
+                        <!-- pick up compiled and generated classes -->
+                        <classes dir="${workdir}">
+                                <include name="annotations/webfault/checkexception/server/**/*.class"/>
+                                <include name="annotations/webfault/checkexception/server/**/*.java"/>
+                        </classes>
+
+                        <classes dir="${FVT.base.dir}/src/annotations/webfault/checkexception/server" >
+                                <include name="**/*java" />
+                        </classes>
+                </war>
+
+                <ear earfile="${FVT.build.installableApps.dir}/WebFaultCheckExc.ear"
+                 appxml="${FVT.base.dir}/src/annotations/webfault/checkexception/etc/application.xml">
+                        <fileset dir="${FVT.build.lib.dir}">
+                                <include name="WebFaultCheckExc.war"/>
+                        </fileset>
+                </ear>
+
+        </target>
+
+        <!-- The client target will build anything necessary for the client
+                piece of the test.  This could just be compiling the client class
+                or in the case of a managed client, building a client side EAR
+                file. -->
+        <target name="client" depends="setenv">
+
+                <!-- doesn't work, but client now supports retrieval via http, so we don't need it.
+                <replace file="${workdir}/AddNumbersImplService.wsdl"
+                        token="REPLACE_WITH_ACTUAL_URL"
+                        value="http://${new.default.host}:${new.wc.defaulthost}/webfaultchkexc/services/WebFaultCheckExceptionService"
+                />
+                -->
+
+                <wsimport keep="true" verbose="true" destdir="${FVT.build.classes.dir}"
+                        wsdl="${workdir}/AddNumbersImplService.wsdl">
+                </wsimport>
+
+                <javac compiler="modern"
+                        srcdir="${FVT.base.dir}/src/annotations/webfault/checkexception"
+                        destdir="${FVT.build.classes.dir}"
+                        deprecation="${deprecation}"
+                        debug="${debug}"
+                        source="${build.tests.with.java.level}"
+                        target="${build.tests.with.java.level}"
+                        failonerror="${failonerror}">
+                        <classpath refid="thinclientclasspath" />
+                        <include name="**/client*/*.java" />
+                </javac>
+        </target>
+
+        <target name="test" depends="setenv">
+                <javac compiler="modern"
+                        srcdir="${FVT.base.dir}/src/annotations/webfault/checkexception"
+                        destdir="${FVT.build.classes.dir}"
+                        deprecation="${deprecation}"
+                        debug="${debug}"
+        	            source="${build.tests.with.java.level}"
+        	            target="${build.tests.with.java.level}"
+                        failonerror="${failonerror}">
+                        <classpath refid="thinclientclasspath" />
+                        <include name="**/test/*.java" />
+                </javac>
+        </target>
+
+        <!-- The preinstall target will perform any tasks necessary before the
+               application is installed into WebSphere.  This could include running
+               ejbdeploy or endptenabler for an EAR that contains an EJB.
+          -->
+        <target name="preinstall" depends="setenv">
+        </target>
+
+
+  <target name="install" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/annotations/webfault/checkexception/installTest.xml"
+         dir="${FVT.base.dir}/src/annotations/webfault/checkexception">
+      <property name="install.mode" value="${rt.install.mode}"/>
+    </ant>
+  </target>
+
+
+  <!-- The uninstall target will uninstall the server side piece of the test
+       from WebSphere.  This target calls the uninstallTest.xml file for
+       the test.
+  -->
+  <target name="uninstall" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/annotations/webfault/checkexception/uninstallTest.xml"
+         dir="${FVT.base.dir}/src/annotations/webfault/checkexception">
+      <property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+    </ant>
+  </target>
+
+</project>
+
+
+
+
+

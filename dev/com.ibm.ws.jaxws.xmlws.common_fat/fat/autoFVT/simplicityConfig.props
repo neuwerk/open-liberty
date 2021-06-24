@@ -1,0 +1,76 @@
+###################################################################################
+# The config file can be used to set various settings and preferences such as
+# the prefered WebSphere operations provider and command line providers.
+# If used, this config file must be in the same directory as the Simplicity jar files
+# or specified on the command line with the jvm arg -DsimplicityConfigProps=<path_to_file>.
+# If not used, default settings will be used. 
+#
+# Additionally, each property can be set as a JVM argument using the property name.
+# They should be specified using the form -D<property>=<value>.
+# ex: -DbootstrappingPropsFile=C:/temp/bootstrapping.properties
+#
+# Information about each settings is available below.
+###################################################################################
+
+###################################################################################
+#
+# General Settings
+#
+###################################################################################
+# This property sets the WebSphere operations provider. The WebSphere operations
+# provider provides WebSphere administration access to the Java api. Valid property
+# values are JMX and WSADMIN. Default value is JMX.
+webSphereOperationsProvider=WSADMIN
+
+# This property sets the command line provider. The command line provider provides
+# command line execution capabilities. Some providers such as the RXA provider allow
+# for remote execution and machine to machine file transfers. Valid property values
+# are RXA, JMX, and LOCAL. Default value is JMX.
+commandLineProvider=RXA
+
+# This property sets the bootstrapping properties file to use. The bootstrapping
+# file provides basic information to bootstrap a WAS administrative process via either
+# wsadmin or JMX.
+#bootstrappingPropsFile=bootstrapping.properties
+
+# This property enables and disables topology caching. If caching is enabled, information
+# about the topology is gathered up front and cached to the bootstrapping properties
+# file. On subsequent invocations, the Object model is then built from the cache without
+# incurring the cost of making an administrative connection. Valid property values
+# are true and false. Default value is false.
+useTopologyCaching=false
+
+# TODO
+#workDir=
+
+# TODO
+#useLocalCommandLineWrapper=
+
+###################################################################################
+#
+# Wsadmin Provider Settings
+#
+###################################################################################
+# This property allows the user to set the port number to use when using the JIIWS
+# protocol to make wsadmin connections. The JIIWS tool is used to facilitate and managed
+# wsadmin connections (http://ausgsa.ibm.com/projects/m/moonstone/distributions/jiiws/).
+# JIIWS supports several protocols including a local protocol (no remote connection),
+# RXA, and the JIIWS protocol. The JIIWS protocol is used when making a remote wsadmin
+# connection if RXA is not being used as the command line provider, or if preferJIIWSWsAdmin
+# is set to true. Integer values are valid. Default value is port 1982.
+# TODO: remove link or point to an external location
+#jiiwsPort=1983
+
+# This property allows the user to set the inactivity timeout for the JIIWS protocol
+# in milliseconds. See the the jiiwsPort property description for more information
+# about the protocol. If no wsadmin requests are received within the timeout period,
+# the remote JIIWS listener stops. Integer values are valid. Default value is 10 minutes
+# (10*60*1000 milliseconds).
+#jiiwsInactivityTimeout=1200000
+
+# This property specifies whether or not to use the JIIWS protocol. See the the jiiwsPort
+# property  description for more information about the protocol. By default, the JIIWS
+# protocol is only used when making a remote wsadmin connection if the RXA is not being
+# used as the command line provider. Valid property values are true and false. Default
+# value is false.
+#preferJIIWSWsAdmin=true

@@ -1,0 +1,55 @@
+KNown Failures:
+Jwsdp:
+	@ONeway 
+		should not generate wsdl when @WebMethod missing.
+		
+    webservicepackagemapping - simply won't work in no package test case
+    
+    webserviceinterfacemapping - need to write this in pass 2.		
+
+    @WebService 
+    serviceName param is not allowed on interface, but spec doesn't say this. - yes it does, mr2 #32
+    
+    behavior of annotation is different between if and class, shouldn't be.
+      - servicename has to be declared on class - ok, mr2 #32
+      - name can't be declared on interface or class, usage is lost
+      - portname, if null on if, causes no porttypes to be generated in wsdl.
+      - fully qual'd package name of interface must be spec'd, even if imported.
+      
+    tooling doesn't map inherited methods to wsdl (webservice_g2.inheritance)  
+    
+    When a wsdl is supplied in the dep. descriptor and war file, but is the
+    wrong wsdl, service fails to deploy.  What should happen is wsdl should
+    be generated.  8.9.06    
+        
+    @WebParam - runtime
+      - service doesn't catch changed annotation params on mode, partname, and lets
+        client invoke the service.  I wonder if these parms are only
+        examined when generating wsdl.  
+        
+   @WebResult
+   	testJava2Wsdl4(), testWsdl2Java1() - partname and name - partname should override, but it doesn't appear
+   	anywhere. May be because ri is incapbile of generating the bare parameter style to which
+   	this applies. ref 224 sec 2.3.1.
+   	
+   @WebFault - if Exception is annotated but params not explicitly defined, wsgen
+               reads this, processes it correctly, but resulting wsdl is BAD as
+               name and namespace are the empty string, and it doesn't catch this,
+               but wsimport can't process the wsdl.
+               
+   @WebFault - Both the exception class and a method in the implementation bean is annotated.
+               operationName (@WebMethod) and name (@WebFault) attributes specify the
+               same name. java2wsdl (wsgen) tool generated a wsdl file, which has two
+               messages with the exact same name attribute. This is conflicting with the
+               WSDL 1.1 spec stating that "The message name attribute provides a unique 
+               name among all messages defined within the enclosing WSDL document."
+               
+   @HandlerChain - JSR-181 states that "The @HandlerChain annotation MAY be present
+   				   on the endpoint interface and service implementation bean. 
+   				   The service implementation bean’s @HandlerChain is used if 
+   				   @HandlerChain is present on both." But, for the case where the anno
+   				   is present on both, the IF's @HandlerChain is used. This is the opposite 
+   				   what the spec is saying.
+               
+               
+ 

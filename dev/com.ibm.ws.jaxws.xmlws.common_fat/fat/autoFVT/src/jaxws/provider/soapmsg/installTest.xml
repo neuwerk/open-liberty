@@ -1,0 +1,34 @@
+<?xml version="1.0"?>                     
+
+<!--
+  @(#) 1.1 autoFVT/src/jaxws/provider/soapmsg/installTest.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01 12/5/06 12:10:16 [8/8/12 06:55:54]
+
+  Description: Build file for the JAX-WS Provider API tests
+ 
+  Date        Author       Feature/Defect          Description
+  12/05/06    sedov        D408880                 New File
+-->
+
+<project default="install" basedir=".">
+	
+	<property name="test.name" value="jwpv.soapmsg" />
+	
+    <import file="../../jaxws-commons.xml" />
+
+  <!-- The install target will install the EAR or WAR file into WebSphere.
+  -->
+  <target name="install" depends="setenv">
+   <echo message="Installing ${test.name}App.ear ..." />
+    <InstallApp earName="${test.name}App.ear"
+                appName="${test.name}"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>
+
+  </target>
+  
+</project>
+

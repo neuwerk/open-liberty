@@ -1,0 +1,444 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+    <!ENTITY instance SYSTEM "../../../instance.xml"><!-- file:30 -->
+<!ENTITY properties SYSTEM "../../xmls/properties.xml"><!-- file:28 -->
+<!ENTITY paths SYSTEM "../../xmls/path_refs.xml"><!-- file:23 -->
+<!ENTITY targets SYSTEM "../../xmls/targets.xml"><!-- file:25 -->
+<!ENTITY taskdefs SYSTEM "../../xmls/taskdefs.xml"><!-- file:26 -->
+<!ENTITY taskdefs_post_compile SYSTEM "../../xmls/taskdefs_post_compile.xml"><!-- file:39 -->
+]>
+
+<!-- 1.6, 3/5/07
+
+        Description: Build file for the resource/injection test.
+
+        Date        Author       Feature/Defect          Description
+        10/17/2006  euzunca      LIDB3296.31.01          new File
+        01/05/2007  btiffany                             clean up some war build problems
+        03/05/2007  btiffany                             spec wsdllocation on wsimport for Zos.
+-->
+
+<project name="build" default="buildall" basedir=".">
+
+
+        <!-- These are XML entity refs.  Basically these statements cause the
+                files declared in the DOCTYPE at the top of the file to be imported
+                into this build file. -->
+          &instance;
+          &properties;
+          &paths;
+          &targets;
+          &taskdefs;
+          &taskdefs_post_compile;
+
+        <!-- This property should match the package name of the test class.  The
+                property is used in the targets.xml file when running any of the
+                component-run* targets for running a single test case class. -->
+        <property name="componentName" value="annotations/resource/test" />
+
+
+        <!-- This path id is used in the targets.xml file when running any of
+                the component-run* targets.  This allows setting the classpath
+                for an individual test. -->
+        <path id="componentClasspath">
+                <path refid="thinclientclasspath" />
+        </path>
+
+
+        <!-- The buildall target will execute all of the targets necessary
+                before installing the test into WebSphere. -->
+        <!--target name="buildall" depends="setenv, clean, init, server, client, client2, preinstall, install, test, testAll" /-->
+        <target name="buildall" depends="setenv, clean, init, server, client, test, preinstall" />
+
+        <!-- The clean target will clean any files, classes, or directories
+                so that a new copy of the test can be built and run. -->
+        <target name="clean" depends="setenv">
+                <delete dir="${FVT.build.classes.dir}/annotations/resource" />
+                <delete file="${FVT.build.lib.dir}/FieldInjection.war" />
+                <delete file="${FVT.build.lib.dir}/MethodInjection.war" />
+                <delete file="${FVT.build.lib.dir}/MethodConflict.war" />
+                <delete file="${FVT.build.lib.dir}/FieldConflict.war" />
+        		<!-- PK96899.fvt -->
+            	<delete file="${FVT.build.lib.dir}/FieldPrimitiveVal.war" />  	
+                <!-- installables -->
+                <delete file="${FVT.build.installableApps.dir}/FieldInjection.ear" />
+                <delete file="${FVT.build.installableApps.dir}/MethodInjection.ear" />
+                <delete file="${FVT.build.installableApps.dir}/FieldConflict.ear" />
+                <delete file="${FVT.build.installableApps.dir}/MethodConflict.ear" />
+        		<!-- PK96899.fvt -->
+        		<delete file="${FVT.build.installableApps.dir}/FieldPrimitiveVal.ear" />
+        </target>
+
+
+        <!-- The init target will initialize any directories, properties, etc.
+                that are needed for the test. -->
+        <target name="init" depends="setenv">
+                <antcall target="component-init" />
+                <mkdir dir="${FVT.build.work.dir}/annotations/resource" />
+                <mkdir dir="${FVT.build.work.dir}/annotations/resource/injection" />
+                <mkdir dir="${FVT.build.work.dir}/annotations/resource/conflict" />
+				<!-- PK96899.fvt -->
+        		<mkdir dir="${FVT.build.work.dir}/annotations/resource/primitiveval" />
+
+                <mkdir dir="${FVT.build.work.dir}/annotations/resource/injection/fieldinjectionserver" />
+                <mkdir dir="${FVT.build.work.dir}/annotations/resource/injection/methodinjectionserver" />
+                <mkdir dir="${FVT.build.work.dir}/annotations/resource/conflict/fieldconflictserver" />
+                <mkdir dir="${FVT.build.work.dir}/annotations/resource/conflict/methodconflictserver" />
+				<!-- PK96899.fvt -->
+        		<mkdir dir="${FVT.build.work.dir}/annotations/resource/primitiveval/fieldprimitivevalserver" />
+
+                <mkdir dir="${FVT.build.work.dir}/annotations/resource/injection/injectionClient" />
+                <mkdir dir="${FVT.build.work.dir}/annotations/resource/conflict/conflictClient" />
+        		<!-- PK96899.fvt -->
+        		<mkdir dir="${FVT.build.work.dir}/annotations/resource/primitiveval/primitivevalclient" />
+        </target>
+
+        <!-- The server target will build anything necessary for the server
+                piece of the test.  Typically this target builds the server side
+                EAR. -->
+        <target name="server" depends="setenv">
+                <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/resource/injection"
+                       destdir="${FVT.build.classes.dir}" deprecation="${deprecation}" debug="${debug}" source="${build.tests.with.java.level}" target="${build.tests.with.java.level}" failonerror="${failonerror}">
+                        <classpath refid="thinclientclasspath" />
+                        <include name="**/*server/*.java" />
+                </javac>
+
+                <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/resource/conflict"
+                       destdir="${FVT.build.classes.dir}"
+                       deprecation="${deprecation}" debug="${debug}" source="${build.tests.with.java.level}" target="${build.tests.with.java.level}" failonerror="${failonerror}">
+                        <classpath refid="thinclientclasspath" />
+                        <include name="**/*server/*.java" />
+                </javac>
+        	
+        	
+        		<!-- PK96899.fvt -->
+        		<javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/resource/primitiveval"
+        	           destdir="${FVT.build.classes.dir}"
+        	           deprecation="${deprecation}" debug="${debug}" source="${build.tests.with.java.level}" target="${build.tests.with.java.level}" failonerror="${failonerror}">
+        	           <classpath refid="thinclientclasspath" />
+        	           <include name="**/*server/*.java" />
+        	    </javac>
+
+                <wsgen genwsdl="true" keep="true" verbose="true" destdir="${FVT.build.work.dir}"
+                       resourcedestdir="${FVT.build.work.dir}/annotations/resource/injection/fieldinjectionserver"
+                       sei="annotations.resource.injection.fieldinjectionserver.FieldInjectionImpl">
+                       <classpath refid="classpath" />
+                </wsgen>
+
+                <wsgen genwsdl="true" keep="true" verbose="true" destdir="${FVT.build.work.dir}"
+                       resourcedestdir="${FVT.build.work.dir}/annotations/resource/injection/methodinjectionserver"
+                       sei="annotations.resource.injection.methodinjectionserver.MethodInjectionImpl">
+                        <classpath refid="classpath" />
+                </wsgen>
+
+                <wsgen genwsdl="true" keep="true" verbose="true" destdir="${FVT.build.work.dir}"
+                       resourcedestdir="${FVT.build.work.dir}/annotations/resource/conflict/methodconflictserver"
+                       sei="annotations.resource.conflict.methodconflictserver.MethodConflictTypeImpl">
+                        <classpath refid="classpath" />
+                </wsgen>
+
+                <wsgen genwsdl="true" keep="true" verbose="true" destdir="${FVT.build.work.dir}"
+                       resourcedestdir="${FVT.build.work.dir}/annotations/resource/conflict/fieldconflictserver"
+                       sei="annotations.resource.conflict.fieldconflictserver.FieldConflictTypeImpl">
+                        <classpath refid="classpath" />
+                </wsgen>
+        	
+        		<!-- PK96899.fvt -->
+        		<wsgen genwsdl="true" keep="true" verbose="true" destdir="${FVT.build.work.dir}"
+        	           resourcedestdir="${FVT.build.work.dir}/annotations/resource/primitiveval/fieldprimitivevalserver"
+        	           sei="annotations.resource.primitiveval.fieldprimitivevalserver.FieldPrimitiveValImpl">
+        	           <classpath refid="classpath" />
+        	    </wsgen>
+
+                <war warfile="${FVT.build.lib.dir}/FieldInjection.war"
+                        webxml="${FVT.base.dir}/src/annotations/resource/injection/fieldinjectionserver/etc/web.xml">
+                        <!-- get the impl class -->
+                        <classes dir="${FVT.build.classes.dir}">
+                                <include name="annotations/resource/injection/fieldinjectionserver/**/*.class" />
+                                <include name="annotations/resource/injection/fieldinjectionserver/**/*.java" />
+                        </classes>
+                        <!-- get the impl src -->
+                        <classes dir="${FVT.base.dir}/src/annotations/resource/injection/fieldinjectionserver" >
+                                <include name="**/*.java" />
+                        </classes>
+                        <!-- get the wsgen artifacts -->
+                        <classes dir="${FVT.build.work.dir}">
+                                <include name="annotations/resource/injection/fieldinjectionserver/**/*.class" />
+                                <include name="annotations/resource/injection/fieldinjectionserver/**/*.java" />
+                        </classes>
+                </war>
+
+                <war warfile="${FVT.build.lib.dir}/MethodInjection.war" webxml="${FVT.base.dir}/src/annotations/resource/injection/methodinjectionserver/etc/web.xml">
+                        <!-- get the impl -->
+                        <classes dir="${FVT.build.classes.dir}">
+                                <include name="annotations/resource/injection/methodinjectionserver/**/*.class" />
+                                <include name="annotations/resource/injection/methodinjectionserver/**/*.java" />
+                        </classes>
+                        <!-- wsgen artifacts -->
+                        <classes dir="${FVT.build.work.dir}">
+                                <include name="annotations/resource/injection/methodinjectionserver/**/*.class" />
+                                <include name="annotations/resource/injection/methodinjectionserver/**/*.java" />
+                        </classes>
+                        <!-- get the impl src -->
+                        <classes dir="${FVT.base.dir}/src/annotations/resource/injection/methodinjectionserver" >
+                                <include name="**/*.java" />
+                        </classes>
+                </war>
+
+                <war warfile="${FVT.build.lib.dir}/FieldConflict.war" webxml="${FVT.base.dir}/src/annotations/resource/conflict/fieldconflictserver/etc/web.xml">
+                        <classes dir="${FVT.build.work.dir}">
+                                <include name="annotations/resource/conflict/fieldconflictserver/**/*.class" />
+                                <include name="annotations/resource/conflict/fieldconflictserver/**/*.java" />
+                        </classes>
+                        <classes dir="${FVT.build.classes.dir}">
+                                <include name="annotations/resource/conflict/fieldconflictserver/**/*.class" />
+                                <include name="annotations/resource/conflict/fieldconflictserver/**/*.java" />
+                        </classes>
+                        <!-- get the impl src -->
+                        <classes dir="${FVT.base.dir}/src/annotations/resource/conflict/fieldconflictserver" >
+                                <include name="**/*.java" />
+                        </classes>
+                </war>
+
+                <war warfile="${FVT.build.lib.dir}/MethodConflict.war" webxml="${FVT.base.dir}/src/annotations/resource/conflict/methodconflictserver/etc/web.xml">
+                        <classes dir="${FVT.build.work.dir}">
+                                <include name="annotations/resource/conflict/methodconflictserver/**/*.class" />
+                                <include name="annotations/resource/conflict/methodconflictserver/**/*.java" />
+                        </classes>
+                        <classes dir="${FVT.build.classes.dir}">
+                                <include name="annotations/resource/conflict/methodconflictserver/**/*.class" />
+                                <include name="annotations/resource/conflict/methodconflictserver/**/*.java" />
+                        </classes>
+                        <!-- get the impl src -->
+                        <classes dir="${FVT.base.dir}/src/annotations/resource/conflict/methodconflictserver" >
+                                <include name="**/*.java" />
+                        </classes>
+                </war>
+        	
+				<!-- PK96899.fvt -->
+        		<war destfile="${FVT.build.lib.dir}/FieldPrimitiveVal.war" webxml="${FVT.base.dir}/src/annotations/resource/primitiveval/fieldprimitivevalserver/etc/web.xml">
+        			<!-- get the impl -->
+        			<classes dir="${FVT.build.classes.dir}">
+        				<include name="annotations/resource/primitiveval/fieldprimitivevalserver/**/*.class" />
+        				<include name="annotations/resource/primitiveval/fieldprimitivevalserver/**/*.java" />        				
+        			</classes>
+        			
+        			<!-- get the wsgen artifacts -->
+        			<classes dir="${FVT.build.work.dir}">
+        				<include name="annotations/resource/primitiveval/fieldprimitivevalserver/**/*.class" />
+						<include name="annotations/resource/primitiveval/fieldprimitivevalserver/**/*.java" />
+        			</classes>
+        			
+        			<!-- get the impl src -->
+        			<classes dir="${FVT.base.dir}/src/annotations/resource/primitiveval/fieldprimitivevalserver" >
+        			    <include name="**/*.java" />
+        			</classes>                      
+        		</war>
+
+                <ear earfile="${FVT.build.installableApps.dir}/FieldInjection.ear" appxml="${FVT.base.dir}/src/annotations/resource/injection/fieldinjectionserver/etc/application.xml">
+                        <fileset dir="${FVT.build.lib.dir}">
+                                <include name="FieldInjection.war" />
+                        </fileset>
+                </ear>
+
+                <ear earfile="${FVT.build.installableApps.dir}/MethodInjection.ear" appxml="${FVT.base.dir}/src/annotations/resource/injection/methodinjectionserver/etc/application.xml">
+                        <fileset dir="${FVT.build.lib.dir}">
+                                <include name="MethodInjection.war" />
+                        </fileset>
+                </ear>
+
+                <ear earfile="${FVT.build.installableApps.dir}/FieldConflict.ear" appxml="${FVT.base.dir}/src/annotations/resource/conflict/fieldconflictserver/etc/application.xml">
+                        <fileset dir="${FVT.build.lib.dir}">
+                                <include name="FieldConflict.war" />
+                        </fileset>
+                </ear>
+
+                <ear earfile="${FVT.build.installableApps.dir}/MethodConflict.ear" appxml="${FVT.base.dir}/src/annotations/resource/conflict/methodconflictserver/etc/application.xml">
+                        <fileset dir="${FVT.build.lib.dir}">
+                                <include name="MethodConflict.war" />
+                        </fileset>
+                </ear>
+	
+        		<!-- PK96899.fvt -->
+        		<ear destfile="${FVT.build.installableApps.dir}/FieldPrimitiveVal.ear" appxml="${FVT.base.dir}/src/annotations/resource/primitiveval/fieldprimitivevalserver/etc/application.xml">
+        			<fileset dir="${FVT.build.lib.dir}">
+        			          <include name="FieldPrimitiveVal.war" />
+        			</fileset>
+				</ear>
+
+        </target>
+	
+	
+
+        <target name="client" depends="setenv">
+
+                <!-- this task injects all the topologyProps.props data into Ant properites beginning with "prefix."... -->
+                <!-- then we'll use them to adjust the host and port -->
+                <readCellConfig prefix="server1" key="defaultServer" verbose="false" />
+
+                <copy todir="${FVT.build.work.dir}/annotations/resource/injection/fieldinjectionserver" overwrite="yes">
+                        <fileset dir="${FVT.base.dir}/src/annotations/resource/injection/fieldinjectionserver/etc/wsdl">
+                                <include name="FieldInjectionImplService.wsdl" />
+                        </fileset>
+                        <filterset id="replace.filter.set1">
+                                <filter token="REPLACE_WITH_HOST_NAME" value="${new.default.host}" />
+                                <filter token="REPLACE_WITH_PORT_NUM" value="${new.wc.defaulthost}" />
+                        </filterset>
+                </copy>
+
+                <copy todir="${FVT.build.work.dir}/annotations/resource/injection/methodinjectionserver" overwrite="yes">
+                        <fileset dir="${FVT.base.dir}/src/annotations/resource/injection/methodinjectionserver/etc/wsdl">
+                                <include name="MethodInjectionImplService.wsdl" />
+                        </fileset>
+                        <filterset id="replace.filter.set2">
+                                <filter token="REPLACE_WITH_HOST_NAME" value="${new.default.host}" />
+                                <filter token="REPLACE_WITH_PORT_NUM" value="${new.wc.defaulthost}" />
+                        </filterset>
+                </copy>
+
+                <copy todir="${FVT.build.work.dir}/annotations/resource/conflict/fieldconflictserver" overwrite="yes">
+                        <fileset dir="${FVT.base.dir}/src/annotations/resource/conflict/fieldconflictserver/etc/wsdl">
+                                <include name="FieldConflictTypeImplService.wsdl" />
+                        </fileset>
+                        <filterset id="replace.filter.set3">
+                                <filter token="REPLACE_WITH_HOST_NAME" value="${new.default.host}" />
+                                <filter token="REPLACE_WITH_PORT_NUM" value="${new.wc.defaulthost}" />
+                        </filterset>
+                </copy>
+
+                <copy todir="${FVT.build.work.dir}/annotations/resource/conflict/methodconflictserver" overwrite="yes">
+                        <fileset dir="${FVT.base.dir}/src/annotations/resource/conflict/methodconflictserver/etc/wsdl">
+                                <include name="MethodConflictTypeImplService.wsdl" />
+                        </fileset>
+                        <filterset id="replace.filter.set4">
+                                <filter token="REPLACE_WITH_HOST_NAME" value="${new.default.host}" />
+                                <filter token="REPLACE_WITH_PORT_NUM" value="${new.wc.defaulthost}" />
+                        </filterset>
+                </copy>
+        	
+        		<!-- PK96899.fvt -->
+	        	<copy todir="${FVT.build.work.dir}/annotations/resource/primitiveval/fieldprimitivevalserver" overwrite="yes">
+                        <fileset dir="${FVT.base.dir}/src/annotations/resource/primitiveval/fieldprimitivevalserver/etc/wsdl">
+                                <include name="FieldPrimitiveValImplService.wsdl" />
+                        </fileset>
+                        <filterset id="replace.filter.set5">
+                                <filter token="REPLACE_WITH_HOST_NAME" value="${new.default.host}" />
+                                <filter token="REPLACE_WITH_PORT_NUM" value="${new.wc.defaulthost}" />
+                        </filterset>
+                </copy>
+
+                <copy todir="${FVT.build.work.dir}/annotations/resource/injection/injectionclient" overwrite="yes">
+                        <fileset dir="${FVT.base.dir}/src/annotations/resource/injection/injectionclient">
+                                <include name="InjectionClient.java" />
+                        </fileset>
+                </copy>
+
+                <copy todir="${FVT.build.work.dir}/annotations/resource/conflict/conflictclient" overwrite="yes">
+                        <fileset dir="${FVT.base.dir}/src/annotations/resource/conflict/conflictclient">
+                                <include name="ConflictClient.java" />
+                        </fileset>
+                </copy>
+        	
+        		<!-- PK96899.fvt -->
+        		<copy todir="${FVT.build.work.dir}/annotations/resource/primitiveval/primitivevalclient" overwrite="yes">
+                        <fileset dir="${FVT.base.dir}/src/annotations/resource/primitiveval/primitivevalclient">
+                                <include name="PrimitiveValClient.java" />
+                        </fileset>
+                </copy>
+
+                <wsimport keep="true" verbose="true" destdir="${FVT.build.classes.dir}"
+                        wsdl="${FVT.build.work.dir}/annotations/resource/injection/fieldinjectionserver/FieldInjectionImplService.wsdl"
+                        wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/fieldinjection/services/FieldInjectionImplService?wsdl"
+                >
+                </wsimport>
+
+                <wsimport keep="true" verbose="true" destdir="${FVT.build.classes.dir}"
+                        wsdl="${FVT.build.work.dir}/annotations/resource/injection/methodinjectionserver/MethodInjectionImplService.wsdl"
+                        wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/methodinjection/services/MethodInjectionImplService?wsdl"
+                >
+                </wsimport>
+
+                <wsimport keep="true" verbose="true" destdir="${FVT.build.classes.dir}"
+                        wsdl="${FVT.build.work.dir}/annotations/resource/conflict/fieldconflictserver/FieldConflictTypeImplService.wsdl"
+                        wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/fieldconflicttype/services/FieldConflictTypeImplService?wsdl"
+                >
+                </wsimport>
+
+                <wsimport keep="true" verbose="true" destdir="${FVT.build.classes.dir}"
+                        wsdl="${FVT.build.work.dir}/annotations/resource/conflict/methodconflictserver/MethodConflictTypeImplService.wsdl"
+                        wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/methodconflicttype/services/MethodConflictTypeImplService?wsdl"
+                >
+                </wsimport>
+        	
+        		<!-- PK96899.fvt -->
+        		<wsimport keep="true" verbose="true" destdir="${FVT.build.classes.dir}"
+                        wsdl="${FVT.build.work.dir}/annotations/resource/primitiveval/fieldprimitivevalserver/FieldPrimitiveValImplService.wsdl"
+                        wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/fieldprimitiveval/services/FieldPrimitiveValImplService?wsdl"
+                >
+                </wsimport>
+
+                <javac compiler="modern"
+                        srcdir="${FVT.base.dir}/src/annotations/resource"
+                        destdir="${FVT.build.classes.dir}"
+                        deprecation="${deprecation}"
+                        debug="${debug}"
+                        source="${build.tests.with.java.level}"
+                        target="${build.tests.with.java.level}"
+                        failonerror="${failonerror}">
+                        <classpath refid="thinclientclasspath" />
+                        <include name="**/*Client*.java" />
+                </javac>
+        </target>
+
+        <!-- The client target will build anything necessary for the test
+                piece of the test.  Often this will just include compiling the
+                the JUnit test case file. -->
+        <target name="test" depends="setenv">
+                <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/resource"
+                        destdir="${FVT.build.classes.dir}"
+                        deprecation="${deprecation}"
+                        debug="${debug}"
+                        source="${build.tests.with.java.level}"
+                        target="${build.tests.with.java.level}"
+                        failonerror="${failonerror}">
+                        <classpath refid="thinclientclasspath" />
+                        <include name="**/test/*.java" />
+                </javac>
+        </target>
+
+
+        <!-- The preinstall target will perform any tasks necessary before the
+               application is installed into WebSphere.  This could include running
+               ejbdeploy or endptenabler for an EAR that contains an EJB.
+          -->
+        <target name="preinstall" depends="setenv">
+        </target>
+
+
+        <!-- The install target will install the server side piece of the test
+               into WebSphere.  This target calls the installTest.xml file for
+               the test. -->
+        <target name="install" depends="setenv">
+                <ant antfile="${FVT.base.dir}/src/annotations/resource/installTest.xml"
+                 dir="${FVT.base.dir}/src/annotations/resource"  >
+                        <property name="install.mode" value="${rt.install.mode}"/>
+                </ant>
+        </target>
+
+
+        <!-- The uninstall target will uninstall the server side piece of the test
+               from WebSphere.  This target calls the uninstallTest.xml file for
+               the test. -->
+        <target name="uninstall" depends="setenv">
+                <ant antfile="${FVT.base.dir}/src/annotations/resource/uninstallTest.xml"
+                 dir="${FVT.base.dir}/src/annotations/resource" >
+                        <property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+                </ant>
+        </target>
+
+</project>
+
+
+
+
+

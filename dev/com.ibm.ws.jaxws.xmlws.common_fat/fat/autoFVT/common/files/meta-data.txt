@@ -1,0 +1,5 @@
+component=JAX-WS FAT Tests
+description=These are the FAT tests for the JAX-WS runtime
+owner=@owner@
+defect-component=@component@
+defect-owner=@owner@

@@ -1,0 +1,38 @@
+<xsd:schema
+	targetNamespace="http://common.wsfvt.badproxy.jaxws"
+	xmlns:tns="http://common.wsfvt.badproxy.jaxws"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<xsd:element name="ping">			
+		<xsd:complexType>
+		      <xsd:sequence>
+		        <xsd:element name="ping" type="xsd:string" />
+		      </xsd:sequence>
+		</xsd:complexType>			
+	</xsd:element>
+	
+	<xsd:element name="pingResponse">			
+		<xsd:complexType>
+		      <xsd:sequence>
+		        <xsd:element name="ping" type="xsd:string" />
+		      </xsd:sequence>
+		</xsd:complexType>			
+	</xsd:element>
+
+	<xsd:element name="notPing">			
+		<xsd:complexType>
+		      <xsd:sequence>
+		        <xsd:element name="message" type="xsd:string" />
+		      </xsd:sequence>
+		</xsd:complexType>			
+	</xsd:element>
+	
+	<xsd:element name="notPingResponse">			
+		<xsd:complexType>
+		      <xsd:sequence>
+		        <xsd:element name="message" type="xsd:string" />
+		      </xsd:sequence>
+		</xsd:complexType>			
+	</xsd:element>
+
+</xsd:schema>

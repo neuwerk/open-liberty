@@ -1,0 +1,810 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+        <!ENTITY instance SYSTEM "../../../../instance.xml"><!-- file:34 -->
+        <!ENTITY properties SYSTEM "../../../xmls/properties.xml"><!-- file:36 -->
+        <!ENTITY paths SYSTEM "../../../xmls/path_refs.xml"><!-- file:31 -->
+        <!ENTITY targets SYSTEM "../../../xmls/targets.xml"><!-- file:33 -->
+        <!ENTITY taskdefs SYSTEM "../../../xmls/taskdefs.xml"><!-- file:34 -->
+        <!ENTITY taskdefs_post_compile SYSTEM "../../../xmls/taskdefs_post_compile.xml"><!-- file:47 -->
+]>
+
+<!-- 1.2.1.8, 8/4/10
+
+     Description: Build file for webservice annotation test
+
+     Date           Author              Feature/Defect
+     07/31/06       Bruce Tiffany       lidb3296.31.01  new file
+     01/24/07        "                                  put wsimport generated src in build/classes
+     05/18/07        "                                  add compileSupport target
+     08/04/2010     jtnguyen            664197          add tests for static and final methods
+-->
+<project name="build" default="buildall" basedir=".">
+
+
+  <!-- These are XML entity refs.  Basically these statements cause the
+       files declared in the DOCTYPE at the top of the file to be imported
+       into this build file.
+  -->
+  &instance;
+  &properties;
+  &paths;
+  &targets;
+  &taskdefs;
+  &taskdefs_post_compile;
+
+
+  <property name="componentPath" value="annotations/webmethod_g2/runtime" />
+  <property name="warname"       value="AnnotationsWebMethodg2Runtime"/>
+  <property name="warfile"       value="${warname}.war" />
+  <property name="warfile2"       value="${warname}2.war" />
+  <property name="warfile3"       value="${warname}3.war" />
+  <property name="warfile4"       value="${warname}4.war" />
+  <property name="warfile5"       value="${warname}5.war" />
+  <property name="warfile6"       value="${warname}6.war" />
+  <property name="workdir" value="${FVT.build.work.dir}/${componentPath}" />
+  <property name="workdir2" value="${workdir}2" />
+  <property name="workdir3" value="${workdir}3" />
+  <property name="workdir4" value="${workdir}4" />
+  <property name="workdir5" value="${workdir}5" />
+  <property name="workdir6" value="${workdir}6" />
+  <property name="srcdir"   value="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/server" />
+
+  <!-- This property should match the package name of the test class.  The
+       property is used in the targets.xml file when running any of the
+       component-run* targets for running a single test case class.
+  -->
+  <property name="componentName" value="${componentPath}/test"/>
+
+
+
+  <uptodate property="supportBuild.notRequired" targetfile="${FVT.base.dir}/build/classes/annotations/support/Support.class" >
+          <srcfiles dir= "${FVT.base.dir}/src/annotations/support" includes="**/*.java"/>
+  </uptodate>
+
+  <!-- This path id is used in the targets.xml file when running any of
+       the component-run* targets.  This allows setting the classpath
+       for an individual test.
+  -->
+  <path id="componentClasspath">
+    <path refid="thinclientclasspath"/>
+  </path>
+
+
+  <!-- The init target will initialize any directories, properties, etc.
+       that are needed for the test.
+  -->
+  <target name="init" depends="setenv">
+    <antcall target="component-init"/>
+    <mkdir dir="${FVT.build.work.dir}/${componentPath}/client" />
+        <mkdir dir="${FVT.build.work.dir}/${componentPath}/void" />
+    <property name="lwmworkdir" value="${workdir}/lwm"/>
+    <property name="lwmnoannoworkdir" value="${workdir}/lwmnoanno"/>
+
+  </target>
+
+
+  <!-- The clean target will clean any files, classes, or directories
+       so that a new copy of the test can be built and run.
+  -->
+  <target name="clean" depends="setenv">
+    <delete dir="${FVT.build.classes.dir}/${componentPath}"/>
+    <delete dir="${workdir}"/>
+    <delete dir="${workdir2}"/>
+    <delete dir="${workdir3}"/>
+    <delete dir="${workdir4}"/>
+    <delete dir="${workdir5}"/>
+    <delete dir="${workdir6}"/>
+    <delete verbose="true">
+        <fileset dir="${FVT.build.lib.dir}" casesensitive="no">
+            <include name="${warname}*.war"/>
+        </fileset>
+    </delete>
+    <delete verbose="true">
+        <fileset dir="${FVT.build.installableApps.dir}" casesensitive="no">
+            <include name="${warname}*.ear"/>
+        </fileset>
+    </delete>
+  </target>
+
+
+  <!-- The buildall target will execute all of the targets necessary
+       before installing the test into WebSphere.
+       
+  -->
+  <target name="buildall" depends="setenv, clean, init, compileSupport, servers, lwm, client, test, preinstall"/>
+   <!-- lwm - legacy webmethod --> 
+   <target name="lwm" depends="setenv, lwmservers, lwmclient"/>
+
+
+  <!-- compile annotations/support package -->
+  <target name="compileSupport" depends="setenv" unless="supportBuild.notRequired">
+          <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/support" destdir="${FVT.build.classes.dir}" deprecation="${deprecation}" debug="${debug}" source="${build.tests.with.java.level}" target="${build.tests.with.java.level}" failonerror="${failonerror}">
+                  <classpath refid="classpath" />
+          </javac>
+  </target>
+
+  <!-- The server target will build anything necessary for the server
+       piece of the test.  Typically this target builds the server side
+       EAR.
+
+       If we needed to replace parameters in the java, we would copy to build/work/... then compile.
+
+       We're going to build 3 warfiles -the first with all methods exposed and the
+       second two with some bean changes that should keep some methods from being
+       exposed.
+  -->
+  <!-- this test deliberate replaces only the impl class and leaves wsdl and beans intact,
+       which is what a developer might well do.
+   -->
+   
+  <!-- build the apps for the legacy web method tests -->
+  <target name="lwmservers" depends="init">
+  
+     <delete dir="${lwmworkdir}"/>
+  	 <mkdir dir="${lwmworkdir}"/>
+  	 <delete file="${FVT.build.installableApps.dir}/lwm*.ear" />
+  	 <delete file="${FVT.build.lib.dir}/lwm*.war"/>
+     
+     <delete dir="${lwmnoannoworkdir}"/>
+  	 <mkdir dir="${lwmnoannoworkdir}"/>
+      
+                
+  	<!-- compile the impl. class to package with war and ear -->    
+      <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${lwmworkdir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+  	       source="${build.tests.with.java.level}"
+  	       target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="WebMethodLegacyCheck*.java"/>
+       	 <include name="jaxws/*java"/>
+    </javac>
+    
+            
+            
+            
+            
+  	<!-- we need artifacts built for client with all methods in the wsdl.  We run this once and save the wsdl to the src tree for client use.  	     
+  	               
+      <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${lwmworkdir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="allPublicMethods/WebMethodLegacyCheck.java"/>
+    </javac>
+	
+    <echo message="wsgen..." />
+     <wsgen
+             destdir="${lwmworkdir}"
+             resourcedestdir="${lwmworkdir}"
+             sourcedestdir="${lwmworkdir}"
+	     	genwsdl="true"
+             sei="annotations.webmethod_g2.runtime.server.WebMethodLegacyCheck"
+             >
+             <classpath>
+                     <pathelement path="${lwmworkdir}"/>                  
+             </classpath>
+     </wsgen>
+     
+    -->
+                                                                                                
+     
+    <war warfile="${FVT.build.lib.dir}/lwm.war"
+       webxml="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc/dd/web.xml">   
+       <classes dir="${lwmworkdir}">
+          <include name="annotations/webmethod_g2/runtime/server/**/*.class"/>
+          <exclude name="annotations/webmethod_g2/runtime/server/**/*Wsdl.class"/>
+          <exclude name="**/allPublicMethods/**.class"/>
+       </classes>
+  	   <classes dir="${srcdir}">
+	      <include name="WebMethodLegacyCheck.java" />
+          <include name="jaxws/**/*java" />
+       </classes>
+     </war>
+
+     <war warfile="${FVT.build.lib.dir}/lwm_wsdl.war"
+	       webxml="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc/dd/web.xml">   
+	       <classes dir="${lwmworkdir}">
+	          <include name="annotations/webmethod_g2/runtime/server/**/*.class"/>
+	          <exclude name="annotations/webmethod_g2/runtime/server/**/*Check.class"/>
+              <exclude name="**/allPublicMethods/**.class"/>
+	      </classes>
+    	  <classes dir="${srcdir}">
+		      <include name="**/WebMethodLegacyCheckWithWsdl.java" />
+	          <include name="jaxws/**/*java" />
+	     </classes>
+	      <webinf dir="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc">
+	        <include name="wsdl/WebMethodLegacyCheckServiceOneOp.wsdl"/>
+	        <include name="wsdl/*Legacy*.xsd"/>
+	      </webinf>
+      </war>
+      
+     <!-- add manifest for our manifest test --> 
+     <war warfile="${FVT.build.lib.dir}/lwm_manifest.war"
+       webxml="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc/dd/web.xml" 
+       manifest=  "${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc/lwm/manifest">
+       <classes dir="${lwmworkdir}">
+          <include name="annotations/webmethod_g2/runtime/server/**/*.class"/>
+          <exclude name="annotations/webmethod_g2/runtime/server/**/*Wsdl.class"/>
+          <exclude name="**/allPublicMethods/**.class"/>
+      </classes>
+ 	  <classes dir="${srcdir}">
+	      <include name="WebMethodLegacyCheck.java" />          
+          <include name="jaxws/**/*java" />
+      </classes>
+    </war>
+    
+    <!-- for lwmjvmnoanno.ear -
+         to reuse client and test for the case of no webmethod annotations exist in the implementation class, 
+         I build it here after other WARs are done.
+    -->
+    
+            
+      <javac compiler="modern" srcdir="${srcdir}/noAnnoMethods"
+           destdir="${lwmnoannoworkdir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+      	   source="${build.tests.with.java.level}"
+      	   target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="WebMethodLegacyCheck.java"/>
+    </javac>
+      
+    <war warfile="${FVT.build.lib.dir}/lwmnoanno.war"
+       webxml="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc/dd/web.xml">   
+       <classes dir="${lwmnoannoworkdir}">
+          <include name="annotations/webmethod_g2/runtime/server/**/*.class"/>
+       </classes>
+  	   <classes dir="${srcdir}/noAnnoMethods">
+	      <include name="WebMethodLegacyCheck.java" />
+       </classes>
+     </war>
+    <!-- this app will be installed by the testcase itself after the jvm prop is set -->
+    <ear earfile="${FVT.build.installableApps.dir}/lwmjvmnoanno.ear"
+         appxml="${FVT.base.dir}/src/${componentPath}/etc/lwm/lwm_jvmnoanno_application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="lwmnoanno.war"/>
+    </ear>
+    
+    
+    <!-- build other EARs -->
+    
+    <!-- this app will be installed by the testcase itself after the jvm prop is set -->
+    <ear earfile="${FVT.build.installableApps.dir}/lwmjvmset.ear"
+         appxml="${FVT.base.dir}/src/${componentPath}/etc/lwm/lwm_jvmset_application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="lwm.war"/>
+    </ear>
+
+    <!-- this app will be installed by the testcase itself after the jvm prop is set -->
+    <ear earfile="${FVT.build.installableApps.dir}/lwmwithwsdl.ear"
+         appxml="${FVT.base.dir}/src/${componentPath}/etc/lwm/lwm_withwsdl_application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="lwm_wsdl.war"/>
+    </ear>
+    
+    
+    <!-- this app is the same as above, it's just easier to build two apps than
+      have a bunch of uninstall/reinstall code in the test case -->
+    <ear earfile="${FVT.build.installableApps.dir}/lwmjvmdefault.ear"
+         appxml="${FVT.base.dir}/src/${componentPath}/etc/lwm/lwm_jvmdefault_application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="lwm.war"/>
+    </ear>
+    
+    <!-- this app will use the WAR with a property in the manifest -->     
+    <ear earfile="${FVT.build.installableApps.dir}/lwmmanifest.ear"
+         appxml="${FVT.base.dir}/src/${componentPath}/etc/lwm/lwm_manifest_application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="lwm_manifest.war"/>
+    </ear>          
+  </target>
+  
+  <target name="lwmclient" depends="init">  
+  	  <!-- client needs to use a wsdl with all operations in it --> 
+      <wsimport
+              keep="true"
+              verbose="true"
+              sourcedestdir="${FVT.build.classes.dir}"
+              package="annotations.webmethod_g2.runtime.lwmclient" 
+              destdir="${FVT.build.classes.dir}"
+              wsdl="${srcdir}/../etc/wsdl/WebMethodLegacyCheckService.wsdl" >
+      </wsimport>
+      
+     <javac compiler="modern" srcdir="${srcdir}/../lwmclient"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="WebMethodLegacyCheckClient.java"/>
+    </javac>
+  </target>  
+
+  <target name="servers" depends="init">
+
+    <delete dir="${workdir}*" />
+    <mkdir  dir="${workdir}" />
+    <mkdir  dir="${workdir}2" />
+    <mkdir  dir="${workdir}3" />
+    <mkdir  dir="${workdir}4" />
+    <mkdir  dir="${workdir}5" />
+    <mkdir  dir="${workdir}6" />
+
+    <!-- copy the imp. classes out to work area and compile them -->
+    <copy
+            overwrite="true"
+            file="${srcdir}/WebMethodRuntimeAnnotatedCheck.java"
+            tofile="${workdir}/WebMethodRuntimeAnnotatedCheck.java">
+    </copy>
+    <javac compiler="modern" srcdir="${workdir}"
+           destdir="${workdir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+    	   source="${build.tests.with.java.level}"
+    	   target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="WebMethodRuntimeAnnotatedCheck.java"/>
+    </javac>
+
+     <!-- keeping wsdl but not using it initially -->
+     <echo message="wsgen..." />
+     <wsgen
+             genwsdl="true"
+             keep="true"
+             verbose="true"
+             destdir="${workdir}"
+             resourcedestdir="${workdir}"
+             sourcedestdir="${workdir}"
+             sei="annotations.webmethod_g2.runtime.server.WebMethodRuntimeAnnotatedCheck"
+             >
+             <classpath>
+                     <pathelement path="${workdir}"/>
+                     <path refid="classpath"/>
+          </classpath>
+     </wsgen>
+
+    <war warfile="${FVT.build.lib.dir}/${warfile}"
+       webxml="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc/dd/web.xml">
+      <webinf dir="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc">
+        <include name="wsdl/*.wsdl"/>
+        <include name="wsdl/*.xsd"/>
+      </webinf>
+       <classes dir="${workdir}">
+          <include name="annotations/webmethod_g2/runtime/server/**/*.class"/>
+           <include name="**/*java" />
+      </classes>
+    </war>
+
+    <ear earfile="${FVT.build.installableApps.dir}/${warname}.ear"
+         appxml="${FVT.base.dir}/src/${componentPath}/etc/dd/application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="${warfile}"/>
+    </ear>
+
+
+    <!-- second server -->
+    <!-- copy the modified imp. classes out to work area and compile them -->
+
+    <!-- wsgen has bug that it will use class down the dest path, so gen wsdl before mutated class is present -->
+    <!-- we want the ORIGINAL wsdl, not from the modified impl, so we point back to original impl bean -->
+    <echo message="wsgen..." />
+    <wsgen
+            genwsdl="true"
+            keep="true"
+            verbose="true"
+            destdir="${workdir}2"
+            resourcedestdir="${workdir}2"
+            sourcedestdir="${workdir}2"
+            sei="annotations.webmethod_g2.runtime.server.WebMethodRuntimeAnnotatedCheck"
+            >
+            <classpath>
+                    <pathelement path="${workdir}"/>
+                    <path refid="classpath"/>
+         </classpath>
+    </wsgen>
+
+    <copy
+            overwrite="true"
+            file="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/server/WebMethodRuntimeAnnotatedCheck2.java"
+            tofile="${workdir}2/WebMethodRuntimeAnnotatedCheck.java">
+    </copy>
+
+    <javac compiler="modern" srcdir="${workdir}2"
+           destdir="${workdir}2"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="WebMethodRuntimeAnnotatedCheck.java"/>
+    </javac>
+
+
+    <war warfile="${FVT.build.lib.dir}/${warfile2}"
+       webxml="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc/dd/web.xml">
+      <webinf dir="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc">
+        <include name="wsdl/*.wsdl"/>
+        <include name="wsdl/*.xsd"/>
+      </webinf>
+       <classes dir="${workdir}2">
+          <include name="annotations/webmethod_g2/runtime/server/**/*.class"/>
+           <include name="**/*java" />
+      </classes>
+    </war>
+
+    <ear earfile="${FVT.build.installableApps.dir}/${warname}2.ear"
+         appxml="${FVT.base.dir}/src/${componentPath}/etc/dd2/application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="${warfile2}"/>
+    </ear>
+
+
+
+    <!-- repeat for third class -->
+    <!-- wsgen has bug that it will use class down the dest path, so gen wsdl before mutated class is present -->
+    <!-- we want the ORIGINAL wsdl, not from the modified impl, so we point back to original impl bean -->
+    <echo message="wsgen..." />
+    <wsgen
+            genwsdl="true"
+            keep="true"
+            verbose="true"
+            destdir="${workdir}3"
+            resourcedestdir="${workdir}3"
+            sourcedestdir="${workdir}3"
+            sei="annotations.webmethod_g2.runtime.server.WebMethodRuntimeAnnotatedCheck"
+            >
+            <classpath>
+                    <pathelement path="${workdir}"/>
+                    <path refid="classpath"/>
+         </classpath>
+    </wsgen>
+    <!-- copy the modified imp. classes out to work area and compile them -->
+    <copy
+            overwrite="true"
+            file="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/server/WebMethodRuntimeAnnotatedCheck3.java"
+            tofile="${workdir}3/WebMethodRuntimeAnnotatedCheck.java">
+    </copy>
+    <javac compiler="modern" srcdir="${workdir}3"
+           destdir="${workdir}3"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="WebMethodRuntimeAnnotatedCheck.java"/>
+    </javac>
+
+     <!-- now make another war file containing the modified class, all else the same -->
+    <war warfile="${FVT.build.lib.dir}/${warfile3}"
+         webxml="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc/dd/web.xml">
+      <webinf dir="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc">
+        <include name="wsdl/*.wsdl"/>
+        <include name="wsdl/*.xsd"/>
+      </webinf>
+      <classes dir="${workdir}3">
+          <include name="annotations/webmethod_g2/runtime/server/**/*.class"/>
+          <include name="**/*java" />
+      </classes>
+    </war>
+
+
+    <ear earfile="${FVT.build.installableApps.dir}/${warname}3.ear"
+         appxml="${FVT.base.dir}/src/${componentPath}/etc/dd3/application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="${warfile3}"/>
+    </ear>
+
+
+    <!-- repeat for 4th case -->
+    <!-- testing switching and exclusion, with wsdl -->
+    <!-- wsgen has bug that it will use class down the dest path, so gen wsdl before mutated class is present -->
+    <!-- we want the ORIGINAL wsdl, not from the modified impl, so we point back to original impl bean -->
+    <echo message="wsgen..." />
+    <wsgen
+            genwsdl="true"
+            keep="true"
+            verbose="true"
+            destdir="${workdir}4"
+            resourcedestdir="${workdir}4"
+            sourcedestdir="${workdir}4"
+            sei="annotations.webmethod_g2.runtime.server.WebMethodRuntimeAnnotatedCheck"
+            >
+            <classpath>
+                    <pathelement path="${workdir}"/>
+                    <path refid="classpath"/>
+         </classpath>
+    </wsgen>
+    <!-- copy the modified imp. classes out to work area and compile them -->
+    <copy
+            overwrite="true"
+            file="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/server/WebMethodRuntimeAnnotatedCheck4.java"
+            tofile="${workdir}4/WebMethodRuntimeAnnotatedCheck.java">
+    </copy>
+    <javac compiler="modern" srcdir="${workdir}4"
+           destdir="${workdir}4"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="WebMethodRuntimeAnnotatedCheck.java"/>
+    </javac>
+
+    <!-- now make another war file containing the modified class, all else the same -->
+    <war warfile="${FVT.build.lib.dir}/${warfile4}"
+         webxml="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc/dd/web.xml">
+      <webinf dir="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc">
+        <include name="wsdl/*.wsdl"/>
+        <include name="wsdl/*.xsd"/>
+      </webinf>
+       <classes dir="${workdir}4">
+          <include name="annotations/webmethod_g2/runtime/server/**/*.class"/>
+          <include name="**/*java" />
+       </classes>
+    </war>
+
+    <ear earfile="${FVT.build.installableApps.dir}/${warname}4.ear"
+         appxml="${FVT.base.dir}/src/${componentPath}/etc/dd4/application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="${warfile4}"/>
+    </ear>
+
+
+    <!-- repeat for 6th case  - dynamic wsdl on impl class -->
+    <!-- wsgen has bug that it will use class down the dest path, so gen wsdl before mutated class is present -->
+     <!-- we need to run wsgen to get the beans -->
+     <!-- but we won't package the wsdl this time -->
+     <!-- we will keep it around in case we need to compare it to what the runtime generates -->
+    <!-- we want the ORIGINAL wsdl, not from the modified impl, so we point back to original impl bean -->
+    <echo message="wsgen..." />
+    <wsgen
+            genwsdl="true"
+            keep="true"
+            verbose="true"
+            destdir="${workdir}6"
+            resourcedestdir="${workdir}6"
+            sourcedestdir="${workdir}6"
+            sei="annotations.webmethod_g2.runtime.server.WebMethodRuntimeAnnotatedCheck"
+            >
+            <classpath>
+                    <pathelement path="${workdir}"/>
+                    <path refid="classpath"/>
+         </classpath>
+    </wsgen>
+
+    <!-- copy the modified imp. classes out to work area and compile them -->
+    <copy
+            overwrite="true"
+            file="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/server/WebMethodRuntimeAnnotatedCheck4.java_nowsdl"
+            tofile="${workdir}6/WebMethodRuntimeAnnotatedCheck.java">
+    </copy>
+    <javac compiler="modern" srcdir="${workdir}6"
+           destdir="${workdir}6"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="WebMethodRuntimeAnnotatedCheck.java"/>
+    </javac>
+
+
+    <!-- now make another war file containing the modified class, all else the same -->
+    <war warfile="${FVT.build.lib.dir}/${warfile6}"
+         webxml="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc/dd/web.xml">
+       <classes dir="${workdir}6">
+          <include name="annotations/webmethod_g2/runtime/server/**/*.class"/>
+          <include name="**/*java" />
+       </classes>
+    </war>
+
+    <ear earfile="${FVT.build.installableApps.dir}/${warname}6.ear"
+         appxml="${FVT.base.dir}/src/${componentPath}/etc/dd6/application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="${warfile6}"/>
+    </ear>
+
+
+    <!-- generate 5th set for the void method testcase -->
+    <!-- copy the modified imp. classes out to work area and compile them -->
+    <copy
+            overwrite="true"
+            file="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/server/WebMethodRuntimeVoidCheck.java"
+            todir="${workdir}5">
+    </copy>
+    <copy
+            overwrite="true"
+            file="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/server/WebMethodRuntimeVoidCheckParent.java"
+            todir="${workdir}5">
+    </copy>
+    <javac compiler="modern" srcdir="${workdir}5"
+           destdir="${workdir}5"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="WebMethodRuntimeVoidCheck*.java"/>
+    </javac>
+    <echo message="wsgen..." />
+    <wsgen
+            genwsdl="true"
+            keep="true"
+            verbose="true"
+            destdir="${workdir}5"
+            resourcedestdir="${workdir}5"
+            sourcedestdir="${workdir}5"
+            sei="annotations.webmethod_g2.runtime.server.WebMethodRuntimeVoidCheck"
+            >
+            <classpath>
+                    <path refid="classpath"/>
+                    <pathelement path="${workdir}5"/>
+         </classpath>
+    </wsgen>
+
+
+    <!-- now make another war file containing the void test  class, all else the same -->
+    <war warfile="${FVT.build.lib.dir}/${warfile5}"
+         webxml="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc2/dd/web.xml">
+      <!-- skip to test dynamic wsdl
+      <webinf dir="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc2">
+        <include name="wsdl/*.wsdl"/>
+        <include name="wsdl/*.xsd"/>
+      </webinf>
+      -->
+      <classes dir="${workdir}5">
+          <include name="annotations/webmethod_g2/runtime/server/**/*.class"/>
+          <include name="**/*java" />
+      </classes>
+    </war>
+
+    <ear earfile="${FVT.build.installableApps.dir}/${warname}5.ear"
+         appxml="${FVT.base.dir}/src/${componentPath}/etc2/dd/application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="${warfile5}"/>
+    </ear>
+
+
+  </target>
+
+
+  <!-- The client target will build anything necessary for the client
+       piece of the test.  This could just be compiling the client class
+       or in the case of a managed client, building a client side EAR
+       file.
+
+       Note that in this test, we're changing namespace parameters, so
+       package names are not what we expect (ifimpl and iftest, or some such thing).
+       Yet we have to put the classes in buid/classes directory to be able
+       to cleanly run the client later.
+
+            If you need to FIND the generated client classes to examine them,
+            use this parameter instead:
+                        destdir="${workdir}/client"
+  -->
+  <target name="client" depends="setenv">
+      <!-- generate client side classes -->
+          
+      <echo message="wsimport...." />
+      <wsimport
+              keep="true"
+              verbose="true"
+              sourcedestdir="${FVT.build.classes.dir}"
+              destdir="${FVT.build.classes.dir}"
+              wsdl="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc/wsdl/WebMethodRuntimeAnnotatedCheckService.wsdl">
+      </wsimport>
+
+      <!-- now the void test -->
+      <echo message="wsimport...." />
+      <mkdir dir="${workdir5}/client" />
+      <wsimport
+              keep="true"
+              verbose="true"
+              sourcedestdir="${FVT.build.classes.dir}"
+              destdir="${FVT.build.classes.dir}"
+              wsdl="${workdir}5/WebMethodRuntimeVoidCheckService.wsdl" >
+           <!-- use wsdl built directly from impl class, makes it easier to change test case and not mismatch the wsdl -->
+           <!--   wsdl="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/etc2/wsdl/WebMethodRuntimeVoidCheckService.wsdl" -->
+      </wsimport>
+
+      <!-- compile client implementations -->
+      <javac compiler="modern" srcdir="${FVT.base.dir}/src/${componentPath}/client"
+             destdir="${FVT.build.classes.dir}"
+             deprecation="${deprecation}"
+             debug="${debug}"
+             source="${build.tests.with.java.level}"
+             target="${build.tests.with.java.level}"
+             failonerror="${failonerror}">
+        <classpath>
+           <path refid="classpath"/>
+           <pathelement path="${workdir}/client"/>
+        </classpath>
+        <include name="*lient.java"/>
+      </javac>
+
+
+  </target>
+
+
+  <!-- The test target will build anything necessary for the test
+       piece of the test.  Often this will just include compiling the
+       the JUnit test case file.
+  -->
+  <target name="test" depends="setenv, client">
+
+    <javac compiler="modern" srcdir="${FVT.base.dir}/src/${componentPath}"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+      <include name="**/test/*.java"/>
+    </javac>
+
+  </target>
+
+
+  <!-- The preinstall target will perform any tasks necessary before the
+       application is installed into WebSphere.  This could include running
+       ejbdeploy or endptenabler for an EAR that contains an EJB.
+  -->
+  <target name="preinstall" depends="setenv">
+  </target>
+
+
+  <!-- The install target will install the server side piece of the test
+       into WebSphere.  This target calls the installTest.xml file for
+       the test.
+  -->
+  <target name="install" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/installTest.xml"
+         dir="${FVT.base.dir}/src/annotations/webmethod_g2/runtime">
+        <property name="install.mode" value="${rt.install.mode}"/>
+    </ant>
+  </target>
+	
+	 <target name="installlwm" depends="setenv">
+	    <ant antfile="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/installTest.xml"
+	         dir="${FVT.base.dir}/src/annotations/webmethod_g2/runtime"
+	    	 target="installlwm">
+	        <property name="install.mode" value="${rt.install.mode}"/>
+	    </ant>
+	  </target>	
+      
+      <!-- for debug --> 
+      <target name="installextras" depends="setenv">
+	    <ant antfile="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/installTest.xml"
+	         dir="${FVT.base.dir}/src/annotations/webmethod_g2/runtime"
+	    	 target="installextras">
+	        <property name="install.mode" value="${rt.install.mode}"/>
+	    </ant>
+	  </target>	
+
+
+  <!-- The uninstall target will uninstall the server side piece of the test
+       from WebSphere.  This target calls the uninstallTest.xml file for
+       the test.
+  -->
+  <target name="uninstall" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/uninstallTest.xml"
+         dir="${FVT.base.dir}/src/annotations/webmethod_g2/runtime">
+        <property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+    </ant>
+  </target>
+ <target name="uninstalllwm" depends="setenv">
+	    <ant antfile="${FVT.base.dir}/src/annotations/webmethod_g2/runtime/uninstallTest.xml"
+	         dir="${FVT.base.dir}/src/annotations/webmethod_g2/runtime"
+	    	 target="uninstalllwm">
+	        <property name="install.mode" value="${rt.install.mode}"/>
+	    </ant>
+	  </target>	
+
+
+</project>

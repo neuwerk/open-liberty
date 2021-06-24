@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://java.sun.com/xml/ns/javaee" 
+			 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+			 id="Application_ID" version="5" 
+			 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd">
+
+  <display-name>PartialWsdlPartial1</display-name>
+  
+    <module id="PartialWsdlPartial1_module1">
+     <web>
+        <web-uri>PartialWsdlPartial1.war</web-uri>
+        <context-root>/partialwsdlp1</context-root>
+     </web>
+  </module>
+  
+ </application>

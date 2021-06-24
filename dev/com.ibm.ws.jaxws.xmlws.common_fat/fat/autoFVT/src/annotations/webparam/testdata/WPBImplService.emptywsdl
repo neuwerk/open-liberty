@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- test jsr224 5.2.5.6 -->
+<definitions targetNamespace="http://testdata.webparam.annotations/" name="WPBImplService" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://testdata.webparam.annotations/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://testdata.webparam.annotations/" schemaLocation="WPBImplService_schema1.xsd"/>
+    </xsd:schema>
+    <xsd:schema>
+      <xsd:import namespace="annotations.webparam.testdata2" schemaLocation="WPBImplService_schema2.xsd"/>
+    </xsd:schema>
+  </types>  
+</definitions>    

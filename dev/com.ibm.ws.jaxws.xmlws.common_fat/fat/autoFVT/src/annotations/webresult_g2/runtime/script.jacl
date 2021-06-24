@@ -1,0 +1,33 @@
+set outFile [open c:/eclipse/WautoFVT/logs/install-error.log {a+}]
+
+if {[catch {$AdminApp install c:/eclipse/WautoFVT/build/installableApps/AnnotationsSoapBinding.ear "-appname AnnotationsSoapBinding -nodeployejb"} result]} {
+    puts $outFile "INSTALL FAIL: AnnotationsSoapBinding.ear\n    $result"
+}
+
+if {[catch {$AdminApp install c:/eclipse/WautoFVT/build/installableApps/AnnotationsSoapBinding.ear "-appname AnnotationsSoapBinding -nodeployejb"} result]} {
+    puts $outFile "INSTALL FAIL: AnnotationsSoapBinding.ear\n    $result"
+}
+
+if {[catch {$AdminApp install c:/eclipse/WautoFVT/build/installableApps/AnnotationsSoapBinding.ear "-appname AnnotationsSoapBinding -nodeployejb"} result]} {
+    puts $outFile "INSTALL FAIL: AnnotationsSoapBinding.ear\n    $result"
+}
+
+if {[catch {$AdminApp install c:/eclipse/WautoFVT/build/installableApps/AnnotationsSoapBindingBad.ear "-appname AnnotationsSoapBindingBad -nodeployejb"} result]} {
+    puts $outFile "INSTALL FAIL: AnnotationsSoapBindingBad.ear\n    $result"
+}
+
+if {[catch {$AdminApp install c:/eclipse/WautoFVT/build/installableApps/AnnotationsSoapBindingImpl.ear "-appname AnnotationsSoapBindingImpl -nodeployejb"} result]} {
+    puts $outFile "INSTALL FAIL: AnnotationsSoapBindingImpl.ear\n    $result"
+}
+
+if {[catch {$AdminApp install c:/eclipse/WautoFVT/build/installableApps/AnnotationsSoapBindingRpc.ear "-appname AnnotationsSoapBindingRpc -nodeployejb"} result]} {
+    puts $outFile "INSTALL FAIL: AnnotationsSoapBindingRpc.ear\n    $result"
+}
+
+if {[catch {$AdminApp install c:/eclipse/WautoFVT/build/installableApps/webresultannog2.ear "-appname webresultannog2 -nodeployejb"} result]} {
+    puts $outFile "INSTALL FAIL: webresultannog2.ear\n    $result"
+}
+close $outFile
+$AdminConfig save
+
+$AdminConfig save

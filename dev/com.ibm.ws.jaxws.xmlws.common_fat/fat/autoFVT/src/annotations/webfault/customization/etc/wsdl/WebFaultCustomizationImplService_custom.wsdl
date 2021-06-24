@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://server.customization.webfault.annotations/" 
+	name="WebFaultCustomizationImplService" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:tns="http://server.customization.webfault.annotations/" 
+	xmlns="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:jaxws="http://java.sun.com/xml/ns/jaxws">
+	
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://server.customization.webfault.annotations/" schemaLocation="WebFaultCustomizationImplService_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="addNumbers">
+    <part name="parameters" element="tns:addNumbers"/>
+  </message>
+  <message name="addNumbersResponse">
+    <part name="parameters" element="tns:addNumbersResponse"/>
+  </message>
+  <message name="WebFaultCustomizationException">
+    <part name="fault" element="tns:WebFaultCustomizationException"/>
+  </message>
+  <message name="multiplyNumbers">
+    <part name="parameters" element="tns:multiplyNumbers"/>
+  </message>
+  <message name="multiplyNumbersResponse">
+    <part name="parameters" element="tns:multiplyNumbersResponse"/>
+  </message>
+  <portType name="WebFaultCustomization">
+    <operation name="addNumbers">
+      <input message="tns:addNumbers"/>
+      <output message="tns:addNumbersResponse"/>
+      <fault name="WebFaultCustomizationException" message="tns:WebFaultCustomizationException"/>
+    </operation>
+    <operation name="multiplyNumbers">
+      <input message="tns:multiplyNumbers"/>
+      <output message="tns:multiplyNumbersResponse"/>
+      <fault name="WebFaultCustomizationException" message="tns:WebFaultCustomizationException">
+        <!-- wsdl:fault customization -->
+      	<jaxws:bindings>
+      	    <!-- change the generated exception class name -->
+	      	<jaxws:class name="MultiplyNumbersException" />
+      	</jaxws:bindings>
+      </fault>
+    </operation>
+  </portType>
+  <binding name="WebFaultCustomizationImplPortBinding" type="tns:WebFaultCustomization">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="addNumbers">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="WebFaultCustomizationException">
+        <soap:fault name="WebFaultCustomizationException" use="literal"/>
+      </fault>
+    </operation>
+    <operation name="multiplyNumbers">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="WebFaultCustomizationException">
+        <soap:fault name="WebFaultCustomizationException" use="literal"/>
+      </fault>
+    </operation>
+  </binding>
+  <service name="WebFaultCustomizationImplService">
+    <port name="WebFaultCustomizationImplPort" binding="tns:WebFaultCustomizationImplPortBinding">
+      <soap:address location="http://@REPLACE_WITH_HOST_NAME@:@REPLACE_WITH_PORT_NUM@//webfaultcustomization/webfaultcustomization"/>
+    </port>
+  </service>
+</definitions>
+

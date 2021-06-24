@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- 
+ 1.1, 4/15/08
+ Change History:
+ Date     UserId      Defect          Description
+ 03/10/08 jramos      LIDB4418-12.01  New File
+-->
+
+<definitions xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" 
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
+    xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" 
+    xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" 
+    xmlns:s0="urn://MtomOnDispatch.mtom21.test.org"
+    targetNamespace="urn://MtomOnDispatch.mtom21.test.org"
+    xmlns="http://schemas.xmlsoap.org/wsdl/">
+    
+  <types>
+   <xs:schema elementFormDefault="qualified"
+    xmlns:xmime="http://www.w3.org/2005/05/xmlmime"
+    xmlns:tns="urn://MtomOnDispatch.mtom21.test.org"
+    targetNamespace="urn://MtomOnDispatch.mtom21.test.org">
+    
+    <xs:import namespace="http://www.w3.org/2005/05/xmlmime"
+               schemaLocation="xmlmime.xsd"/>
+    <xs:complexType name="ImageDepot">
+       <xs:sequence>
+           <xs:element name="imageData" 
+                       type="xs:base64Binary"                        
+                       xmime:expectedContentTypes="image/jpeg"/>
+
+       </xs:sequence>
+    </xs:complexType>
+    
+    <xs:element name="invoke">
+       <xs:complexType>
+          <xs:sequence>
+             <xs:element minOccurs="0" maxOccurs="1" name="input" type="tns:ImageDepot"/>
+          </xs:sequence>
+       </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="sendImageResponse">
+       <xs:complexType>
+          <xs:sequence>
+             <xs:element minOccurs="0" maxOccurs="1" name="output" type="tns:ImageDepot"/>
+          </xs:sequence>
+       </xs:complexType>
+    </xs:element>
+    
+   </xs:schema>
+  </types>
+
+  <message name="emptyMessage"/>
+  <message name="sendImage">
+    <part name="parameters" element="s0:invoke" />
+  </message>
+  <message name="sendImageResponse">
+    <part name="parameters" element="s0:sendImageResponse" />
+  </message>
+
+  <portType name="ImageServiceInterface">
+    <operation name="invoke">
+      <input message="s0:sendImage" />
+      <output message="s0:sendImageResponse" />
+    </operation>  
+  </portType>
+
+  <binding name="ImageServiceSoap" type="s0:ImageServiceInterface">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document" />
+    <operation name="invoke">
+      <soap:operation soapAction="sendImage" style="document" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+  </binding>
+
+  <service name="MtomOnDispatchService">
+    <port name="AttachmentServicePort" binding="s0:ImageServiceSoap">
+      <soap:address location="http://localhost:9080/mtommixedsetting/MtomOnDispatchService" />
+    </port>
+  </service>
+
+</definitions>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions targetNamespace="http://handlerdeploy.jaxws" 
+      xmlns:tns="http://handlerdeploy.jaxws"
+      xmlns:xs="http://handlerdeploy.jaxws/xsd"
+      xmlns="http://schemas.xmlsoap.org/wsdl/" 
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+      xmlns:soap11="http://schemas.xmlsoap.org/wsdl/soap/"
+      xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/">
+
+   <types>
+      <xsd:schema targetNamespace="http://handlerdeploy.jaxws/xsd"
+                  xmlns:ts="http://handlerdeploy.jaxws/xsd"
+                  xmlns="http://www.w3.org/2001/XMLSchema"
+                  elementFormDefault="qualified">
+
+         <complexType name="echoMessage">
+            <sequence>
+               <element name="request" type="xsd:string"/>
+            </sequence>
+         </complexType>
+
+         <complexType name="echoMessageResponse">
+            <sequence>
+               <element name="response" type="xsd:string"/>
+            </sequence>
+         </complexType>
+
+         <element name="echoMessage" type="ts:echoMessage"/>
+         <element name="echoMessageResponse" type="ts:echoMessageResponse"/>
+
+      </xsd:schema>
+   </types>
+
+   <message name="echoMessage">
+      <part name="message" element="xs:echoMessage"/>
+   </message>
+
+   <message name="echoMessageResponse">
+      <part name="result" element="xs:echoMessageResponse"/>
+   </message>
+
+   <portType name="EchoMessagePortType">
+      <operation name="echoMessage">
+         <input message="tns:echoMessage" name="incoming"/>
+         <output message="tns:echoMessageResponse" name="outgoing"/>
+      </operation>
+   </portType>
+
+   <binding name="EchoMessageSOAP11Binding" type="tns:EchoMessagePortType">
+      <soap11:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+      <operation name="echoMessage">
+         <soap11:operation soapAction=""/>
+         <input>
+            <soap11:body use="literal"/>
+         </input>
+
+         <output>
+            <soap11:body use="literal"/>
+         </output>
+      </operation>
+   </binding>
+
+   <binding name="EchoMessageSOAP12Binding" type="tns:EchoMessagePortType">
+      <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+      <operation name="echoMessage">
+         <soap12:operation soapAction=""/>
+         <input>
+            <soap12:body use="literal"/>
+         </input>
+
+         <output>
+            <soap12:body use="literal"/>
+         </output>
+      </operation>
+   </binding>
+
+   <service name="EchoMessageSOAP11Service">
+      <port binding="tns:EchoMessageSOAP11Binding" name="EchoMessageSOAP11Port">
+         <soap11:address location="http://@myHostTag@:@myPortTag@/jaxws-handlerdeploy/EchoMessageSOAP11Service"/>
+      </port>
+   </service>
+
+   <service name="EchoMessageSOAP11SimpleService">
+      <port binding="tns:EchoMessageSOAP11Binding" name="EchoMessageSOAP11SimplePort">
+         <soap11:address location="http://@myHostTag@:@myPortTag@/jaxws-handlerdeploy/EchoMessageSOAP11SimpleService"/>
+      </port>
+   </service>
+
+   <service name="EchoMessageSOAP12Service">
+      <port binding="tns:EchoMessageSOAP12Binding" name="EchoMessageSOAP12Port">
+         <soap12:address location="http://@myHostTag@:@myPortTag@/jaxws-handlerdeploy/EchoMessageSOAP12Service"/>
+      </port>
+   </service>
+
+   <service name="EchoMessageSOAP12SimpleService">
+      <port binding="tns:EchoMessageSOAP12Binding" name="EchoMessageSOAP12SimplePort">
+         <soap12:address location="http://@myHostTag@:@myPortTag@/jaxws-handlerdeploy/EchoMessageSOAP12SimpleService"/>
+      </port>
+   </service>
+
+   <service name="EchoMessageSOAP11Provider">
+      <port binding="tns:EchoMessageSOAP11Binding" name="EchoMessageSOAP11ProviderPort">
+         <soap11:address location="http://@myHostTag@:@myPortTag@/jaxws-handlerdeploy/EchoMessageSOAP11Provider"/>
+      </port>
+   </service>
+
+   <service name="EchoMessageSOAP12Provider">
+      <port binding="tns:EchoMessageSOAP12Binding" name="EchoMessageSOAP12ProviderPort">
+         <soap12:address location="http://@myHostTag@:@myPortTag@/jaxws-handlerdeploy/EchoMessageSOAP12Provider"/>
+      </port>
+   </service>
+
+</definitions>

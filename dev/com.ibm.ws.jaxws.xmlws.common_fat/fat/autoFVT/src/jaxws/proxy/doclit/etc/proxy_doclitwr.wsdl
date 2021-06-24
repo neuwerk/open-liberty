@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:tns="http://doclitwrapped.wsfvt.doclit.proxy.jaxws"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://doclitwrapped.wsfvt.doclit.proxy.jaxws">
+
+	<wsdl:types>
+		<xsd:schema
+			targetNamespace="http://doclitwrapped.wsfvt.doclit.proxy.jaxws"
+			xmlns:tns="http://doclitwrapped.wsfvt.doclit.proxy.jaxws"
+			xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+			<xsd:complexType name="MyComplexType">
+				<xsd:sequence>
+					<xsd:element name="a" type="xsd:long" />
+					<xsd:element name="b" type="xsd:string" />
+				</xsd:sequence>
+			</xsd:complexType>
+
+			<xsd:element name="MyFault" type="xsd:string" />
+
+			<!-- wrappers for void op() -->
+			<xsd:element name="oneWayVoid">
+				<xsd:complexType>
+					<xsd:sequence />
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- wrappers for void op(in T) -->
+			<xsd:element name="oneWay">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="oneway_str"
+							type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- wrappers for void op(in T) throws WSE-->
+			<xsd:element name="oneWayException">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="exception_msg"
+							type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="twoWayHolder">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="twoWayHolder_str"
+							type="xsd:string" />
+						<xsd:element name="twoWayHolder_int"
+							type="xsd:int" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="twoWay">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="twoway_str"
+							type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="twoWayException">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="exception_msg"
+							type="tns:ExceptionTypeEnum" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:simpleType name="ExceptionTypeEnum">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="Unchecked" />
+					<xsd:enumeration value="WSE" />
+					<xsd:enumeration value="SoapFault_NoDetail" />
+					<xsd:enumeration value="SoapFault_WithDetail" />
+					<xsd:enumeration value="WsdlFault" />
+				</xsd:restriction>
+			</xsd:simpleType>
+
+			<xsd:element name="ExceptionBean" type="xsd:string" />
+
+			<xsd:element name="twoWayOut">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="in" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="twoWayOutResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="out1" type="xsd:string" />
+						<xsd:element name="out2"
+							type="tns:MyComplexType" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="twoWayMulti">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="a" type="xsd:int" />
+						<xsd:element name="c" type="xsd:string" />
+						<xsd:element name="b" type="tns:MyComplexType" />
+						<xsd:element name="d" type="tns:MyComplexType" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="twoWayMultiResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="c" type="xsd:string" />
+						<xsd:element name="d" type="tns:MyComplexType" />
+						<xsd:element name="e" type="xsd:int" />
+						<xsd:element name="f" type="tns:MyComplexType" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="twoWayNonVoidHolder">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="in" type="xsd:string" />
+						<xsd:element name="inout" type="xsd:integer" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="twoWayNonVoidHolderResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="out" type="xsd:string" />
+						<xsd:element name="inout" type="xsd:integer" />
+						<xsd:element name="return" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- wrapper exception and polymorphic fault test
+				This bean should have an associated exception
+			-->
+			<xsd:element name="MyBaseFaultBean" type="tns:BaseFault" />
+
+			<xsd:complexType name="BaseFault">
+				<xsd:sequence>
+					<xsd:element name="message" type="xsd:string" />
+					<xsd:element name="error_code" type="xsd:int" />
+				</xsd:sequence>
+			</xsd:complexType>
+
+			<xsd:element name="twoWayInOut">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="twoway_str" type="xsd:string"
+							default="TwoWayStr" />
+						<xsd:element name="oneway_int"
+							type="xsd:integer" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="twoWayInOutResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="twoway_str"
+							type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="twoWaySilly">
+				<xsd:complexType>
+					<xsd:sequence>
+
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="ReturnType">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="return_str"
+							type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- test for 2 operations having same soapaction -->
+			<xsd:element name="soapAction1a">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="param1" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			
+			<xsd:element name="soapAction1b">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="param1" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>			
+
+			<xsd:element name="soapAction2a">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="param1" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			
+			<xsd:element name="soapAction2b">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="param1" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>	
+
+			<xsd:element name="soapActionResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="opName" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>	
+
+		</xsd:schema>
+	</wsdl:types>
+
+	<wsdl:message name="CustomException">
+		<wsdl:part name="fault" element="tns:ExceptionBean" />
+	</wsdl:message>
+
+	<wsdl:message name="oneWayVoidRequest">
+		<wsdl:part name="part" element="tns:oneWayVoid" />
+	</wsdl:message>
+
+	<wsdl:message name="oneWayRequest">
+		<wsdl:part name="part" element="tns:oneWay" />
+	</wsdl:message>
+
+	<wsdl:message name="oneWayExceptionRequest">
+		<wsdl:part name="request" element="tns:oneWayException" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWayHolderRequest">
+		<wsdl:part name="part" element="tns:twoWayHolder" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWayHolderResponse">
+		<wsdl:part name="part" element="tns:twoWayHolder" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWayOutRequest">
+		<wsdl:part name="part" element="tns:twoWayOut" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWayOutResponse">
+		<wsdl:part name="part" element="tns:twoWayOutResponse" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWayMultiRequest">
+		<wsdl:part name="request" element="tns:twoWayMulti" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWayMultiResponse">
+		<wsdl:part name="response" element="tns:twoWayMultiResponse" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWayExceptionRequest">
+		<wsdl:part name="request" element="tns:twoWayException" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWayRequest">
+		<wsdl:part name="part" element="tns:twoWay" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWayResponse">
+		<wsdl:part name="part" element="tns:ReturnType" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWayInOutRequest">
+		<wsdl:part name="part" element="tns:twoWayInOut" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWayInOutResponse">
+		<wsdl:part name="part" element="tns:twoWayInOutResponse" />
+	</wsdl:message>
+	
+	<wsdl:message name="twoWayNonVoidHolderRequest">
+		<wsdl:part name="part" element="tns:twoWayNonVoidHolder" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWayNonVoidHolderResponse">
+		<wsdl:part name="part" element="tns:twoWayNonVoidHolderResponse" />
+	</wsdl:message>	
+
+	<wsdl:message name="twoWaySillyRequest">
+		<wsdl:part name="part" element="tns:twoWaySilly" />
+	</wsdl:message>
+
+	<wsdl:message name="twoWaySillyResponse">
+		<wsdl:part name="part" element="tns:twoWaySilly" />
+	</wsdl:message>
+
+	<wsdl:message name="soapAction1aRequest">
+		<wsdl:part name="part" element="tns:soapAction1a" />
+	</wsdl:message>
+
+	<wsdl:message name="soapAction1bRequest">
+		<wsdl:part name="part" element="tns:soapAction1b" />
+	</wsdl:message>
+	
+	<wsdl:message name="soapAction2aRequest">
+		<wsdl:part name="part" element="tns:soapAction2a" />
+	</wsdl:message>
+
+	<wsdl:message name="soapAction2bRequest">
+		<wsdl:part name="part" element="tns:soapAction2b" />
+	</wsdl:message>	
+
+	<wsdl:message name="soapActionResponse">
+		<wsdl:part name="part" element="tns:soapActionResponse" />
+	</wsdl:message>
+
+	<wsdl:portType name="DocLitWrappedProxy">
+
+		<!-- void op(void) -->
+		<wsdl:operation name="oneWayVoid">
+			<wsdl:input message="tns:oneWayVoidRequest" />
+		</wsdl:operation>
+
+		<!-- void op(in X) -->
+		<wsdl:operation name="oneWay">
+			<wsdl:input message="tns:oneWayRequest" />
+		</wsdl:operation>
+
+		<!-- void op(in X) throws WebServiceException -->
+		<wsdl:operation name="oneWayException">
+			<wsdl:input message="tns:oneWayExceptionRequest" />
+		</wsdl:operation>
+
+		<!-- void op(inout X) -->
+		<wsdl:operation name="twoWayHolder">
+			<wsdl:input message="tns:twoWayHolderRequest" />
+			<wsdl:output message="tns:twoWayHolderResponse" />
+		</wsdl:operation>
+
+		<!-- T op(in X) -->
+		<wsdl:operation name="twoWay">
+			<wsdl:input message="tns:twoWayRequest" />
+			<wsdl:output message="tns:twoWayResponse" />
+		</wsdl:operation>
+
+		<!-- T op(in X) throws ExceptionBean -->
+		<wsdl:operation name="twoWayException">
+			<wsdl:input message="tns:twoWayExceptionRequest" />
+			<wsdl:output message="tns:twoWayResponse" />
+			<wsdl:fault name="CustomException" message="tns:CustomException" />
+		</wsdl:operation>
+
+		<!-- T op(in P, inout X, out Y) -->
+		<wsdl:operation name="twoWayNonVoidHolder">
+			<wsdl:input message="tns:twoWayNonVoidHolderRequest" />
+			<wsdl:output message="tns:twoWayNonVoidHolderResponse" />
+		</wsdl:operation>
+
+		<!-- void op(in P, inout X) -->
+		<wsdl:operation name="twoWayInOut">
+			<wsdl:input message="tns:twoWayInOutRequest" />
+			<wsdl:output message="tns:twoWayInOutResponse" />
+		</wsdl:operation>
+
+		<!-- void op(in P, out X, out Y) -->
+		<wsdl:operation name="twoWayOut">
+			<wsdl:input message="tns:twoWayOutRequest" />
+			<wsdl:output message="tns:twoWayOutResponse" />
+		</wsdl:operation>
+
+		<!-- void op(in A, inout B, in C, inout D, out X, out Y) -->
+		<wsdl:operation name="twoWayMulti">
+			<wsdl:input message="tns:twoWayMultiRequest" />
+			<wsdl:output message="tns:twoWayMultiResponse" />
+		</wsdl:operation>
+
+		<!-- void op() -->
+		<wsdl:operation name="twoWaySilly">
+			<wsdl:input message="tns:twoWaySillyRequest" />
+			<wsdl:output message="tns:twoWaySillyResponse" />
+		</wsdl:operation>
+		
+		<!-- soap action test 1a -->
+		<wsdl:operation name="soapAction1a">
+			<wsdl:input message="tns:soapAction1aRequest" />
+			<wsdl:output message="tns:soapActionResponse" />
+		</wsdl:operation>		
+
+		<!-- soap action test 1b -->
+		<wsdl:operation name="soapAction1b">
+			<wsdl:input message="tns:soapAction1bRequest" />
+			<wsdl:output message="tns:soapActionResponse" />
+		</wsdl:operation>		
+
+		<!-- soap action test 2a -->
+		<wsdl:operation name="soapAction2a">
+			<wsdl:input message="tns:soapAction2aRequest" />
+			<wsdl:output message="tns:soapActionResponse" />
+		</wsdl:operation>		
+
+		<!-- soap action test 2b -->
+		<wsdl:operation name="soapAction2b">
+			<wsdl:input message="tns:soapAction2bRequest" />
+			<wsdl:output message="tns:soapActionResponse" />
+		</wsdl:operation>	
+
+	</wsdl:portType>
+
+	<wsdl:binding name="ProxyDocLitWrapped" type="tns:DocLitWrappedProxy">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+
+		<wsdl:operation name="oneWayVoid">
+			<soap:operation soapAction="oneWayVoid" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+		</wsdl:operation>
+
+		<wsdl:operation name="oneWay">
+			<soap:operation soapAction="oneWay" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+		</wsdl:operation>
+
+		<wsdl:operation name="oneWayException">
+			<soap:operation soapAction="oneWayException" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+		</wsdl:operation>
+
+		<wsdl:operation name="twoWayHolder">
+			<soap:operation soapAction="twoWayHolder" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="twoWayNonVoidHolder">
+			<soap:operation soapAction="twoWayNonVoidHolder" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="twoWay">
+			<soap:operation
+				soapAction="twoWay" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="twoWayOut">
+			<soap:operation soapAction="twoWayOut" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="twoWayException">
+			<soap:operation soapAction="twoWayException" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+			<wsdl:fault name="CustomException">
+				<soap:fault use="literal" name="CustomException" />
+			</wsdl:fault>
+		</wsdl:operation>
+
+		<wsdl:operation name="twoWayInOut">
+			<soap:operation
+				soapAction="twoWayInOut" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="twoWayMulti">
+			<soap:operation soapAction="twoWayMulti" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="twoWaySilly">
+			<soap:operation soapAction="twoWaySilly" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		
+		<wsdl:operation name="soapAction1a">
+			<soap:operation soapAction="soapAction" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		
+		<wsdl:operation name="soapAction1b">
+			<soap:operation soapAction="soapAction" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		
+		<wsdl:operation name="soapAction2a">
+			<soap:operation soapAction="" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		
+		<wsdl:operation name="soapAction2b">
+			<soap:operation soapAction="" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>			
+
+	</wsdl:binding>
+
+	<wsdl:service name="ProxyDocLitWrappedService">
+		<wsdl:port binding="tns:ProxyDocLitWrapped"
+			name="ProxyDocLitWrappedPort">
+			<soap:address
+				location="http://@HOST@:@PORT@/jwpr.doclit/services/ProxyDocLitWrappedService" />
+		</wsdl:port>
+	</wsdl:service>
+
+</wsdl:definitions>

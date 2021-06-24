@@ -1,0 +1,442 @@
+<!--
+   1.19.1.8, FVT/ws/code/websvcs.fvt/src/xmls/taskdefs_post_compile.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01, 7/10/12
+
+   Description:  This file contains custom tasks that are built with the fvts (hint -> post_compile).
+                 Any custom tasks that are not part of the fvt build should reside in the
+                 taskdefs.xml file.
+
+   Change History:
+   Date        UserId         Feature/Defect          Description
+   03/03/2003  ulbricht       D160012                 Use WSDL2Java deployScope option
+   03/12/2003  ulbricht       LIDB1270.256.11         Add start/stop IHS tasks and genplugincfg task
+   04/30/2003  ulbricht       D163619                 Add linkreplace task
+   05/12/2003  ulbricht       D163811                 Add Setup JMS Task
+   06/03/2003  ulbricht       D166543                 Add WsadminScript Task
+   07/17/2003  ulbricht       D174224                 Add Host Task
+   10/05/2003  ulbricht       D178846                 Add Application XML task
+   10/30/2003  ulbricht       D178750                 Use jacl script to setup JMS
+   01/20/2004  ulbricht       D187853                 Remove addclassloadermode task
+   07/15/2004  ulbricht       D217923                 Change hostname to cellname task
+   04/23/2006  ulbricht       308793.2                Add modify ports task
+   05/23/2006  ulbricht       368616                  Modify for WSFP Release
+   09/12/2006  jramos         389918                  Added ReplaceHostPortTask task
+   11/01/2006  sedov          402504                  Added readCellConfig task
+   11/14/2006  sedov          404343                  Added web-xml/app-xml tasks
+   01/17/2007  smithd         415287                  Add CART reporting
+   01/12/2007  jramos         413702                  Added startAppsTask
+   01/21/2007  jramos         415986                  Add TimedWASRestart
+   03/14/2007  jramos         426382                  Add getInstErrLogsTask
+   03/28/2007  ulbricht       428364                  Adjust classpath for ReadCellConfig
+   04/02/2007  ulbricht       430026                  Add ModifyXmlLogTask
+   05/23/2007  jramos         440922                  change for Pyxis
+   06/27/2007  jramos         446691                  Add two tasks for wssecurity
+   07/20/2007  jramos         453487                  Add filterReleases task
+   07/31/2007  ulbricht       455649                  Change jar names
+   09/11/2007  sedov          466314                  Added session check task
+   09/16/2007  btiffany       467494                  Add echotime task
+   09/18/2007  jramos         467003                  Add manageServerSetup task
+   10/19/2007  sedov          476378                  Added ejbref typedef for web-xml
+   02/05/2008  jramos         495713                  Add configGlobalSecurity and configMultiSecDomains
+   06/12/2008  jramos         524904                  Add migrateWAS task
+   11/07/2008  jramos         559143                  Add manageSession task
+   01/15/2009  jramos         571132                  Add setFrameworkTopology task
+   02/13/2009  btiffany       575083                  Add enableLTPASecurity task
+   02/25/2009  syed           576960                  Added replaceElemProp and setProperty
+   10/3/2009   whsu           617164                  Added task needed for ssl for sts 
+   12/14/2009  syed           632052                  Added CopySamlKeys
+   02/05/2010  gkuo           637627                  Added RunIf task
+   10/04/2010  whsu           668510                  FAT:extend serviceref appclient testcases for appclient image  
+   01/25/2012                 726664                  Added SAML Web SSO tests
+   07/10/2012                 736372                  Added OAuth 2.0 tests
+ 
+-->
+
+
+  <taskdef name="echotime"
+           classname="com.ibm.ws.wsfvt.build.tasks.EchoTimeTask">
+    <classpath refid="wasjaxrpctaskclasspath"/>
+  </taskdef>
+
+  <taskdef name="addelement" loaderRef="refaddelement"
+           classname="com.ibm.ws.wsfvt.build.tasks.AddElementTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="ejbdeploy" loaderRef="refejbdeploy"
+           classname="com.ibm.ws.wsfvt.build.tasks.EjbDeployTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="removeelement" loaderRef="refremoveelement"
+           classname="com.ibm.ws.wsfvt.build.tasks.RemoveElementTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="foreach" loaderRef="refforeach"
+           classname="com.ibm.ws.wsfvt.build.tasks.ForeachTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="InstallApp" loaderRef="refInstallApp"
+           classname="com.ibm.ws.wsfvt.build.tasks.liberty.InstallApp">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="UninstallApp" loaderRef="refUninstallApp"
+           classname="com.ibm.ws.wsfvt.build.tasks.liberty.UninstallApp">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="StartWAS" loaderRef="refStartWAS"
+           classname="com.ibm.ws.wsfvt.build.tasks.StartWAS">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+  
+  <taskdef name="StartLiberty" loaderRef="refStartLiberty"
+           classname="com.ibm.ws.wsfvt.build.tasks.liberty.StartLiberty">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="StopWAS" loaderRef="refStopWAS"
+           classname="com.ibm.ws.wsfvt.build.tasks.StopWAS">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+  
+  <taskdef name="StopLiberty" loaderRef="refStopLiberty"
+           classname="com.ibm.ws.wsfvt.build.tasks.liberty.StopLiberty">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="EnableTrace" loaderRef="refEnableTrace"
+           classname="com.ibm.ws.wsfvt.build.tasks.EnableTraceTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="extendedreplace" loaderRef="refextendedreplace"
+           classname="com.ibm.ws.wsfvt.build.tasks.ExtendedReplace">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="startihs" loaderRef="refstartihs"
+           classname="com.ibm.ws.wsfvt.build.tasks.StartIhsTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="stopihs" loaderRef="refstopihs"
+           classname="com.ibm.ws.wsfvt.build.tasks.StopIhsTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="genplugincfg" loaderRef="refgenplugincfg"
+           classname="com.ibm.ws.wsfvt.build.tasks.GenPluginCfgTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="linkreplace" loaderRef="reflinkreplace"
+           classname="com.ibm.ws.wsfvt.build.tasks.LinkReplaceTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="wsadminscript" loaderRef="refwsadminscript"
+           classname="com.ibm.ws.wsfvt.build.tasks.WsadminScript">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="applicationxml" loaderRef="refapplicationxml"
+           classname="com.ibm.ws.wsfvt.build.tasks.ApplicationXmlTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="retrievesigners" loaderRef="refretrievesigners"
+           classname="com.ibm.ws.wsfvt.build.tasks.RetrieveSignersTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="retrievestssigners" loaderRef="refretrievestssigners"
+           classname="com.ibm.ws.wsfvt.build.tasks.RetrieveSTSSignersTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+
+
+  <taskdef name="readCellConfig" loaderRef="refreadCellConfig"
+           classname="com.ibm.ws.wsfvt.build.tasks.liberty.ReadCellConfig">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="readClientConfig" loaderRef="refreadClientConfig"
+           classname="com.ibm.ws.wsfvt.build.tasks.ReadClientConfig">
+    <classpath>
+        <pathelement path="${FVT.build.classes.dir}"/>
+      	<pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+
+	<taskdef name="web-xml" loaderRef="refweb-xml"  classname="com.ibm.ws.wsfvt.build.tasks.WebXml">
+	  <classpath refid="libertytaskclasspath"/>
+	</taskdef>
+	
+	<typedef name="servlet" classname="com.ibm.ws.wsfvt.build.tasks.WebXml$Servlet">
+	    <classpath refid="libertytaskclasspath"/>
+	</typedef>
+	
+	<typedef name="listener" classname="com.ibm.ws.wsfvt.build.tasks.WebXml$Listener">
+	    <classpath refid="libertytaskclasspath"/>
+	</typedef>
+
+	<typedef name="ejbref" classname="com.ibm.ws.wsfvt.build.tasks.WebXml$EjbRef">
+	    <classpath refid="libertytaskclasspath"/>
+	</typedef>
+	
+	<taskdef name="app-xml" loaderRef="refapp-xml"  classname="com.ibm.ws.wsfvt.build.tasks.AppXml">
+	  <classpath refid="libertytaskclasspath"/>
+	</taskdef>
+	
+	<typedef name="webModule" classname="com.ibm.ws.wsfvt.build.tasks.AppXml$WebModule">
+	    <classpath refid="libertytaskclasspath"/>
+	</typedef>
+	
+	<typedef name="ejbModule" classname="com.ibm.ws.wsfvt.build.tasks.AppXml$EjbModule">
+	    <classpath refid="libertytaskclasspath"/>
+	</typedef>		
+	
+	<typedef name="javaModule" classname="com.ibm.ws.wsfvt.build.tasks.AppXml$JavaModule">
+	    <classpath refid="libertytaskclasspath"/>
+	</typedef>
+
+  <taskdef name="cartReport" loaderRef="refcartReport"
+           classname="com.ibm.ws.wsfvt.build.tasks.CARTReport">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+		
+  <taskdef name="startAppsTask" loaderRef="refstartAppsTask"
+           classname="com.ibm.ws.wsfvt.build.tasks.StartAppsTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="timedWASRestart" loaderRef="reftimedWASRestart"
+           classname="com.ibm.ws.wsfvt.build.tasks.TimedWASRestart">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="getInstErrLogsTask" loaderRef="refgetInstErrLogsTask"
+           classname="com.ibm.ws.wsfvt.build.tasks.RetrieveInstallErrorLogsTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="modifyxmllog" loaderRef="refmodifyxmllog"
+           classname="com.ibm.ws.wsfvt.build.tasks.ModifyXmlLogTask">
+    <classpath>
+      <pathelement path="${FVT.build.classes.dir}"/>
+      <pathelement location="${FVT.base.dir}/common/jars/wsfvtfw.jar"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="subAnt" loaderRef="refsubAnt"  classname="com.ibm.ws.wsfvt.build.tasks.SubAnt">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="for" loaderRef="reffor"  classname="com.ibm.ws.wsfvt.build.tasks.ForTask">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="listTestDirs" loaderRef="reflistTestDirs"  classname="com.ibm.ws.wsfvt.build.tasks.ListTestDirs">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="BatchIOU" loaderRef="refBatchIOU"  classname="com.ibm.ws.wsfvt.build.tasks.BatchIOU">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="CopyKeys" loaderRef="refCopyKeys"  classname="com.ibm.ws.wsfvt.build.tasks.CopyKeys">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="CopySamlKeys" loaderRef="refCopySamlKeys"  classname="com.ibm.ws.wsfvt.build.tasks.CopySamlKeys">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="ManagePolicySetFiles" loaderRef="refManagePolicySetFiles"  classname="com.ibm.ws.wsfvt.build.tasks.ManagePolicySetFiles">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="filterTests" loaderRef="reffilterTests"
+           classname="com.ibm.ws.wsfvt.build.tasks.FilterTestsTask">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+
+   <taskdef name="session-check" loaderRef="refchecksession"
+           classname="com.ibm.ws.wsfvt.build.tasks.SessionCheckTask">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+
+  <taskdef name="run-check" loaderRef="refruncheck"
+           classname="com.ibm.ws.wsfvt.build.tasks.RunCheckTask">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+
+  <taskdef name="run-if" loaderRef="refrunif"
+           classname="com.ibm.ws.wsfvt.build.tasks.RunIfTask">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+
+  <taskdef name="manageServerSetup" loaderRef="refmanageServerSetup"
+           classname="com.ibm.ws.wsfvt.build.tasks.SetupServerManagementTask">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+
+  <taskdef name="configGlobalSecurity" loaderRef="refconfigureglobalsecurity"
+           classname="com.ibm.ws.wsfvt.build.tasks.ConfigureSecurityTask">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+
+  <taskdef name="configMultiSecDomains" loaderRef="refconfigMultiSecDomains"
+           classname="com.ibm.ws.wsfvt.build.tasks.ConfigureMultiSecurityDomainsTask">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+
+  <taskdef name="copyh" loaderRef="CopyHRef"
+           classname="com.ibm.ws.wsfvt.build.tasks.CopyH">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+
+  <taskdef name="deleteh" loaderRef="DeleteHRef"
+           classname="com.ibm.ws.wsfvt.build.tasks.DeleteH">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+
+  <taskdef name="migrateWAS" loaderRef="refmigrateWAS"
+           classname="com.ibm.ws.wsfvt.build.tasks.WASMigrationTask">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+
+  <taskdef name="AddKerberosJAASConfig"
+            classname="com.ibm.ws.wsfvt.build.tasks.AddKerberosJAASConfig"
+            loaderRef="AddKerberosJAASConfigRef">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+
+  <taskdef name="manageSession"
+            classname="com.ibm.ws.wsfvt.build.tasks.ManageSimplicitySession"
+            loaderRef="ManageSimplicitySessionRef">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+
+  <taskdef name="setFrameworkTopology"
+            classname="com.ibm.ws.wsfvt.build.tasks.SetFrameworkTopology"
+            loaderRef="SetFrameworkTopologyRef">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+  
+  <taskdef name="setLibertyTopology"
+            classname="com.ibm.ws.wsfvt.build.tasks.liberty.SetLibertyTopology"
+            loaderRef="SetLibertyTopologyRef">
+    <classpath refid="libertytaskclasspath"/>
+  </taskdef>
+  
+    <taskdef name="enableLTPASecurity"
+            classname="com.ibm.ws.wsfvt.build.tasks.EnableLTPASecurity"
+            loaderRef="EnableLTPASecRef">
+	    <classpath refid="libertytaskclasspath"/>
+    </taskdef>
+
+  <taskdef name="replaceElemProp"
+             classname="com.ibm.ws.wsfvt.build.tasks.ReplaceElemPropertyTask"
+             loaderRef="replaceElemPropertyRef">
+    <classpath>
+      <pathelement path="${FVT.base.dir}/build/classes"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="setProperty"
+          classname="com.ibm.ws.wsfvt.build.tasks.SetPropertyTask"
+          loaderRef="setPropertyRef">
+    <classpath>
+      <pathelement path="${FVT.base.dir}/build/classes"/>
+    </classpath>
+  </taskdef>
+
+  <taskdef name="ImportSSLKey" loaderRef="refImportSSLKey"  classname="com.ibm.ws.wsfvt.build.tasks.ImportSSLKey">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="ImportSSLCert" loaderRef="refImportSSLCert"  classname="com.ibm.ws.wsfvt.build.tasks.ImportSSLCert">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="WsadminRemote" loaderRef="refWsadminRemote"  classname="com.ibm.ws.wsfvt.build.tasks.WsadminRemote">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="CopySpMetaData" loaderRef="refCopySpMetaData"  classname="com.ibm.ws.wsfvt.build.tasks.CopySpMetaData">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="DeleteSpMetaData" loaderRef="refDeleteSpMetaData"  classname="com.ibm.ws.wsfvt.build.tasks.DeleteSpMetaData">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>
+
+  <taskdef name="ConfigOAuthDerby" loaderRef="refConfigOAuthDerby"  classname="com.ibm.ws.wsfvt.build.tasks.ConfigOAuthDerby">
+    <classpath refid="libertytaskclasspath" />
+  </taskdef>

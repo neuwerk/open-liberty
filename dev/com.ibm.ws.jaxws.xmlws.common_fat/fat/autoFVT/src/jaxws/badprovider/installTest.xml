@@ -1,0 +1,168 @@
+<?xml version="1.0"?>                     
+
+<!--
+  @(#) 1.1 WautoFVT/src/jaxws/badprovider/installTest.xml, WAS.websvcs.fvt, WSFP.WFVT 9/20/06 16:59:21 [11/3/06 09:01:57]
+
+  Description: Build file for the JAX-WS Dispatch API tests
+ 
+  Date        Author       Feature/Defect          Description
+  05/31/06    sedov        LIDB3296.42             New File
+-->
+
+<project default="install" basedir=".">
+   
+	<property name="componentName" value="jaxws/badprovider"/>
+	<property name="test.name" value="jaxws.badprovider" />
+	
+    <import file="..\jaxws-commons.xml" />
+
+	<property name="test.base.dir" value="${FVT.base.dir}/src/${componentName}" />
+	
+	<path id="componentClasspath">
+	   <path refid="jaxws.classpath"/>
+	</path>	
+
+  <!-- The install target will install the EAR or WAR file into WebSphere.
+  -->
+  <target name="install" depends="setenv">
+   <echo message="Installing ${test.name}App.ear ..." />
+  	
+    <InstallApp earName="${test.name}.DefaultsApp.ear"
+                appName="${test.name}.Defaults"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>
+  	
+    <InstallApp earName="${test.name}.HTTPMessageSoapMessageApp.ear"
+                appName="${test.name}.HTTPMessageSoapMessage"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp> 
+  	
+    <InstallApp earName="${test.name}.InvalidBindingApp.ear"
+                appName="${test.name}.InvalidBinding"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>    	
+
+    <InstallApp earName="${test.name}.loggerApp.ear"
+                appName="${test.name}.logger"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>    	
+  	
+    <InstallApp earName="${test.name}.NoAnnotationApp.ear"
+                appName="${test.name}.NoAnnotation"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>   	
+
+    <InstallApp earName="${test.name}.NonProviderWSPApp.ear"
+                appName="${test.name}.NonProviderWSP"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>  			
+	
+    <InstallApp earName="${test.name}.PrivateConstructorApp.ear"
+                appName="${test.name}.PrivateConstructor"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>  		
+	
+    <InstallApp earName="${test.name}.SOAP11MessageDataSourceApp.ear"
+                appName="${test.name}.SOAP11MessageDataSource"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>  	
+	
+    <InstallApp earName="${test.name}.SOAP11PayloadSoapMessageApp.ear"
+                appName="${test.name}.SOAP11PayloadSoapMessage"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>  	
+	
+    <InstallApp earName="${test.name}.SOAP12PayloadDataSourceApp.ear"
+                appName="${test.name}.SOAP12PayloadDataSource"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp> 	
+	
+    <InstallApp earName="${test.name}.SOAP12PayloadSoapMessageApp.ear"
+                appName="${test.name}.SOAP12PayloadSoapMessage"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp> 	
+	
+    <InstallApp earName="${test.name}.UnsupportedTypeApp.ear"
+                appName="${test.name}.UnsupportedType"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp> 	
+	
+    <InstallApp earName="${test.name}.UntypedProviderApp.ear"
+                appName="${test.name}.UntypedProvider"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp> 	
+	
+    <InstallApp earName="${test.name}.WSPandWSApp.ear"
+                appName="${test.name}.WSPandWS"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>
+	
+    <InstallApp earName="${test.name}.WSProviderApp.ear"
+                appName="${test.name}.WSProvider"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>	   
+  	
+  </target>
+  
+</project>
+

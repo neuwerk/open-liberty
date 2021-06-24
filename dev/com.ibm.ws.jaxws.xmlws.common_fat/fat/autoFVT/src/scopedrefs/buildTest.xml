@@ -1,0 +1,711 @@
+<?xml version="1.0"?>                     
+<!--
+//
+// @(#) 1.3 autoFVT/src/scopedrefs/buildTest.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01 12/8/10 15:19:52 [8/8/12 06:57:57]
+//
+// IBM Confidential OCO Source Material
+// (C) COPYRIGHT International Business Machines Corp. 2010
+// The source code for this program is not published or otherwise divested
+// of its trade secrets, irrespective of what has been deposited with the
+// U.S. Copyright Office.
+//
+// Description:  Test Scoped JNDI references  ejb and servlet based jaxws web services.
+//
+// Change History:
+// Date        UserId      Defect          Description
+// ======================================================
+// 10/14/10    btiffany    F743-34250   new file   
+// 11/18/2010  btiffany    F743-34252   add more tests 
+// 12/6/2010   btiffany                 changes for multi-server tests.
+
+-->
+
+<project name="build" default="buildall" basedir=".">
+
+  <!-- use import instead of entity refs -->   
+  <import file="../xmls/common_imports.xml"/>
+  
+  <!-- This property should match the package name of the test class.  The
+       property is used in the targets.xml file when running any of the
+       component-run* targets for running a single test case class.
+  -->                     
+  <property name="componentName" value="scopedrefs/test"/>
+  
+  <property name="srcdir" value="${basedir}" />    <!-- websvcs.fvt/src/scopedrefs -->
+  <property name="workdir" value="${FVT.build.work.dir}/scopedrefs" />
+  <property name="workdir2" value="${FVT.build.work.dir}/scopedrefs2" />
+  <property name="workdir3" value="${FVT.build.work.dir}/scopedrefs3" />
+  <property name="workdir4" value="${FVT.build.work.dir}/scopedrefs4" />
+  <property name="workdir5" value="${FVT.build.work.dir}/scopedrefs5" />
+  <property name="workdir21" value="${FVT.build.work.dir}/scopedrefs21" />
+  <property name="workdir23" value="${FVT.build.work.dir}/scopedrefs23" />
+
+     
+  <!-- This path id is used in the targets.xml file when running any of
+       the component-run* targets.  This allows setting the classpath 
+       for an individual test.
+  -->
+  <path id="componentClasspath">
+    <path refid="thinclientclasspath"/>
+    <path location="${WAS.base.dir}/lib/j2ee.jar" />
+  </path>     
+     
+  <!-- The init target will initialize any directories, properties, etc.
+       that are needed for the test.
+  -->    
+  <target name="init" depends="setenv">
+    <antcall target="component-init"/>
+    <mkdir dir="${workdir}"/>
+    <mkdir dir="${workdir2}"/>
+    <mkdir dir="${workdir3}"/>
+    <mkdir dir="${workdir4}"/>
+    <mkdir dir="${workdir5}"/>
+    <mkdir dir="${workdir21}" />
+    <mkdir dir="${workdir23}" />
+  </target>                       
+  
+     
+  <!-- The clean target will clean any files, classes, or directories
+       so that a new copy of the test can be built and run.
+  -->                       
+  <target name="clean" depends="setenv">
+    <delete dir="${workdir}" />
+    <delete dir="${workdir2}" />
+    <delete dir="${workdir3}" />
+    <delete dir="${workdir4}" />
+    <delete dir="${workdir5}" />
+    <delete dir="${workdir21}" />
+    <delete dir="${workdir23}" />
+    <delete dir="${FVT.build.classes.dir}/scopedrefs"/>    
+  </target>
+  
+   
+  <!-- The buildall target will execute all of the targets necessary
+       before installing the test into WebSphere.
+  -->                                                                                      
+  <target name="buildall" depends="setenv, clean, init, server,  launchclientapp, client, test, preinstall"/>  
+   
+  
+  <!-- due to endpoints needing access to generated client code of other endpoints, we have to do a 
+       little dance here to build mock endpoints first, then generate client code, 
+       then build real endpoints, then package everything. 
+  -->     
+  <target name="server" depends="setenv, init, prepapp1mod1, prepapp1mod2, prepapp1mod3,
+    prepapp2mod1, prepapp2mod3, packageserverapps" />
+ 
+       
+  <target name="prepapp1mod1" depends="setenv">
+      <!-- compile the fake impls.   Can't compile real impls until we have client code  -->
+       <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${workdir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="server/app1/mod1_fake/*.java"/> 
+
+      </javac>
+
+      <!-- gen wsdl so we can get client artifacts -->
+      <echo message="wsgen..."/>
+      <wsgen genwsdl="true" keep="true" verbose="false"
+             destdir="${workdir}"
+             resourcedestdir="${workdir}"
+             sourcedestdir="${workdir}"
+             sei="scopedrefs.server.app1.mod1.B1"
+             >
+              <classpath>
+                    <pathelement path="${workdir}"/>                    
+                    <path refid="classpath"/> 
+              </classpath>
+     </wsgen> 
+     <wsgen genwsdl="true" keep="true" verbose="false"
+             destdir="${workdir}"
+             resourcedestdir="${workdir}"
+             sourcedestdir="${workdir}"
+             sei="scopedrefs.server.app1.mod1.B2"
+             >
+              <classpath>
+                    <pathelement path="${workdir}"/>    
+                    <path refid="classpath"/>                        
+              </classpath>
+     </wsgen> 
+     
+      <!-- get client artifacts.  Burn in host and port, alas --> 
+      <!-- readCellConfig sets the variable {server1.WC_defaulthost}, i.e. the port number -->  
+      <readCellConfig prefix="server1" key="defaultServer" verbose="${verbose.output}" />
+      <property name="myhostname" value="127.0.0.1" />  <!-- for portability, we hope --> 
+      <!-- we need separate packages for each bean so we don't overwrite ObjectFactroy. -->
+      <wsimport wsdl="${workdir}/B1Service.wsdl"
+	         destdir="${FVT.build.classes.dir}"
+	         wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp1mod1/B1Service?wsdl"
+	         package="scopedrefs.generatedclients.app1.mod1.b1"
+	         verbose="true"                           
+	         sourcedestdir="${FVT.build.classes.dir}">
+      </wsimport>
+       <wsimport wsdl="${workdir}/B2Service.wsdl"
+	         destdir="${FVT.build.classes.dir}"
+	         wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp1mod1/B2Service?wsdl"
+	         package="scopedrefs.generatedclients.app1.mod1.b2"
+	         verbose="true"                           
+	         sourcedestdir="${FVT.build.classes.dir}">
+      </wsimport>
+      <!-- package module1  - moved to package1pp1 -->
+   </target>
+   
+    <!-- app1 module 2 -->   
+    <target name="prepapp1mod2" depends="setenv">
+      <!-- compile the SEI's.   Can't compile impls until we have client code  -->
+       <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${workdir2}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="server/app1/mod2_fake/*.java"/> 
+
+      </javac>
+
+      <!-- gen wsdl so we can get client artifacts -->
+      <echo message="wsgen..."/>
+      <wsgen genwsdl="true" keep="true" verbose="false"
+             destdir="${workdir2}"
+             resourcedestdir="${workdir2}"
+             sourcedestdir="${workdir2}"
+             sei="scopedrefs.server.app1.mod2.B1"
+             >
+              <classpath>
+                    <pathelement path="${workdir2}"/>    
+                    <path refid="classpath"/>                        
+              </classpath>
+     </wsgen> 
+     <wsgen genwsdl="true" keep="true" verbose="false"
+             destdir="${workdir2}"
+             resourcedestdir="${workdir2}"
+             sourcedestdir="${workdir2}"
+             sei="scopedrefs.server.app1.mod2.B2"
+             >
+              <classpath>
+                    <pathelement path="${workdir2}"/>    
+                    <path refid="classpath"/>                        
+              </classpath>
+     </wsgen> 
+     
+      <!-- get client artifacts.  Burn in host and port, alas --> 
+      <!-- readCellConfig sets the variable {server1.WC_defaulthost}, i.e. the port number -->  
+      <readCellConfig prefix="server1" key="defaultServer" verbose="${verbose.output}" />
+      <property name="myhostname" value="127.0.0.1" />  <!-- for portability, we hope --> 
+      <!-- we need separate packages for each bean so we don't overwrite ObjectFactroy. -->
+      <wsimport wsdl="${workdir2}/B1Service.wsdl"
+	         destdir="${FVT.build.classes.dir}"
+	         wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp1mod2/B1Service?wsdl"
+	         package="scopedrefs.generatedclients.app1.mod2.b1"
+	         verbose="true"                           
+	         sourcedestdir="${FVT.build.classes.dir}">
+      </wsimport>
+       <wsimport wsdl="${workdir2}/B2Service.wsdl"
+	         destdir="${FVT.build.classes.dir}"
+	         wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp1mod2/B2Service?wsdl"
+	         package="scopedrefs.generatedclients.app1.mod2.b2"
+	         verbose="true"                           
+	         sourcedestdir="${FVT.build.classes.dir}">
+      </wsimport>
+   </target>   <!-- end app1 mod2 -->
+   
+   <target name="prepapp1mod3" depends="setenv">
+      <!-- compile the SEI's.   Can't compile impls until we have client code  -->
+       <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${workdir3}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="server/app1/mod3_fake/*.java"/> 
+
+      </javac>
+
+      <!-- gen wsdl so we can get client artifacts -->
+      <echo message="wsgen..."/>
+      <wsgen genwsdl="true" keep="true" verbose="false"
+             destdir="${workdir3}"
+             resourcedestdir="${workdir3}"
+             sourcedestdir="${workdir3}"
+             sei="scopedrefs.server.app1.mod3.B1"
+             >
+              <classpath>
+                    <pathelement path="${workdir3}"/>    
+                    <path refid="classpath"/>                        
+              </classpath>
+     </wsgen> 
+     <wsgen genwsdl="true" keep="true" verbose="false"
+             destdir="${workdir3}"
+             resourcedestdir="${workdir3}"
+             sourcedestdir="${workdir3}"
+             sei="scopedrefs.server.app1.mod3.B2"
+             >
+              <classpath>
+                    <pathelement path="${workdir3}"/>    
+                    <path refid="classpath"/>                        
+              </classpath>
+     </wsgen> 
+     
+      <!-- get client artifacts.  Burn in host and port, alas --> 
+      <!-- readCellConfig sets the variable {server1.WC_defaulthost}, i.e. the port number -->  
+      <readCellConfig prefix="server1" key="defaultServer" verbose="${verbose.output}" />
+      <property name="myhostname" value="127.0.0.1" />  <!-- for portability, we hope --> 
+      <!-- we need separate packages for each bean so we don't overwrite ObjectFactroy. -->
+      <wsimport wsdl="${workdir3}/B1Service.wsdl"
+	         destdir="${FVT.build.classes.dir}"
+	         wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp1mod3/B1Service?wsdl"
+	         package="scopedrefs.generatedclients.app1.mod3.b1"
+	         verbose="true"                           
+	         sourcedestdir="${FVT.build.classes.dir}">
+      </wsimport>
+       <wsimport wsdl="${workdir3}/B2Service.wsdl"
+	         destdir="${FVT.build.classes.dir}"
+	         wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp1mod3/B2Service?wsdl"
+	         package="scopedrefs.generatedclients.app1.mod3.b2"
+	         verbose="true"                           
+	         sourcedestdir="${FVT.build.classes.dir}">
+      </wsimport>
+      <!-- package module3  - moved to packageapp1 -->
+   </target>   <!-- end app1 mod3 -->
+   
+   <target name="prepapp2mod1" depends="setenv">
+      <!-- compile the fake impls.   Can't compile real impls until we have client code  -->
+       <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${workdir21}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="server/app2/mod1_fake/*.java"/> 
+
+      </javac>
+
+      <!-- gen wsdl so we can get client artifacts -->
+      <echo message="wsgen..."/>
+      <wsgen genwsdl="true" keep="true" verbose="false"
+             destdir="${workdir21}"
+             resourcedestdir="${workdir21}"
+             sourcedestdir="${workdir21}"
+             sei="scopedrefs.server.app2.mod1.B1"
+             >
+              <classpath>
+                    <pathelement path="${workdir21}"/>                    
+                    <path refid="classpath"/> 
+              </classpath>
+     </wsgen> 
+     <wsgen genwsdl="true" keep="true" verbose="false"
+             destdir="${workdir21}"
+             resourcedestdir="${workdir21}"
+             sourcedestdir="${workdir21}"
+             sei="scopedrefs.server.app2.mod1.B2"
+             >
+              <classpath>
+                    <pathelement path="${workdir21}"/>    
+                    <path refid="classpath"/>                        
+              </classpath>
+     </wsgen> 
+     
+      <!-- get client artifacts.  Burn in host and port, alas --> 
+      <!-- readCellConfig sets the variable {server1.WC_defaulthost}, i.e. the port number -->  
+      <readCellConfig prefix="server1" key="defaultServer" verbose="${verbose.output}" />
+      <property name="myhostname" value="127.0.0.1" />  <!-- for portability, we hope --> 
+      <!-- we need separate packages for each bean so we don't overwrite ObjectFactroy. -->
+      <!-- 
+         We need a burned in URL that will work for both the single server and multi-server tests. 
+         
+         Unfortunately, it is impossible for a single URL to work everywhere, because app2
+         is going to be at a different port number for the multi-server tests.  Since
+         we haven't created the second server at build time, we don't know what that port number is. 
+         
+         Burning in the wsdl location in the FVT tree at build time doesn't work on Z, but that's
+         one place where it will still otherwise be unchanged between the two tests.
+         It also has the problem of the host and port being defined as 
+         REPLACE_WITH_ACTUAL_URL , so we'll have to add a method on the server to fix up the 
+         endpoint url before we invoke the references, and disable the global tests on Z. 
+         
+         If we ever wanted to add this to Z in the future, we could pack all the wsdl's into some
+         static location that is the same on both Z and distrib, either static html in a war file,
+         or maybe somewhere down /tmp.  
+        
+         remove for now:
+           wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp2mod1/B1Service?wsdl"
+           wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp2mod1/B2Service?wsdl"
+      -->
+      
+      <wsimport wsdl="${workdir21}/B1Service.wsdl"
+	         destdir="${FVT.build.classes.dir}"
+      	     wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp2mod1/B1Service?wsdl"
+	         package="scopedrefs.generatedclients.app2.mod1.b1"
+	         verbose="true"                           
+	         sourcedestdir="${FVT.build.classes.dir}">
+      </wsimport>
+       <wsimport wsdl="${workdir21}/B2Service.wsdl"
+	         destdir="${FVT.build.classes.dir}"
+             wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp2mod1/B2Service?wsdl"
+	         package="scopedrefs.generatedclients.app2.mod1.b2"
+	         verbose="true"                           
+	         sourcedestdir="${FVT.build.classes.dir}">
+      </wsimport>
+   </target>
+   
+      <target name="prepapp2mod3" depends="setenv">
+      <!-- compile the fake impls.   Can't compile real impls until we have client code  -->
+       <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${workdir23}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="server/app2/mod3_fake/*.java"/> 
+
+      </javac>
+
+      <!-- gen wsdl so we can get client artifacts -->
+      <echo message="wsgen..."/>
+      <wsgen genwsdl="true" keep="true" verbose="false"
+             destdir="${workdir23}"
+             resourcedestdir="${workdir23}"
+             sourcedestdir="${workdir23}"
+             sei="scopedrefs.server.app2.mod3.B1"
+             >
+              <classpath>
+                    <pathelement path="${workdir23}"/>                    
+                    <path refid="classpath"/> 
+              </classpath>
+     </wsgen> 
+     <echo message="wsgen..."/>
+     <wsgen genwsdl="true" keep="true" verbose="false"
+             destdir="${workdir23}"
+             resourcedestdir="${workdir23}"
+             sourcedestdir="${workdir23}"
+             sei="scopedrefs.server.app2.mod3.B2"
+             >
+              <classpath>
+                    <pathelement path="${workdir23}"/>    
+                    <path refid="classpath"/>                        
+              </classpath>
+     </wsgen> 
+     
+      <!-- get client artifacts.  Burn in host and port, alas --> 
+      <!-- readCellConfig sets the variable {server1.WC_defaulthost}, i.e. the port number -->  
+      <readCellConfig prefix="server1" key="defaultServer" verbose="${verbose.output}" />
+      <property name="myhostname" value="127.0.0.1" />  <!-- for portability, we hope --> 
+      <!-- we need separate packages for each bean so we don't overwrite ObjectFactroy. -->
+      <!-- remove wsdllocation for now for multi-server tests. 
+         wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp2mod3/B1Service?wsdl"
+         wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp2mod3/B2Service?wsdl"
+      --> 
+      <wsimport wsdl="${workdir23}/B1Service.wsdl"
+	         destdir="${FVT.build.classes.dir}"
+      	     wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp2mod3/B1Service?wsdl"
+	         package="scopedrefs.generatedclients.app2.mod3.b1"
+	         verbose="true"                           
+	         sourcedestdir="${FVT.build.classes.dir}">
+      </wsimport>
+       <wsimport wsdl="${workdir23}/B2Service.wsdl"
+	         destdir="${FVT.build.classes.dir}"
+       	     wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp2mod3/B2Service?wsdl"
+	         package="scopedrefs.generatedclients.app2.mod3.b2"
+	         verbose="true"                           
+	         sourcedestdir="${FVT.build.classes.dir}">
+      </wsimport>
+   </target>
+   
+   
+   
+   <target name="packageserverapps" depends="setenv" > 
+      <!-- now that all the generated client code is present, we can finally compile the endpoint impls -->
+      <!-- now we can compile the impls -->
+       <!-- now we can compile the impls -->
+      <!-- app1 mod1 -->
+      <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${workdir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="server/app1/mod1_real/*.java"/> 
+          <include name="server/app1/common/*.java"/> 
+      </javac> 
+      
+      <!-- app1 mod2 -->
+      <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${workdir2}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="server/app1/mod2_real/*.java"/> 
+          <include name="server/app1/common/*.java"/> 
+      </javac> 
+       
+      <!-- app1 mod3 --> 
+      <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${workdir3}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="server/app1/mod3_real/*java"/> 
+           <include name="server/app1/common/*.java"/> 
+      </javac>   
+      
+     <!-- app2 mod1 --> 
+     <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${workdir21}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="server/app2/mod1_real/*java"/> 
+           <include name="server/app2/common/*.java"/> 
+      </javac>   
+
+      <!-- app2 mod3 -->
+     <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${workdir23}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="server/app2/mod3_real/*java"/> 
+           <include name="server/app2/common/*.java"/> 
+      </javac>           
+   
+       <!-- build up module 1 jar file for app1 -->   
+       <delete file="${FVT.build.lib.dir}/scopedrefsapp1mod1.jar" />
+       <jar destfile="${FVT.build.lib.dir}/scopedrefsapp1mod1.jar">  
+          <fileset dir="${workdir}" includes="**" excludes="*wsdl, *xsd, **/jaxws/**" />
+          <fileset dir="${srcdir}" includes="server/app1/mod1/*java" />
+          <fileset  dir="${srcdir}" includes="server/app1/common/*java" />
+          <fileset dir="${FVT.build.classes.dir}" includes="scopedrefs/generatedclients/**"/>
+          <zipfileset dir="${srcdir}/server/app1/mod1_real/META-INF" includes="ejb-jar.xml" prefix="META-INF" />   
+       </jar> 
+       
+      <!-- build up module 1 jar file for app2 -->   
+       <delete file="${FVT.build.lib.dir}/scopedrefsapp2mod1.jar" />
+       <jar destfile="${FVT.build.lib.dir}/scopedrefsapp2mod1.jar">  
+          <fileset dir="${workdir21}" includes="**" excludes="*wsdl, *xsd, **/jaxws/**" />
+          <fileset dir="${srcdir}" includes="server/app2/mod1/*java" />
+          <fileset  dir="${srcdir}" includes="server/app2/common/*java" />
+          <fileset dir="${FVT.build.classes.dir}" includes="scopedrefs/generatedclients/**"/>
+          <zipfileset dir="${srcdir}/server/app2/mod1_real/META-INF" includes="ejb-jar.xml" prefix="META-INF" />   
+       </jar> 
+       
+       <!-- package module2  for app1 -->
+       <delete file="${FVT.build.lib.dir}/scopedrefsapp1mod2.war" />
+       <war destfile="${FVT.build.lib.dir}/scopedrefsapp1mod2.war"
+           webxml="${srcdir}/server/app1/mod2_real/WEB-INF/web.xml"
+       >   
+           <classes dir="${workdir2}" includes="**" excludes="*wsdl, *xsd, **/jaxws/**" />
+           <classes dir="${FVT.build.classes.dir}" includes="scopedrefs/generatedclients/**"/>
+          <classes  dir="${srcdir}" includes="server/app1/mod2/*java" />
+           <classes  dir="${srcdir}" includes="server/app1/common/*java" />
+      </war> 
+       
+       <!-- build up module3 war file for app1  --> 
+       <delete file="${FVT.build.lib.dir}/scopedrefsapp1mod3.war" />
+       <war destfile="${FVT.build.lib.dir}/scopedrefsapp1mod3.war"
+           webxml="${srcdir}/server/app1/mod3_real/WEB-INF/web.xml"
+       >   
+          <classes dir="${workdir3}" includes="**" excludes="*wsdl, *xsd, **/jaxws/**" />
+          <classes dir="${FVT.build.classes.dir}" includes="scopedrefs/generatedclients/**"/>
+          <classes  dir="${srcdir}" includes="server/app1/mod3/*java" />
+           <classes  dir="${srcdir}" includes="server/app1/common/*java" />
+      </war> 
+      
+      <!-- build up module3 war file for app2  --> 
+       <delete file="${FVT.build.lib.dir}/scopedrefsapp2mod3.war" />
+       <war destfile="${FVT.build.lib.dir}/scopedrefsapp2mod3.war"
+           webxml="${srcdir}/server/app2/mod3_real/WEB-INF/web.xml"
+       >   
+          <classes dir="${workdir23}" includes="**" excludes="*wsdl, *xsd, **/jaxws/**" />
+          <classes dir="${FVT.build.classes.dir}" includes="scopedrefs/generatedclients/**"/>
+          <classes  dir="${srcdir}" includes="server/app2/mod3/*java" />
+           <classes  dir="${srcdir}" includes="server/app2/common/*java" />
+      </war> 
+          
+      <!-- package app1 ear -->
+        <!-- we want to create an ear with no application.xml, to see if that works.
+           In order to do that, we have to invoke the ear task in update mode against
+           an empty zip file
+        -->               
+        <delete file="${FVT.build.installableApps.dir}/scopedrefsapp1.ear"/>
+        <zip destfile="${FVT.build.installableApps.dir}/scopedrefsapp1.ear"
+	        whenempty="create"
+	        basedir="."  
+	        includes="absolutely/**/nothing"
+        />
+        <echo message="note: the error opening an empty zip file is expected" /> 
+        <ear earfile="${FVT.build.installableApps.dir}/scopedrefsapp1.ear" 
+             appxml="${srcdir}/server/app1/application.xml">
+            <fileset dir="${FVT.build.lib.dir}"  includes="scopedrefsapp1mod1.jar" />               
+            <fileset dir="${FVT.build.lib.dir}"  includes="scopedrefsapp1mod2.war" />                          
+            <fileset dir="${FVT.build.lib.dir}"  includes="scopedrefsapp1mod3.war" />     
+            <metainf dir="${FVT.base.dir}/src/scopedrefs/server/etc">
+		             <include name="was.policy" />
+            </metainf>          
+        </ear>     
+        
+        <!-- package app2 ear -->
+        <delete file="${FVT.build.installableApps.dir}/scopedrefsapp2.ear"/>
+        <zip destfile="${FVT.build.installableApps.dir}/scopedrefsapp2.ear"
+	        whenempty="create"
+	        basedir="."  
+	        includes="absolutely/**/nothing"
+        />
+        <echo message="note: the error opening an empty zip file is expected" /> 
+        <ear earfile="${FVT.build.installableApps.dir}/scopedrefsapp2.ear"
+             appxml="${srcdir}/server/app2/application.xml">
+            <fileset dir="${FVT.build.lib.dir}"  includes="scopedrefsapp2mod1.jar" />               
+            <fileset dir="${FVT.build.lib.dir}"  includes="scopedrefsapp2mod3.war" />               
+            <metainf dir="${FVT.base.dir}/src/scopedrefs/server/etc">
+                <include name="was.policy" />
+            </metainf>          
+        </ear>     
+      
+  </target>   
+  
+    <!-- The preinstall target will perform any tasks necessary before the
+       application is installed into WebSphere.  This could include running
+       ejbdeploy or endptenabler for an EAR that contains an EJB.
+    --> 
+    
+   <target name="preinstall"   depends="setenv">  
+   	<!-- 
+        <endpointenable earfile="${FVT.build.installableApps.dir}/scopedrefsapp1.ear" />
+         <endpointenable earfile="${FVT.build.installableApps.dir}/scopedrefsapp2.ear" />
+            -->
+   </target>   
+
+   <target name="launchclientapp" depends="setenv">
+      <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="server/app2/mod1_real/A*java"/> 
+          <include name="server/app2/common/*.java"/> 
+      </javac>     
+      <delete file="${FVT.build.lib.dir}/scopedrefslaunchclientapp.jar"/>
+      <jar jarfile="${FVT.build.lib.dir}/scopedrefslaunchclientapp.jar"
+	         manifest="${srcdir}/server/app2/launchclient/MANIFEST.MF">
+	      <fileset dir="${FVT.build.classes.dir}">
+	        <include name="scopedrefs/generatedclients/**"/> 
+	        <include name="scopedrefs/server/app2/mod1/A*" />
+	        <include name="scopedrefs/server/app2/common/**" />
+	      </fileset>
+	      <fileset dir="${srcdir}">
+	           <include name="server/app2/mod1_real/A*java" />
+	           <include  name="server/app2/common/*java" />
+	      </fileset>
+	      <zipfileset dir="${srcdir}/server/app2/launchclient" prefix="META-INF">
+	        <include name="application-client.xml"/>
+	      </zipfileset>     
+     </jar>
+    
+    <delete file="${FVT.build.installableApps.dir}/scopedrefslaunchclientapp.ear"/>
+    <ear earfile="${FVT.build.installableApps.dir}/scopedrefslaunchclientapp.ear"
+            appxml="${srcdir}/server/app2/launchclient/application.xml">
+	      <fileset dir="${FVT.build.lib.dir}">
+	        <include name="scopedrefslaunchclientapp.jar"/>
+	      </fileset>
+    </ear>
+   </target>     
+               
+  <!-- The client target will build anything necessary for the client
+       piece of the test.  This could just be compiling the client class
+       or in the case of a managed client, building a client side EAR
+       file.
+  -->  
+  <target name="client" depends="setenv">
+      <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="client/**/*.java"/> 
+      </javac> 
+	      
+  </target>
+                            
+  <!-- The test target will build anything necessary for the test
+       piece of the test.  Often this will just include compiling the
+       the JUnit test case file.
+  -->                               
+  <target name="test" depends="setenv">
+           <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="**/test/*.java"/>
+      </javac>
+  </target>   
+  
+    
+    
+  <!-- The install target will install the server side piece of the test
+       into WebSphere.  This target calls the installTest.xml file for
+       the test.
+  -->           
+  <target name="install" depends="setenv">
+    <ant antfile="${srcdir}/installTest.xml"
+         dir="${srcdir}">
+      <property name="install.mode" value="${rt.install.mode}"/>
+    </ant>
+  </target>
+  
+  <!-- for debug use only --> 
+   <target name="installapp1" depends="setenv">
+    <ant antfile="${srcdir}/installTest.xml"
+         target="installapp1" 
+         dir="${srcdir}">
+      <property name="install.mode" value="${rt.install.mode}"/>
+    </ant>
+  </target>
+    
+  <!-- The uninstall target will uninstall the server side piece of the test
+       from WebSphere.  This target calls the uninstallTest.xml file for
+       the test.
+  -->           
+  <target name="uninstall" depends="setenv">
+    <ant antfile="${srcdir}/uninstallTest.xml"
+         dir="${srcdir}">
+      <property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+    </ant>
+  </target>
+ 
+</project>

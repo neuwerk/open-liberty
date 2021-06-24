@@ -1,0 +1,30 @@
+<?xml version="1.0"?>                     
+<!--
+  @(#) 1.2 WautoFVT/src/jaxws/async/uninstallTest.xml, WAS.websvcs.fvt, WSFP.WFVT 9/18/06 16:54:43 [11/3/06 09:01:52]
+
+  Description: Build file for the JAX-WS Dispatch API tests
+ 
+  Date        Author       Feature/Defect          Description
+  05/31/06    sedov        LIDB3296.42             New File
+-->
+
+<project default="uninstall" basedir=".">
+   
+	<property name="test.name" value="jw.async" />
+	
+    <import file="..\jaxws-commons.xml" />
+
+  <!-- The uninstall target will uninstall the EAR or WAR file from
+       WebSphere.
+  -->
+  <target name="uninstall" depends="setenv">
+   <echo message="Uninstalling ${test.name}App.ear ..." />
+    <UninstallApp appName="${test.name}"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>
+
+  </target>
+  
+</project>

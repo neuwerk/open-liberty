@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://java.sun.com/xml/ns/javaee" 
+			 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+			 id="Application_ID" version="5" 
+			 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd">
+
+  <display-name>BT11AddNumbersImplService</display-name>
+  <module id="BindingType11_module1">
+     <web>
+        <web-uri>BT11AddNumbersImplService.war</web-uri>
+        <context-root>/bindingtype11</context-root>
+     </web>
+  </module>
+  
+ </application>

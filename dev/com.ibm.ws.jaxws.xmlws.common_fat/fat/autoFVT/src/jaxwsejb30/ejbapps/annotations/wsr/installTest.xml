@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+
+<!--
+
+   autoFVT/src/jaxwsejb30/ejbapps/annotations/wsr/installTest.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01
+   
+   Change History:
+   Date       UserId              Feature/Defect          Description
+   ***************************************************************************
+   08/21/2007 btiffany            LIDB4511.45             new file
+   07/07/2008 samerrel            534715                  Formatting fixes
+-->
+
+<project default="install" basedir=".">
+    <import file="../../../../xmls/common_imports.xml" />
+    <import file="buildTest.xml" />
+
+    <target name="install" depends="setenv">
+        <InstallApp earName="${warsvc.ear}.ear"
+                    appName="${warsvc.ear}"
+                    localInstall="${conn.type}"
+                    useDefaultBindings="true"
+                    installRootLocation="${FVT.build.installableApps.dir}"
+                    installMode="${install.mode}"
+                    fvtRootLocation="${FVT.base.dir}">
+        </InstallApp>
+        <InstallApp earName="${ejbsvc.ear}.ear"
+                    appName="${ejbsvc.ear}"
+                    localInstall="${conn.type}"
+                    useDefaultBindings="true"
+                    installRootLocation="${FVT.build.installableApps.dir}"
+                    installMode="${install.mode}"
+                    fvtRootLocation="${FVT.base.dir}">
+        </InstallApp>
+        <InstallApp earName="${ejbref.ear}.ear"
+                    appName="${ejbref.ear}"
+                    localInstall="${conn.type}"
+                    useDefaultBindings="true"
+                    installRootLocation="${FVT.build.installableApps.dir}"
+                    installMode="${install.mode}"
+                    fvtRootLocation="${FVT.base.dir}">
+        </InstallApp>
+    </target>
+
+</project>

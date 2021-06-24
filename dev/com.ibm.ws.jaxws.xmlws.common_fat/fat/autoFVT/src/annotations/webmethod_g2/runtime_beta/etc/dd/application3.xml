@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Application_ID" version="5" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd">
+  <display-name>AnnotationsWebMethodg2Beta3</display-name>
+  <!-- due to axis limitation of no duplicate servicenames allowed in was, 
+       we'll skip the first test and just deploy the second , since it's a superset
+  
+  <module id="WebModule_1g">
+     <web>
+        <web-uri>AnnotationsWebMethodg2Beta.war</web-uri>
+        <context-root>/webmethodg3beta</context-root>
+     </web>
+  </module>
+  -->
+  
+  <module id="WebModule_2g">
+     <web>
+        <web-uri>AnnotationsWebMethodg2Beta3.war</web-uri>
+        <context-root>/webmethodg2beta3</context-root>
+     </web>
+  </module>
+  
+</application>

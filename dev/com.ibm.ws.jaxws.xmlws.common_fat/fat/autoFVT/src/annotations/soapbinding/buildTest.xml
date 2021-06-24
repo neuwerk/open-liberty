@@ -1,0 +1,815 @@
+<?xml version="1.0"?>
+
+
+<!-- 
+     @(#) 1.1.1.14 autoFVT/src/annotations/soapbinding/buildTest.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01 3/13/10 18:10:12 [8/8/12 06:55:04]
+
+     Description: Build file for the WAS annotation tests.
+
+
+     Date        Author       Feature/Defect          Description
+     06/15/2006  btiffany     LIDB3296-31.01          New File
+     03/05/2007  bt                                   remove server_impl_mix from default targets, invalid test.
+     03/13/10    lizet        D643070                 2.2 RI upgrade
+
+
+     To run this standalone, set WAS_HOME, ANT_HOME, JUNIT_HOME, FVT_TOP
+     and run unittest.bat long enough so that it creates instance.xml
+-->
+<project name="build" default="buildall" basedir=".">
+<import file="../../xmls/common_imports.xml" />
+
+  <!-- This property should match the package name of the test class.  The
+       property is used in the targets.xml file when running any of the
+       component-run* targets for running a single test case class.
+  -->
+        <property name="componentName" value="annotations/soapbinding"/>
+        <property name="warbasename"   value="AnnotationsSoapBinding" />
+        <property name="warfile1"      value="AnnotationsSoapBinding.war" />
+        <property name="earfile"       value="AnnotationsSoapBindingBeta.ear" />
+        <property name="appname"       value="AnnotationsSoapBinding" />
+        <property name="workdir" value="${FVT.build.work.dir}/annotations/soapbinding/server" />
+        <property name="srcdir"  value="${FVT.base.dir}/src/annotations/soapbinding/testdata" />
+        <property name="workdir_rpc" value="${FVT.build.work.dir}/annotations/soapbinding/serverrpc" />
+        <property name="workdir_imp" value="${FVT.build.work.dir}/annotations/soapbinding/serverimpl" />
+        <!-- a variable to let us largely reuse this file without so many changes.
+       set it to the name of the subdir under annotations
+  -->
+        <property name="anno_subset"  value="soapbinding" />
+
+
+        <!-- This path id is used in the targets.xml file when running any of
+       the component-run* targets.  This allows setting the classpath
+       for an individual test.
+  -->
+        <path id="componentClasspath">
+                <path refid="thinclientclasspath"/>
+        </path>
+
+        <!-- need junit.jar explicitly in the path for setup to run -->
+        <path id="setupClasspath">
+                <pathelement location="${FVT.base.dir}/common/jars/junit.jar"/>
+                <path refid="classpath"/>
+        </path>
+
+
+        <!-- The buildall target will execute all of the targets necessary
+       before installing the test into WebSphere.
+       Note that junit doesn't get invoked here, that happens later
+       in src/build.xml. -->
+       <!-- <target name="buildall" depends="setenv, clean, init, server2, test, preinstall"/> -->
+        <target name="buildall" depends="setenv, clean, init, servers,  clients, test, preinstall"/>
+
+        <target name="servers" depends= "server_beta, server_beta_bad, server_impl, server_impl_sei,  server_rpc_impl, server_rpc_sei" />
+        <target name="clients" depends= "client_beta, client_impl, client_rpc" />
+
+        <!-- the setenv target is in src/xmls/targets.xml and sets up a the environment -->
+
+
+        <!-- The init target will initialize any directories, properties, etc.
+       that are needed for the test.
+        -->
+        <target name="init" depends="setenv">
+                <!-- component-init comes from targets.xml and makes the main directories
+            used by all tests.-->
+                <antcall target="component-init"/>
+                <mkdir dir="${FVT.build.work.dir}/annotations/${anno_subset}"/>
+        </target>
+
+
+        <!-- The clean target will clean any files, classes, or directories
+       so that a new copy of the test can be built and run.
+         -->
+        <target name="clean" depends="setenv">
+                <delete dir="${FVT.build.classes.dir}/annotations/${anno_subset}"/>
+                <delete dir="${FVT.build.work.dir}/annotations/${anno_subset}"/>
+                <delete file="${FVT.build.lib.dir}/*${anno_subset}*war"/>
+                <delete file="${FVT.build.lib.dir}/AnnotationsSoapBinding*.war"/>
+                <delete file="${FVT.build.installableApps.dir}/${anno_subset}*.ear"/>
+                <delete file="${FVT.build.installableApps.dir}/AnnotationsSoapBinding*.ear"/>
+
+                <mkdir dir="${workdir}"/>
+        </target>
+
+        <!-- This task is only used to go around the limitations of the current BETA release.
+            In BETA, a fully annotated SEI is required. Once you have generated the wsdl,
+            and put into src tree, this task is no longer necessary  -->
+        <target name="gen_artifacts" depends="setenv">
+                <mkdir dir="${FVT.build.work.dir}/annotations/soapbinding/testdata/server"/>
+                <mkdir dir="${FVT.build.work.dir}/annotations/soapbinding/testdata/server2"/>
+
+                <javac compiler="modern"
+                        srcdir="${FVT.base.dir}/src/annotations/soapbinding/testdata"
+                        destdir="${FVT.build.classes.dir}"
+                        deprecation="${deprecation}"
+                        debug="${debug}"
+                        source="${build.tests.with.java.level}"
+                        target="${build.tests.with.java.level}"
+                        failonerror="${failonerror}">
+                        <classpath refid="thinclientclasspath" />
+                        <include name="SoapBindAnno3Impl.java" />
+                        <include name="SoapBindAnno3.java" />
+                </javac>
+
+                <wsgen genwsdl="true" keep="true" verbose="true"
+                        destdir="${FVT.build.work.dir}"
+                        resourcedestdir="${FVT.build.work.dir}/annotations/soapbinding/testdata/server"
+                        sei="annotations.soapbinding.testdata.server.SoapBindAnno3Impl"
+                        classpath="${FVT.build.classes.dir}">
+                        <classpath refid="classpath" />
+                </wsgen>
+        </target>
+
+
+        <!-- The server target will build anything necessary for the server
+                piece of the test.  Typically this target builds the server side EAR. -->
+
+        <!-- server_beta was used for beta.  A doc-lit-bare class -->
+        <target name="server_beta" depends="setenv">
+
+                <!-- for beta, we had to use the fully annotated interface produced by wsimport -->
+                <wsimport keep="true" verbose="true"
+                        destdir="${workdir}"
+                        wsdl="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/wsdl/SoapBindAnno3ImplService.wsdl">
+                </wsimport>
+
+                <copy todir="${workdir}" overwrite="yes">
+                        <fileset dir="${FVT.base.dir}/src/annotations/soapbinding/testdata">
+                                <include name="SoapBindAnno3Impl.java" />
+                        </fileset>
+                </copy>
+
+                <javac compiler="modern"
+                        srcdir="${workdir}"
+                        destdir="${workdir}"
+                        deprecation="${deprecation}"
+                        debug="${debug}"
+                        source="${build.tests.with.java.level}"
+                        target="${build.tests.with.java.level}"
+                        failonerror="${failonerror}">
+                        <classpath refid="classpath" />
+                        <include name="SoapBindAnno3Impl.java" />
+                        <include name="SoapBindAnno3.java" />
+                </javac>
+
+
+                <war warfile="${FVT.build.lib.dir}/${warfile1}"
+                 webxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/web.xml">
+                        <webinf dir="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server">
+                                <include name="wsdl/SoapBindAnno3ImplService.wsdl"/>
+                                <include name="wsdl/SoapBindAnno3ImplService_schema1.xsd"/>
+                        </webinf>
+
+                        <!-- pick up compiled and generated classes -->
+                        <classes dir="${workdir}">
+                                <include name="**/*.class"/>
+                                <include name="**/*.java"/>
+                        </classes>
+                </war>
+
+                <ear earfile="${FVT.build.installableApps.dir}/${earfile}"
+                        appxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/application.xml">
+                        <fileset dir="${FVT.build.lib.dir}" includes="${warfile1}" />
+                </ear>
+        </target>
+
+        <!-- replace sei with another having the annotations swapped -->
+        <target name="server_beta_bad" depends="setenv" >
+            <property name="workdir" value="${FVT.build.work.dir}/annotations/soapbinding/server" />
+            <property name="srcdir"  value="${FVT.base.dir}/src/annotations/soapbinding/testdata" />
+
+            <copy file="${workdir}/annotations/soapbinding\testdata\server\SoapBindAnno3.class"
+                  tofile="${workdir}/annotations\soapbinding\testdata\server\SoapBindAnno3_original.class"
+                  overwrite="yes">
+            </copy>
+            <delete verbose="true" file="${workdir}/annotations/soapbinding\testdata\server\SoapBindAnno3.class" />
+            <copy file="${workdir}/annotations/soapbinding\testdata\server\SoapBindAnno3.java"
+                  tofile="${workdir}/annotations\soapbinding\testdata\server\SoapBindAnno3_original.java"
+                  overwrite="yes">
+            </copy>
+
+            <!-- insert the bad sei -->
+            <copy file="${srcdir}/SoapBindAnno3_bad.java"
+                  tofile="${workdir}\annotations\soapbinding\testdata\server\SoapBindAnno3.java"
+                  overwrite="yes">
+            </copy>
+
+            <!-- and compile it -->
+            <javac compiler="modern"
+                    srcdir="${workdir}"
+                    destdir="${workdir}"
+                    deprecation="${deprecation}"
+                    debug="${debug}"
+                    source="${build.tests.with.java.level}"
+                    target="${build.tests.with.java.level}"
+                    failonerror="${failonerror}">
+                    <classpath refid="classpath" />
+                    <include name="**/SoapBindAnno3.java" />
+            </javac>
+
+
+            <!-- overwrite prior war file so we can use same dd -->
+            <delete file="${FVT.build.lib.dir}/${warfile1}" quiet="true" />
+            <war warfile="${FVT.build.lib.dir}/${warfile1}"
+             webxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/web.xml">
+                    <webinf dir="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server">
+                            <include name="wsdl/SoapBindAnno3ImplService.wsdl"/>
+                            <include name="wsdl/SoapBindAnno3ImplService_schema1.xsd"/>
+                    </webinf>
+
+                    <!-- pick up compiled and generated classes -->
+                    <classes dir="${workdir}">
+                            <include name="**/*.class"/>
+                            <include name="**/*.java"/>
+                    </classes>
+            </war>
+
+            <ear earfile="${FVT.build.installableApps.dir}/AnnotationsSoapBindingBadBeta.ear"
+                    appxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/application_bad.xml">
+                    <fileset dir="${FVT.build.lib.dir}" includes="${warfile1}" />
+            </ear>
+        </target>
+
+        <!-- this server uses an impl class w/o sei and tests doclitbareOnMethod and doclitWRappedonMethod -->
+        <target name="server_impl" depends="setenv" >
+            <delete dir="${workdir_imp}" quiet="true" />
+            <mkdir dir="${workdir_imp}" />
+
+             <!-- compile for wsgen -->
+             <javac compiler="modern"
+                     srcdir="${FVT.base.dir}/src/annotations/soapbinding/testdata"
+                     destdir="${workdir_imp}"
+                     deprecation="${deprecation}"
+                     debug="${debug}"
+                     source="${build.tests.with.java.level}"
+                     target="${build.tests.with.java.level}"
+                     failonerror="${failonerror}">
+                     <classpath refid="thinclientclasspath" />
+                     <include name="SoapBindRtImpl.java" />
+             </javac>
+
+            <!-- generate gen classes from impl class.
+              We'll gen. wsdl for checking, but won't put it in war,  want server to generate wsdl on the fly.
+              We need it to gen the client though.
+            -->
+            <echo message="--wsgen--" />
+            <wsgen genwsdl="true" keep="true" verbose="true"
+                    destdir="${workdir_imp}"
+                    resourcedestdir="${workdir_imp}"
+                    sei="annotations.soapbinding.testdata.serverimpl.SoapBindRtImpl"
+                    classpath="${workdir_imp}">
+                    <classpath refid="classpath" />
+            </wsgen>
+
+
+            <!-- dev. says we have to have obj fac. for doc lit bare now... 409137.3 -->
+            <!-- generate objectfactory from wsdl here -->
+            <echo message="--xjc--" />
+            <xjc destdir="${workdir_imp}" >
+                 <arg value="-wsdl" />
+                 <schema dir="${workdir_imp}" includes="*.wsdl" />
+            </xjc>
+            <!-- leaves a bit of a mess, beans and support files are now present twice,
+                 from xjc in target-dir, and from wsgen in target-dir/jaxws.
+                 However the ones from xjc are not compiled.
+
+                 ObjectFactory.java does not contain an import statement for the jaxws
+                 package, so we have to throw away the wsgen beans and use the xjc beans
+                 instead.
+            -->
+
+            <delete verbose="true">
+               <fileset dir="${workdir_imp}"
+                     includes="**/jaxws/*" >
+               </fileset>
+            </delete>
+
+            <javac compiler="modern" srcdir="${workdir_imp}"
+                   destdir="${workdir_imp}"
+                   deprecation="${deprecation}"
+                   debug="${debug}"
+                   source="${build.tests.with.java.level}"
+                   target="${build.tests.with.java.level}"
+                   failonerror="${failonerror}">
+                   <classpath>
+                      <dirset dir="${workdir_imp}" />
+                      <path refid="thinclientclasspath" />
+                   </classpath>
+                   <include name="**/*java"/>
+            </javac>
+
+            <!-- copy in impl source -->
+            <copy file="${srcdir}/SoapBindRtImpl.java" todir="${workdir_imp}" />
+
+            <!-- war/ear it up -->
+            <war warfile="${FVT.build.lib.dir}/${warbasename}Impl.war"
+             webxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/web_impl.xml">
+                   <!--  **** we want the server to generate this  ****
+                    <webinf dir="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server">
+                            <include name="wsdl/SoapBindRtImplService.wsdl"/>
+                            <include name="wsdl/SoapBindRtImplService_schema1.xsd"/>
+                    </webinf>
+                   -->
+
+                    <!-- pick up compiled and generated classes -->
+                    <classes dir="${workdir_imp}">
+                            <include name="**/*.class"/>
+                            <include name="**/*.java"/>
+                    </classes>
+            </war>
+
+            <ear earfile="${FVT.build.installableApps.dir}/${warbasename}Impl.ear"
+                    appxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/application_impl.xml">
+                    <fileset dir="${FVT.build.lib.dir}" includes="${warbasename}Impl.war" />
+            </ear>
+
+        </target>
+
+
+
+        <target name="server_impl_sei" depends="setenv" >
+            <delete dir="${workdir_imp}2" quiet="true" />
+            <mkdir dir="${workdir_imp}2" />
+
+             <!-- compile for wsgen -->
+             <javac compiler="modern"
+                     srcdir="${FVT.base.dir}/src/annotations/soapbinding/testdata"
+                     destdir="${workdir_imp}2"
+                     deprecation="${deprecation}"
+                     debug="${debug}"
+                     source="${build.tests.with.java.level}"
+                     target="${build.tests.with.java.level}"
+                     failonerror="${failonerror}">
+                     <classpath refid="thinclientclasspath" />
+                     <include name="SoapBindRtIf*.java" />
+                     <exclude name="*If2*.java" />
+                     <exclude name="*Client.java" />
+             </javac>
+
+            <!-- generate gen classes from impl class.
+              We'll gen. wsdl for checking, but won't put it in war,  want server to generate wsdl on the fly.
+              We need it to gen the client though.
+            -->
+            <echo message="--wsgen--" />
+            <wsgen genwsdl="true" keep="true" verbose="true"
+                    destdir="${workdir_imp}2"
+                    resourcedestdir="${workdir_imp}2"
+                    sei="annotations.soapbinding.testdata.serverimpl.SoapBindRtIfImpl"
+                    classpath="${workdir_imp}2">
+                    <classpath refid="classpath" />
+            </wsgen>
+
+
+            <!-- dev. says we have to have obj fac. for doc lit bare now... 409137.3 -->
+            <!-- generate objectfactory from wsdl here -->
+            <echo message="--xjc--" />
+            <xjc destdir="${workdir_imp}2" >
+                 <arg value="-wsdl" />
+                 <schema dir="${workdir_imp}2" includes="*.wsdl" />
+            </xjc>
+            <!-- leaves a bit of a mess, beans and support files are now present twice,
+                 from xjc in target-dir, and from wsgen in target-dir/jaxws.
+                 However the ones from xjc are not compiled.
+
+                 ObjectFactory.java does not contain an import statement for the jaxws
+                 package, so we have to throw away the wsgen beans and use the xjc beans
+                 instead.
+            -->
+
+            <delete verbose="true">
+               <fileset dir="${workdir_imp}2"
+                     includes="**/jaxws/*" >
+               </fileset>
+            </delete>
+
+            <javac compiler="modern" srcdir="${workdir_imp}2"
+                   destdir="${workdir_imp}2"
+                   deprecation="${deprecation}"
+                   debug="${debug}"
+                   source="${build.tests.with.java.level}"
+                   target="${build.tests.with.java.level}"
+                   failonerror="${failonerror}">
+                   <classpath>
+                      <dirset dir="${workdir_imp}2" />
+                      <path refid="thinclientclasspath" />
+                   </classpath>
+                   <include name="**/*java"/>
+            </javac>
+
+            <!-- copy in impl source -->
+            <copy file="${srcdir}/SoapBindRtIfImpl.java" todir="${workdir_imp}2" />
+            <copy file="${srcdir}/SoapBindRtIf.java" todir="${workdir_imp}2" />
+
+            <!-- war/ear it up -->
+            <war warfile="${FVT.build.lib.dir}/${warbasename}Impl2.war"
+             webxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/web_impl.xml">
+                   <!--  **** we want the server to generate this  ****
+                    <webinf dir="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server">
+                            <include name="wsdl/SoapBindRtImplService.wsdl"/>
+                            <include name="wsdl/SoapBindRtImplService_schema1.xsd"/>
+                    </webinf>
+                   -->
+
+                    <!-- pick up compiled and generated classes -->
+                    <classes dir="${workdir_imp}2">
+                            <include name="**/*.class"/>
+                            <include name="**/*.java"/>
+                    </classes>
+            </war>
+
+            <ear earfile="${FVT.build.installableApps.dir}/${warbasename}Impl2.ear"
+                    appxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/application_impl2.xml">
+                    <fileset dir="${FVT.build.lib.dir}" includes="${warbasename}Impl2.war" />
+            </ear>
+
+        </target>
+
+
+        <target name="server_impl_mix" depends="setenv" >
+            <delete dir="${workdir_imp}3" quiet="true" />
+            <mkdir dir="${workdir_imp}3" />
+
+             <!-- compile for wsgen -->
+             <javac compiler="modern"
+                     srcdir="${FVT.base.dir}/src/annotations/soapbinding/testdata"
+                     destdir="${workdir_imp}3"
+                     deprecation="${deprecation}"
+                     debug="${debug}"
+                     source="${build.tests.with.java.level}"
+                     target="${build.tests.with.java.level}"
+                     failonerror="${failonerror}">
+                     <classpath refid="thinclientclasspath" />
+                     <include name="SoapBindRtIf2*.java" />
+                     <exclude name="*Client.java" />
+             </javac>
+
+            <!-- generate gen classes from impl class.
+              We'll gen. wsdl for checking, but won't put it in war,  want server to generate wsdl on the fly.
+              We need it to gen the client though.
+            -->
+            <echo message="--wsgen--" />
+            <wsgen genwsdl="true" keep="true" verbose="true"
+                    destdir="${workdir_imp}3"
+                    resourcedestdir="${workdir_imp}3"
+                    sei="annotations.soapbinding.testdata.serverimpl.SoapBindRtIf2Impl"
+                    classpath="${workdir_imp}3">
+                    <classpath refid="classpath" />
+            </wsgen>
+
+
+            <!-- dev. says we have to have obj fac. for doc lit bare now... 409137.3 -->
+            <!-- generate objectfactory from wsdl here -->
+            <echo message="--xjc--" />
+            <xjc destdir="${workdir_imp}3" >
+                 <arg value="-wsdl" />
+                 <schema dir="${workdir_imp}3" includes="*.wsdl" />
+            </xjc>
+            <!-- leaves a bit of a mess, beans and support files are now present twice,
+                 from xjc in target-dir, and from wsgen in target-dir/jaxws.
+                 However the ones from xjc are not compiled.
+
+                 ObjectFactory.java does not contain an import statement for the jaxws
+                 package, so we have to throw away the wsgen beans and use the xjc beans
+                 instead.
+            -->
+
+            <delete verbose="true">
+               <fileset dir="${workdir_imp}3"
+                     includes="**/jaxws/*" >
+               </fileset>
+            </delete>
+
+            <javac compiler="modern" srcdir="${workdir_imp}3"
+                   destdir="${workdir_imp}3"
+                   deprecation="${deprecation}"
+                   debug="${debug}"
+                   source="${build.tests.with.java.level}"
+                   target="${build.tests.with.java.level}"
+                   failonerror="${failonerror}">
+                   <classpath>
+                      <dirset dir="${workdir_imp}3" />
+                      <path refid="thinclientclasspath" />
+                   </classpath>
+                   <include name="**/*java"/>
+            </javac>
+
+            <!-- copy in impl source -->
+            <copy file="${srcdir}/SoapBindRtIf2Impl.java" todir="${workdir_imp}3" />
+            <copy file="${srcdir}/SoapBindRtIf2.java" todir="${workdir_imp}3" />
+
+            <!-- war/ear it up -->
+            <war warfile="${FVT.build.lib.dir}/${warbasename}Impl3.war"
+             webxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/web_impl.xml">
+                   <!--  **** we want the server to generate this  ****
+                    <webinf dir="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server">
+                            <include name="wsdl/SoapBindRtImplService.wsdl"/>
+                            <include name="wsdl/SoapBindRtImplService_schema1.xsd"/>
+                    </webinf>
+                   -->
+
+                    <!-- pick up compiled and generated classes -->
+                    <classes dir="${workdir_imp}3">
+                            <include name="**/*.class"/>
+                            <include name="**/*.java"/>
+                    </classes>
+            </war>
+
+            <ear earfile="${FVT.build.installableApps.dir}/${warbasename}Impl3.ear"
+                    appxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/application_impl3.xml">
+                    <fileset dir="${FVT.build.lib.dir}" includes="${warbasename}Impl3.war" />
+            </ear>
+
+        </target>
+
+        <!-- this server uses rpc and tests null args and responses and holders as well as basic things -->
+        <target name="server_rpc_impl" depends="setenv" >
+            <delete dir="${workdir_rpc}" quiet="true" />
+            <mkdir dir="${workdir_rpc}" />
+
+             <!-- compile for wsgen -->
+             <javac compiler="modern"
+                     srcdir="${FVT.base.dir}/src/annotations/soapbinding/testdata"
+                     destdir="${workdir_rpc}"
+                     deprecation="${deprecation}"
+                     debug="${debug}"
+                     source="${build.tests.with.java.level}"
+                     target="${build.tests.with.java.level}"
+                     failonerror="${failonerror}">
+                     <classpath refid="thinclientclasspath" />
+                     <include name="SoapBindRpcImpl.java" />
+             </javac>
+
+            <!-- generate gen classes from impl class.
+              We'll gen. wsdl for checking, but won't put it in war,  want server to generate wsdl on the fly.
+              We need it to gen the client though.
+            -->
+            <wsgen genwsdl="true" keep="true" verbose="true"
+                    destdir="${workdir_rpc}"
+                    resourcedestdir="${workdir_rpc}"
+                    sei="annotations.soapbinding.testdata.serverrpc.SoapBindRpcImpl"
+                    classpath="${workdir_rpc}">
+                    <classpath refid="classpath" />
+            </wsgen>
+
+            <!-- copy in impl source -->
+            <copy file="${srcdir}/SoapBindRpcImpl.java" todir="${workdir_rpc}" />
+
+            <!-- war/ear it up -->
+            <war warfile="${FVT.build.lib.dir}/${warbasename}Rpc.war"
+             webxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/web_rpc.xml">
+                   <!--  **** we want the server to generate this  ****
+                    <webinf dir="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server">
+                            <include name="wsdl/SoapBindRpcImplService.wsdl"/>
+                            <include name="wsdl/SoapBindRpcImplService_schema1.xsd"/>
+                    </webinf>
+                   -->
+
+                    <!-- pick up compiled and generated classes -->
+                    <classes dir="${workdir_rpc}">
+                            <include name="**/*.class"/>
+                            <include name="**/*.java"/>
+                    </classes>
+            </war>
+
+            <ear earfile="${FVT.build.installableApps.dir}/${warbasename}Rpc.ear"
+                    appxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/application_rpc.xml">
+                    <fileset dir="${FVT.build.lib.dir}" includes="${warbasename}Rpc.war" />
+            </ear>
+
+        </target>
+
+
+        <!-- this server uses rpc on sei and tests null args and responses and holders as well as basic things -->
+        <target name="server_rpc_sei" depends="setenv" >
+            <delete dir="${workdir_rpc}2" quiet="true" />
+            <mkdir dir="${workdir_rpc}2" />
+
+             <!-- compile for wsgen -->
+             <javac compiler="modern"
+                     srcdir="${FVT.base.dir}/src/annotations/soapbinding/testdata"
+                     destdir="${workdir_rpc}2"
+                     deprecation="${deprecation}"
+                     debug="${debug}"
+                     source="${build.tests.with.java.level}"
+                     target="${build.tests.with.java.level}"
+                     failonerror="${failonerror}">
+                     <classpath refid="thinclientclasspath" />
+                     <include name="SoapBindRpcIf*.java" />
+                     <exclude name="SoapBindRpcIf*lient.java" />
+             </javac>
+
+            <!-- generate gen classes from impl class.
+              We'll gen. wsdl for checking, but won't put it in war,  want server to generate wsdl on the fly.
+              We need it to gen the client though.
+            -->
+            <wsgen genwsdl="true" keep="true" verbose="true"
+                    destdir="${workdir_rpc}2"
+                    resourcedestdir="${workdir_rpc}2"
+                    sei="annotations.soapbinding.testdata.serverrpc.SoapBindRpcIfImpl"
+                    classpath="${workdir_rpc}2">
+                    <classpath refid="classpath" />
+            </wsgen>
+
+            <!-- copy in impl source -->
+            <copy file="${srcdir}/SoapBindRpcIf.java" todir="${workdir_rpc}2" />
+            <copy file="${srcdir}/SoapBindRpcIfImpl.java" todir="${workdir_rpc}2" />
+
+            <!-- war/ear it up -->
+            <war warfile="${FVT.build.lib.dir}/${warbasename}Rpc2.war"
+             webxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/web_rpc.xml">
+                   <!--  **** we want the server to generate this  ****
+                    <webinf dir="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server">
+                            <include name="wsdl/SoapBindRpcImplService.wsdl"/>
+                            <include name="wsdl/SoapBindRpcImplService_schema1.xsd"/>
+                    </webinf>
+                   -->
+
+                    <!-- pick up compiled and generated classes -->
+                    <classes dir="${workdir_rpc}2">
+                            <include name="**/*.class"/>
+                            <include name="**/*.java"/>
+                    </classes>
+            </war>
+
+            <ear earfile="${FVT.build.installableApps.dir}/${warbasename}Rpc2.ear"
+                    appxml="${FVT.base.dir}/src/annotations/soapbinding/testdata/dd/server/application_rpc2.xml">
+                    <fileset dir="${FVT.build.lib.dir}" includes="${warbasename}Rpc2.war" />
+            </ear>
+
+        </target>
+
+       <!-- The client target will build anything necessary for the client
+       piece of the test.  This could just be compiling the client class
+       or in the case of a managed client, building a client side EAR
+       file. -->
+       <target name="client_beta" depends="setenv">
+          <!-- generate client side classes -->
+          <echo message="wsimport...." />
+          <wsimport
+                  keep="true"
+                  verbose="true"
+                  sourcedestdir="${FVT.build.classes.dir}"
+                  destdir="${FVT.build.classes.dir}"
+                  wsdl="${FVT.base.dir}/src/annotations/${anno_subset}/testdata/dd/server/wsdl/SoapBindAnno3ImplService.wsdl">
+          </wsimport>
+
+          <!-- compile client implementation -->
+          <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/${anno_subset}"
+             destdir="${FVT.build.classes.dir}"
+             deprecation="${deprecation}"
+             debug="${debug}"
+             source="${build.tests.with.java.level}"
+             target="${build.tests.with.java.level}"
+             failonerror="${failonerror}">
+             <include name="**/SoapBindAnno3Client.java"/>
+             <classpath refid="thinclientclasspath" />
+         </javac>
+      </target>
+
+      <!-- even though we have the same methods as in the beta client, this
+           time we have a different service name, and we have to have generated beans
+           present for the wrapped method.  So, darn, we need another client.
+           We'll use the wsdl from the server step.
+
+           Although the prior test didn't generate any beans, it did generate ObjectFactory.java,
+           which this test would overwrite.  So, we put the server class in a different package to stop that.
+      -->
+      <target name="client_impl" depends="setenv" >
+          <!-- generate client side classes -->
+          <echo message="wsimport...." />
+          <wsimport
+                  keep="true"
+                  verbose="true"
+                  sourcedestdir="${FVT.build.classes.dir}"
+                  destdir="${FVT.build.classes.dir}"
+                  wsdl="${workdir_imp}/SoapBindRtImplService.wsdl">
+          </wsimport>
+
+          <!-- compile client implementation -->
+          <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/${anno_subset}"
+             destdir="${FVT.build.classes.dir}"
+             deprecation="${deprecation}"
+             debug="${debug}"
+             source="${build.tests.with.java.level}"
+             target="${build.tests.with.java.level}"
+             failonerror="${failonerror}">
+             <include name="**/SoapBindRtImplClient.java"/>
+             <classpath refid="thinclientclasspath" />
+         </javac>
+      </target>
+
+
+      <target name="client_rpc" depends="setenv" >
+          <property name="srcdir"  value="${FVT.base.dir}/src/annotations/soapbinding/testdata" />
+          <!-- generate client side classes -->
+          <echo message="wsimport...." />
+          <wsimport
+                  keep="true"
+                  verbose="true"
+                  sourcedestdir="${FVT.build.classes.dir}"
+                  destdir="${FVT.build.classes.dir}"
+                  wsdl="${workdir_rpc}/SoapBindRpcImplService.wsdl">
+          </wsimport>
+
+          <!-- compile client implementation -->
+          <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/${anno_subset}"
+             destdir="${FVT.build.classes.dir}"
+             deprecation="${deprecation}"
+             debug="${debug}"
+             source="${build.tests.with.java.level}"
+             target="${build.tests.with.java.level}"
+             failonerror="${failonerror}">
+             <include name="**/SoapBindRpcClient.java"/>
+             <classpath refid="thinclientclasspath" />
+         </javac>
+      </target>
+
+
+
+        <!-- The test target will build anything necessary for the test
+       piece of the test.  Often this will just include compiling the
+       the JUnit test case file.
+  -->
+        <target name="test" depends="setenv,compiletWAScaseSrc">
+                <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/${anno_subset}:${FVT.base.dir}/src/annotations/support"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           listfiles="yes"
+           depend="yes"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+                        <classpath refid="thinclientclasspath"/>
+                        <exclude name="**/testdata/*"/>
+                </javac>
+        </target>
+	
+	  <target name = "compiletWAScaseSrc">
+		<mkdir dir="${FVT.base.dir}/build/work/annotations/soapbinding/j2w"/>
+		<delete file="${FVT.base.dir}/build/work/annotations/soapbinding/j2w/*"/>
+		<antcall target="compiletWAScase">
+		  	<param name="srcfile" value="Sbj2w*java"/>
+		    <param name="srcdir" value="${FVT.base.dir}/src/annotations/soapbinding/testdata"/>
+			<param name="targetDir" value="${FVT.base.dir}/build/work/annotations/soapbinding/j2w"/>
+			<param name="workdir" value="${FVT.base.dir}"/>
+			<param name="basedir" value="${FVT.base.dir}"/>
+		</antcall>
+		<antcall target="compiletWAScase">
+		    <param name="srcfile" value="SoapBindAnno.java"/>
+		    <param name="srcdir" value="${FVT.base.dir}/src/annotations/soapbinding/testdata"/>
+			<param name="targetDir" value="${FVT.base.dir}/build/work/annotations/soapbinding/j2w"/>
+			<param name="workdir" value="$${FVT.base.dir}"/>
+			<param name="basedir" value="${FVT.base.dir}"/>
+		</antcall>
+		<antcall target="compiletWAScase">
+		    <param name="srcfile" value="SoapBindAnno2.java"/>
+		    <param name="srcdir" value="${FVT.base.dir}/src/annotations/soapbinding/testdata"/>
+		    <param name="targetDir" value="${FVT.base.dir}/build/work/annotations/soapbinding/j2w"/>
+			<param name="workdir" value="${FVT.base.dir}"/>
+			<param name="basedir" value="${FVT.base.dir}"/>
+		</antcall>  
+	  </target>
+	  <target name="compiletWAScase">
+		<javac compiler="modern" sourcepath="${workdir}"
+		       srcdir="${srcdir}"
+		       destdir="${targetDir}"
+		       deprecation="${deprecation}"
+		       debug="${debug}"
+		       failonerror="${failonerror}"
+               source="${build.tests.with.java.level}"
+               target="${build.tests.with.java.level}"
+		       verbose="false">
+		<include name="${srcfile}"/>
+		</javac>
+	  </target>
+
+        <!-- The preinstall target will perform any tasks necessary before the
+       application is installed into WebSphere.  This could include running
+       ejbdeploy or endptenabler for an EAR that contains an EJB. -->
+        <target name="preinstall" depends="setenv">
+        </target>
+
+
+        <!-- The install target will install the server side piece of the test
+               into WebSphere.  This target calls the installTest.xml file for
+               the test. -->
+        <target name="install" depends="setenv">
+                <ant antfile="${FVT.base.dir}/src/annotations/soapbinding/installTest.xml"
+                 dir="${FVT.base.dir}/src/annotations/soapbinding"  >
+                        <property name="install.mode" value="${rt.install.mode}"/>
+                </ant>
+        </target>
+
+
+        <!-- The uninstall target will uninstall the server side piece of the test
+               from WebSphere.  This target calls the uninstallTest.xml file for
+               the test. -->
+        <target name="uninstall" depends="setenv">
+                <ant antfile="${FVT.base.dir}/src/annotations/soapbinding/uninstallTest.xml"
+                 dir="${FVT.base.dir}/src/annotations/soapbinding" >
+                        <property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+                </ant>
+        </target>
+
+</project>

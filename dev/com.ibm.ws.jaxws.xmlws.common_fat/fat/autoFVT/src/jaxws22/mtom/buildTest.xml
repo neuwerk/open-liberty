@@ -1,0 +1,286 @@
+<?xml version="1.0"?>                     
+<!--
+
+   Description:  Test JAXWS 2.2 and JSR109 V3 changes 
+   
+   Date        UserId      Defect          Description
+   03/03/2010  btiffany                    new file
+   08/02/2010  btiffany    663795          refactor directory structure
+   08/25/2010  btiffany    663795.1        quit erasing the addressing tests (oops) 
+-->
+
+<project name="build" default="buildall" basedir=".">
+
+  <!-- use import instead of entity refs -->   
+  <import file="../../xmls/common_imports.xml"/>
+  
+  <!-- This property should match the package name of the test class.  The
+       property is used in the targets.xml file when running any of the
+       component-run* targets for running a single test case class.
+  -->                     
+  <property name="componentName" value="jaxws22/mtom/test"/>
+  <echo message="${FVT.base.dir}"/>
+     
+  <!-- This path id is used in the targets.xml file when running any of
+       the component-run* targets.  This allows setting the classpath 
+       for an individual test.
+  -->
+  <path id="componentClasspath">
+    <path refid="thinclientclasspath"/>
+  </path>
+     
+     
+  <!-- The init target will initialize any directories, properties, etc.
+       that are needed for the test.
+  -->    
+  <target name="init" depends="setenv">
+    <antcall target="component-init"/>
+    <mkdir dir="${FVT.build.work.dir}/jaxws22/mtom"/>
+  </target>                       
+  
+     
+  <!-- The clean target will clean any files, classes, or directories
+       so that a new copy of the test can be built and run.
+  -->                       
+  <target name="clean" depends="setenv">
+    <delete dir="${FVT.build.classes.dir}/jaxws22/mtom"/>    
+  </target>
+  
+   
+  <!-- The buildall target will execute all of the targets necessary
+       before installing the test into WebSphere.
+  -->                                                                                      
+  <target name="buildall" depends="setenv, clean, init, mtomclient, server,  mtommanagedclient, mtomapiclient, test, preinstall"/>  
+  
+  <!-- Only if running in eclipse and building automatically,  some stuff that was never intended to
+       be built will be, and will break the tests. 
+  -->     
+  <target name="cleanupaftereclipse">
+      <delete file="${FVT.build.classes.dir}/ObjectFactory.class" />
+      <delete file="${FVT.build.classes.dir}/com_bad/test/ObjectFactory.class" />
+      <delete file="${FVT.build.classes.dir}/com/test/ObjectFactory.class" />
+  </target>
+     
+  
+  <!-- The server target will build anything necessary for the server
+       piece of the test.  Typically this target builds the server side
+       EAR.
+  -->                               
+  <target name="server" depends="setenv">
+        <echo message="prebuilt app is used for services" />   
+          
+        <!--                   
+        
+	        <echo message="building war file to test client side dd's in war container" />
+	        <delete file="${FVT.build.lib.dir}/managedclientdriverservlet.war" />
+	     	<war destfile="${FVT.build.lib.dir}/managedclientdriverservlet.war"
+				  webxml="${FVT.base.dir}/src/jaxws22/mtom/client/etc/clientwar/web.xml">
+				
+				<zipfileset dir="${FVT.base.dir}/src/jaxws22/client/mtom/etc/META-INF/wsdl"
+					includes="*.wsdl, *.xsd"
+					prefix="WEB-INF/wsdl" />
+				
+				
+				<zipfileset dir="${FVT.base.dir}/src/jaxws22/client/mtom"
+					includes="*.java"
+					prefix="WEB-INF/src" />		
+				
+				
+				<classes dir="${FVT.build.classes.dir}">			
+					<include name="jaxws22/client/mtom/**/*.class" />			
+				</classes>
+			</war>
+			<delete file="${FVT.build.installableApps.dir}/jaxws22mtom_managedclientdriverservlet.ear"/>
+			<ear earfile="${FVT.build.installableApps.dir}/jaxws22mtom_managedclientdriverservlet.ear"
+			     appxml="${FVT.base.dir}/src/jaxws22/client/mtom/etc/clientwar/application.xml">
+				<fileset dir="${FVT.build.lib.dir}" includes="managedclientdriverservlet.war" />		
+			</ear>	
+		
+		-->	
+  </target>    
+               
+  <!-- The client target will build anything necessary for the client
+       piece of the test.  This could just be compiling the client class
+       or in the case of a managed client, building a client side EAR
+       file.
+  -->   
+   <target name="mtomapiclient" depends="setenv">  
+    <!-- this just generates some wsimport code for the  MTOMJsrv22FactoryMethodsTest to exercise. -->
+    <!-- the classes dir has to be declared as  a src dir for eclipse to pick this up --> 
+    
+		<wsimport debug="${debug}" fork="true"
+				 verbose="true"
+			      keep="true"
+			      destdir="${FVT.build.classes.dir}"			    
+			      wsdl="${FVT.base.dir}/src/jaxws22/mtom/etc/META-INF/wsdl/mtom.wsdl" 
+			     package="jaxws22.mtom.client">
+            <jvmarg line="-Djava.endorsed.dirs=${FVT.base.dir}/common/jars/endorsed"/>
+        </wsimport>         
+    
+  </target>
+  
+                              
+  <target name="mtomclient" depends="setenv">  
+    <!-- this will build the client classes for the server side mtom tests -->
+
+    <!-- surprise, the managed client needs wsimport-generated artifacts to work, 
+         create those now -->
+  
+	<wsimport debug="${debug}" fork="true"
+
+	     keep="true"
+	     destdir="${FVT.build.work.dir}"			    
+	     wsdl="${FVT.base.dir}/src/jaxws22/mtom/etc/META-INF/wsdl/MTOMAnnotationNoMTOMService.wsdl" 	  
+        package="jaxws22.mtom.client">
+            <jvmarg line="-Djava.endorsed.dirs=${FVT.base.dir}/common/jars/endorsed"/>
+        </wsimport>          
+        
+	 <wsimport debug="${debug}" fork="true"
+
+	     keep="true"
+	     destdir="${FVT.build.work.dir}"			    
+	     wsdl="${FVT.base.dir}/src/jaxws22/mtom/etc/META-INF/wsdl/MTOMAnnotationOnlyService.wsdl" 	  
+        package="jaxws22.mtom.client">
+            <jvmarg line="-Djava.endorsed.dirs=${FVT.base.dir}/common/jars/endorsed"/>
+        </wsimport>         
+        
+	 	 <wsimport  debug="${debug}" fork="true"
+
+	     keep="true"
+	     destdir="${FVT.build.work.dir}"			    
+	     wsdl="${FVT.base.dir}/src/jaxws22/mtom/etc/META-INF/wsdl/MTOMDDNoMTOMService.wsdl" 	  
+        package="jaxws22.mtom.client">
+            <jvmarg line="-Djava.endorsed.dirs=${FVT.base.dir}/common/jars/endorsed"/>
+        </wsimport>         
+        
+	 	 <wsimport  debug="${debug}" fork="true"
+
+	     keep="true"
+	     destdir="${FVT.build.work.dir}"			    
+	     wsdl="${FVT.base.dir}/src/jaxws22/mtom/etc/META-INF/wsdl/MTOMDDOnlyService.wsdl" 	  
+        package="jaxws22.mtom.client">
+            <jvmarg line="-Djava.endorsed.dirs=${FVT.base.dir}/common/jars/endorsed"/>
+        </wsimport>         
+        
+	 	<wsimport  debug="${debug}" fork="true"
+
+	     keep="true"
+	     destdir="${FVT.build.work.dir}"			    
+	     wsdl="${FVT.base.dir}/src/jaxws22/mtom/etc/META-INF/wsdl/MTOMDDOverrideService.wsdl" 	  
+        package="jaxws22.mtom.client">
+            <jvmarg line="-Djava.endorsed.dirs=${FVT.base.dir}/common/jars/endorsed"/>
+        </wsimport>         
+	 
+
+ 
+	<!-- compile all the code for the clients, handler, driver, etc. --> 
+	 
+	<javac compiler="modern" srcdir="${FVT.base.dir}/src/jaxws22/mtom/client" fork="true"
+           destdir="${FVT.build.classes.dir}"           
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+      <classpath location="${FVT.build.work.dir}"/>
+      <include name="**/*.java"/>
+      <compilerarg value="-J-Xbootclasspath/p:${ref.to.22api}"/>
+    </javac>  
+    
+     <!-- delete the webservice interface class so war container won't try to deploy it -->
+	 <!--  webserviceclient needs these to work, too bad.
+	 <delete file="${FVT.build.work.dir}/jaxws22/client/mtom/MTOMDDOnly.class"/>
+	 <delete file="${FVT.build.work.dir}/jaxws22/client/mtom/MTOMAnnotationNoMTOM.class"/>
+ 	 <delete file="${FVT.build.work.dir}/jaxws22/client/mtom/MTOMAnnotationOnly.class"/>
+  	 <delete file="${FVT.build.work.dir}/jaxws22/client/mtom/MTOMDDNoMTOM.class"/>
+ 	 <delete file="${FVT.build.work.dir}/jaxws22/client/mtom/MTOMDDOverride.class"/>  	 
+ 	 -->
+      
+  </target>
+  
+   <target name="mtommanagedclient" depends="setenv">  
+       <delete file="${FVT.build.lib.dir}/jaxws22mtomclient.jar" />
+	   <jar destfile="${FVT.build.lib.dir}/jaxws22mtomclient.jar"
+	        manifest="${FVT.base.dir}/src/jaxws22/mtom/etc/META-INF/MANIFEST.MF"
+	    >
+		  <fileset dir="${FVT.build.classes.dir}">
+	        <include name="jaxws22/mtom/client/Com*.class"/>	
+	        <include name="jaxws22/mtom/client/Man*.class"/>  
+	        <include name="jaxws22/mtom/client/Mes*.class"/>        
+         </fileset>
+           <fileset dir="${FVT.build.work.dir}">
+	        <include name="jaxws22/mtom/client/*.class"/>	
+	        <include name="jaxws22/mtom/client*.java"/>  
+         </fileset>
+               <fileset dir="${FVT.build.work.dir}">
+	        <include name="jaxws22/mtom/client/inject/*.class"/>	
+	        <include name="jaxws22/mtom/client/inject/*.java"/>  
+         </fileset>
+         <!-- pick up application-client.xml and manifest.mf -->
+         <zipfileset dir="${FVT.base.dir}/src/jaxws22/mtom/etc" >
+           <exclude name="**/application.xml" />
+           <exclude name="**/apps/**" />
+         </zipfileset> 
+      </jar>    
+      <delete file="${FVT.build.installableApps.dir}/jaxws22mtomclient.ear" />
+      <ear earfile="${FVT.build.installableApps.dir}/jaxws22mtomclient.ear"       
+         appxml="${FVT.base.dir}/src/jaxws22/mtom/etc/META-INF/application.xml">	
+	      <fileset dir="${FVT.build.lib.dir}" includes="jaxws22mtomclient.jar"/>
+      </ear>
+  </target>
+                            
+                            
+  <!-- The client target will build anything necessary for the test
+       piece of the test.  Often this will just include compiling the
+       the JUnit test case file.
+  -->                               
+  <target name="test" depends="setenv">
+  
+    <javac compiler="modern" srcdir="${FVT.base.dir}/src/jaxws22/mtom" fork="true"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+      <include name="test/*Test.java"/>
+      <compilerarg value="-J-Xbootclasspath/p:${ref.to.22api}"/>
+    </javac>
+      
+  </target>         
+  
+             
+  <!-- The preinstall target will perform any tasks necessary before the
+       application is installed into WebSphere.  This could include running
+       ejbdeploy or endptenabler for an EAR that contains an EJB.
+  -->                               
+  <target name="preinstall" depends="setenv">
+  </target>         
+  
+  
+  <!-- The install target will install the server side piece of the test
+       into WebSphere.  This target calls the installTest.xml file for
+       the test.
+  -->           
+  <target name="install" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/jaxws22/mtom/installTest.xml"
+         dir="${FVT.base.dir}/src/jaxws22/mtom">
+      <property name="install.mode" value="${rt.install.mode}"/>
+    </ant>
+  </target>
+  
+    
+  <!-- The uninstall target will uninstall the server side piece of the test
+       from WebSphere.  This target calls the uninstallTest.xml file for
+       the test.
+  -->           
+  <target name="uninstall" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/jaxws22/mtom/uninstallTest.xml"
+         dir="${FVT.base.dir}/src/jaxws22/mtom">
+      <property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+    </ant>
+  </target>
+ 
+</project>

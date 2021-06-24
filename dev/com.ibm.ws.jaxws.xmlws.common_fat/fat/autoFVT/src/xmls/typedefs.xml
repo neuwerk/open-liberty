@@ -1,0 +1,16 @@
+<!--
+   1.1, 9/18/07
+
+   Description:  This file contains custom types that are built with the fvt..
+
+   Change History:
+   Date        UserId         Feature/Defect          Description
+   09/18/2007  jramos         467003                  New File
+-->
+
+	<typedef name="Session"
+        classname="com.ibm.ws.wsfvt.build.types.Session"
+        loaderRef="refsession">
+		<classpath refid="libertytaskclasspath" />
+	</typedef>
+

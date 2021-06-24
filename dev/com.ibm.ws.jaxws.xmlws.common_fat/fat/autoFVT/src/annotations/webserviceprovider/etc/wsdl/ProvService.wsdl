@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions
+	 targetNamespace="http://server.webserviceprovider.annotations/" 
+	 name="ProvBasicService"
+	  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+	  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	  xmlns:tns="http://server.webserviceprovider.annotations/" 
+	  xmlns="http://schemas.xmlsoap.org/wsdl/">
+	  
+  <types>
+    <!-- embedded from: C:\eclipse\WFVT\ws\code\websvcs.fvt\build\work\WebServiceRunTimeTestCase\server/WebServiceBasicRuntimeService_schema1.xsd-->
+        <xs:schema version="1.0" targetNamespace="http://server.webserviceprovider.annotations/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+          <xs:element name="echo" type="ns1:echo" xmlns:ns1="http://server.webserviceprovider.annotations/"/>
+
+          <xs:complexType name="echo">
+            <xs:sequence>
+              <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+          </xs:complexType>
+
+          <xs:element name="echoResponse" type="ns2:echoResponse" xmlns:ns2="http://server.webserviceprovider.annotations/"/>
+
+          <xs:complexType name="echoResponse">
+            <xs:sequence>
+              <xs:element name="return" type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:schema>
+
+
+  </types>
+  <message name="echo">
+    <part name="parameters" element="tns:echo"/>
+  </message>
+  <message name="echoResponse">
+    <part name="parameters" element="tns:echoResponse"/>
+  </message>
+  <portType name="ProvBasic">
+    <operation name="echo">
+      <input message="tns:echo"/>
+      <output message="tns:echoResponse"/>
+    </operation>
+  </portType>
+  <binding name="ProvServicePortBinding" type="tns:ProvBasic">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="echo">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="ProvBasicService">
+    <port name="ProvBasicPort" binding="tns:ProvServicePortBinding">
+      <soap:address location="REPLACE_WITH_ACTUAL_URL"/>
+    </port>
+  </service>
+</definitions>
+

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     1.1, 12/2/09
+    
+    Change History:
+    Date       UserId              Feature/Defect          Description
+    ****************************************************************************
+    11/18/09   varadan             F743-17947-01           New file
+-->
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd" 
+    version="3.1">    
+
+    <enterprise-beans>
+        <session id="AnnotationsSession3">
+            <ejb-name>Ejb1</ejb-name>
+            <ejb-class>jaxwsejb31Singleton.annotationsRef.ejb1.wsfvt.server.Ejb1</ejb-class>
+            <transaction-type>Container</transaction-type>
+            
+        </session>
+    </enterprise-beans>
+</ejb-jar>

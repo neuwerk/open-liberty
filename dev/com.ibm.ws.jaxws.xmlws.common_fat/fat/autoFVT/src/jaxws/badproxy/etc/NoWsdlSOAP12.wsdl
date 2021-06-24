@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:soap11="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"	
+	xmlns:common="http://common.wsfvt.badproxy.jaxws"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:tns="http://NoWsdlSOAP12.common.wsfvt.badproxy.jaxws"
+	targetNamespace="http://NoWsdlSOAP12.common.wsfvt.badproxy.jaxws">
+	
+	<wsdl:types>
+	    <xsd:schema
+	      targetNamespace="http://NoWsdlSOAP12.common.wsfvt.badproxy.jaxws">
+
+	      <xsd:import namespace="http://common.wsfvt.badproxy.jaxws"
+	        schemaLocation="common.xsd"/>
+	    </xsd:schema>
+	    
+	</wsdl:types>
+
+	<wsdl:message name="pingRequest">
+		<wsdl:part name="request" element="common:ping" />
+	</wsdl:message>
+
+	<wsdl:message name="pingResponse">
+		<wsdl:part name="response" element="common:pingResponse" />
+	</wsdl:message>
+
+	<wsdl:portType name="NoWsdlSOAP12Port">
+
+		<wsdl:operation name="ping">
+			<wsdl:input message="tns:pingRequest" />
+			<wsdl:output message="tns:pingResponse" />
+		</wsdl:operation>					
+			
+	</wsdl:portType>
+	
+	<wsdl:binding name="BadProxyBinding" type="tns:NoWsdlSOAP12Port">
+		<soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+
+		<wsdl:operation name="ping">
+			<soap12:operation soapAction="http://NoWsdlSOAP12.common.wsfvt.badproxy.jaxws/ping" />
+			<wsdl:input>
+				<soap12:body use="literal"  />
+			</wsdl:input>
+			<wsdl:output>
+				<soap12:body use="literal"  />
+			</wsdl:output>
+		</wsdl:operation>								
+	
+	</wsdl:binding>
+	
+	<wsdl:service name="NoWsdlSOAP12Service">
+		<wsdl:port binding="tns:BadProxyBinding" name="NoWsdlSOAP12Port">
+			<soap12:address location="http://@HOST@:@PORT@/@base-test-name@.@test-name@/services/NoWsdlSOAP12Service" />
+		</wsdl:port>
+	</wsdl:service>
+	
+</wsdl:definitions>
+	

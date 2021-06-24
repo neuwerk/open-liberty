@@ -1,0 +1,273 @@
+<?xml version="1.0"?>                     
+<!--
+
+   Description:  Test JAXWS 2.2 3.6.2.1 Dynamic bean generation
+   
+   Date        UserId      Defect          Description
+   07/10/2010  btiffany                    new file
+-->
+
+<project name="build" default="buildall" basedir=".">
+
+  <!-- use import instead of entity refs -->   
+  <import file="../../xmls/common_imports.xml"/>
+  
+  <!-- This property should match the package name of the test class.  The
+       property is used in the targets.xml file when running any of the
+       component-run* targets for running a single test case class.
+  -->                     
+  <property name="componentName" value="jaxws/dynamicbeangen"/>
+  
+  <property name="workdir" value="${FVT.build.work.dir}/${componentName}" />
+  <property name="workdir2" value="${FVT.build.work.dir}/${componentName}2" />
+  <property name="workdir3" value="${FVT.build.work.dir}/${componentName}3" />
+  <property name="workdir4" value="${FVT.build.work.dir}/${componentName}4" />
+  <property name="workdir5" value="${FVT.build.work.dir}/${componentName}5" />
+  <property name="srcdir" value="${basedir}" />
+     
+  <!-- This path id is used in the targets.xml file when running any of
+       the component-run* targets.  This allows setting the classpath 
+       for an individual test.
+  -->
+  <path id="componentClasspath">
+    <path refid="thinclientclasspath"/>
+  </path>     
+     
+  <!-- The init target will initialize any directories, properties, etc.
+       that are needed for the test.
+  -->    
+  <target name="init" depends="setenv">
+    <antcall target="component-init"/>
+    <mkdir dir="${workdir}"/>
+  </target>                       
+  
+     
+  <!-- The clean target will clean any files, classes, or directories
+       so that a new copy of the test can be built and run.
+  -->                       
+  <target name="clean" depends="setenv">
+    <delete dir="${workdir}" />
+    <delete dir="${FVT.build.classes.dir}/${componentName}"/>    
+  </target>
+  
+   
+  <!-- The buildall target will execute all of the targets necessary
+       before installing the test into WebSphere.
+  -->                                                                                      
+  <target name="buildall" depends="setenv, clean, init, server,  client, test, preinstall"/>  
+  
+ 
+  
+  <!-- The server target will build anything necessary for the server
+       piece of the test.  Typically this target builds the server side
+       EAR.
+  -->                               
+  <target name="server" depends="init">
+	   <!-- we don't want to compile server/jaxws at this time -->
+  	   <javac compiler="modern" srcdir="${basedir}"
+           destdir="${workdir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+  	       source="${build.tests.with.java.level}"
+  	       target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+          <classpath refid="classpath"/>
+          <include name="**/server/*java"/>
+	  </javac>
+      <echo message="wsgen..." />
+      <wsgen
+             genwsdl="true"
+             keep="true"
+             verbose="true"
+             destdir="${workdir}"
+             resourcedestdir="${workdir}"
+             sourcedestdir="${workdir}"
+             sei="jaxws.dynamicbeangen.server.DynamicNoWsdl"
+             >
+             <classpath>           
+                     <path location="${workdir}" />         
+                     <path refid="classpath"/>
+          </classpath>
+      </wsgen>  
+      
+      <!-- now overlay our "special" packaged beans --> 
+      <!-- we'll use this to check that generated beans are NOT being called --> 
+      	<javac compiler="modern" srcdir="${srcdir}"
+	        destdir="${workdir}"
+	        deprecation="${deprecation}"
+	        debug="${debug}"
+      	    source="${build.tests.with.java.level}"
+      	    target="${build.tests.with.java.level}"
+	        failonerror="${failonerror}">
+	       <classpath refid="classpath"/>
+	       <include name="server/jaxws/*java"/>
+		</javac>
+		
+		<copy todir="${workdir}/jaxws/dynamicbeangen/server/jaxws">
+	   			 <fileset dir="${srcdir}/server/jaxws" includes="*java" />	   			 
+		</copy>
+		        
+        <delete file="${FVT.build.lib.dir}/jaxwsdynamicbeans.war" />
+     	<war destfile="${FVT.build.lib.dir}/jaxwsdynamicbeans.war"
+			  webxml="${srcdir}/server/with_all_beans_without_wsdl_web.xml">
+		    <!--	
+			<zipfileset dir="${workdir}"
+				includes="*.wsdl, *.xsd"
+				prefix="WEB-INF/wsdl" />				
+			-->	
+			<zipfileset dir="${srcdir}/server"
+				includes="*.java"
+				prefix="WEB-INF/src" />		
+			<classes dir="${workdir}">			
+				<include name="**/*.class" />	
+				<include name="**/*.java" />		
+			</classes>
+		</war>
+	
+	    <delete file="${FVT.build.lib.dir}/jaxwsdynamicbeans_nobeans_nowsdl.war" />
+	 	<war destfile="${FVT.build.lib.dir}/jaxwsdynamicbeans_nobeans_nowsdl.war"
+			  webxml="${srcdir}/server/without_beans_without_wsdl_web.xml">
+		    <!--	
+			<zipfileset dir="${workdir}"
+				includes="*.wsdl, *.xsd"
+				prefix="WEB-INF/wsdl" />				
+			-->	
+			<zipfileset dir="${srcdir}/server"
+				includes="*Class.java, DynamicNo*java"	            
+				prefix="WEB-INF/src" />		
+			<classes dir="${workdir}">		
+
+ 				<include name="**/*.class" />	
+				<include name="**/*.java" />		
+	            <exclude name="**/jaxws/*" />
+	            <exclude name="**/*Another*" />
+			</classes>
+		</war>
+	
+	    <delete file="${FVT.build.lib.dir}/jaxwsdynamicbeans_somebeans_nowsdl.war" />
+	    <!-- add our custom beans into the work dir again, and delete all the wsgen-supplied beans -->
+	    <delete dir="${workdir}">
+	         <include name="**/jaxws/*"/>
+        </delete>
+		<javac compiler="modern" srcdir="${srcdir}"
+	        destdir="${workdir}"
+	        deprecation="${deprecation}"
+	        debug="${debug}"
+	        source="${build.tests.with.java.level}"
+	        target="${build.tests.with.java.level}"
+	        failonerror="${failonerror}">
+	       <classpath refid="classpath"/>
+	       <include name="server/jaxws/*java"/>
+		</javac>
+	 	<war destfile="${FVT.build.lib.dir}/jaxwsdynamicbeans_somebeans_nowsdl.war"
+			  webxml="${srcdir}/server/with_some_beans_without_wsdl_web.xml">
+		    <!--	
+			<zipfileset dir="${workdir}"
+				includes="*.wsdl, *.xsd"
+				prefix="WEB-INF/wsdl" />				
+			-->	
+			<zipfileset dir="${srcdir}/server"
+				includes="*Class.java, DynamicNo*java"	            
+				prefix="WEB-INF/src" />		
+			<zipfileset dir="${srcdir}/server/jaxws"
+				includes="*java"	            
+				prefix="WEB-INF/src" />		
+			<classes dir="${workdir}">			
+				<include name="**/*.class" />	 				
+				<include name="**/*.java" />		
+	            <!-- <exclude name="**/jaxws/*" /> -->
+	            <exclude name="**/*Another*" />
+			</classes>
+		</war>
+	
+		<delete file="${FVT.build.installableApps.dir}/jaxwsdynamicbeans.ear"/>
+		<ear earfile="${FVT.build.installableApps.dir}/jaxwsdynamicbeans.ear"
+		     appxml="${srcdir}/server/application.xml">
+             
+			<fileset dir="${FVT.build.lib.dir}" includes="jaxwsdynamicbeans.war" />	
+			
+			<fileset dir="${FVT.build.lib.dir}" includes="jaxwsdynamicbeans_nobeans_nowsdl.war" />
+            
+			<fileset dir="${FVT.build.lib.dir}" includes="jaxwsdynamicbeans_somebeans_nowsdl.war" />
+		
+		</ear>	
+  </target>    
+               
+  <!-- The client target will build anything necessary for the client
+       piece of the test.  This could just be compiling the client class
+       or in the case of a managed client, building a client side EAR
+       file.
+  -->  
+  <target name="client" depends="setenv">
+ 	<wsimport debug="${debug}"
+		      destdir="${FVT.build.classes.dir}"
+			  sourcedestdir="${FVT.build.classes.dir}"
+		      wsdl="${workdir}/DynamicBeansService.wsdl"
+			  verbose="true" >
+	</wsimport>	
+    <javac compiler="modern"  fork="true" debug="${debug}" 
+            srcdir="${srcdir}/client"
+            destdir="${FVT.build.classes.dir}"
+            includes="*java"
+  	        source="${build.tests.with.java.level}"
+  	        target="${build.tests.with.java.level}"
+			verbose="false">
+               <classpath refid="componentClasspath"/>
+    </javac>	
+  </target>
+   
+  
+                            
+  <!-- The client target will build anything necessary for the test
+       piece of the test.  Often this will just include compiling the
+       the JUnit test case file.
+  -->                               
+  <target name="test" depends="setenv">
+  
+    <javac compiler="modern" srcdir="${srcdir}"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+  	       source="${build.tests.with.java.level}"
+  	       target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+      <include name="test/*Test.java"/>
+
+    </javac>
+      
+  </target>         
+  
+             
+  <!-- The preinstall target will perform any tasks necessary before the
+       application is installed into WebSphere.  This could include running
+       ejbdeploy or endptenabler for an EAR that contains an EJB.
+  -->                               
+  <target name="preinstall" depends="setenv">
+  </target>         
+  
+  
+  <!-- The install target will install the server side piece of the test
+       into WebSphere.  This target calls the installTest.xml file for
+       the test.
+  -->           
+  <target name="install" depends="setenv">
+    <ant antfile="${srcdir}/installTest.xml"
+         dir="${srcdir}">
+      <property name="install.mode" value="${rt.install.mode}"/>
+    </ant>
+  </target>
+  
+    
+  <!-- The uninstall target will uninstall the server side piece of the test
+       from WebSphere.  This target calls the uninstallTest.xml file for
+       the test.
+  -->           
+  <target name="uninstall" depends="setenv">
+    <ant antfile="${srcdir}/uninstallTest.xml"
+         dir="${srcdir}">
+      <property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+    </ant>
+  </target>
+ 
+</project>

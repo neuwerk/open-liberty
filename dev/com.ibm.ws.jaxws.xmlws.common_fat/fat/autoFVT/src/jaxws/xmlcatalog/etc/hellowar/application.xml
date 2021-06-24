@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    
+    @(#) 1.1 autoFVT/src/jaxws/xmlcatalog/etc/hellowar/application.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01 6/30/09 10:50:33 [8/8/12 06:09:25]
+    
+    Change History:
+    Date       UserId              Feature/Defect          Description
+    ****************************************************************************
+    06/29/2009 samerrel            552420                  New File
+    
+-->
+
+<application id="xmlcataloghellowar" version="5"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd">
+	<display-name>xmlcatalog-hellowar</display-name>
+	<module id="hellowar">
+		<web>
+			<web-uri>xmlcatalog-hellowar.war</web-uri>
+			<context-root>/xmlcatalog/hellowar</context-root>
+		</web>
+	</module>
+</application>
+

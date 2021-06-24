@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions targetNamespace="http://soapfaults.jaxws"
+  xmlns:tns="http://soapfaults.jaxws"
+  xmlns:ts="http://soapfaults.jaxws/xsd"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+  xmlns="http://schemas.xmlsoap.org/wsdl/" >
+  
+  <types>
+    <xsd:schema targetNamespace="http://soapfaults.jaxws/xsd" 
+                xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" 
+                xmlns:env12="http://www.w3.org/2003/05/soap-envelope" >
+
+      <xsd:import namespace="http://schemas.xmlsoap.org/soap/envelope/"
+              schemaLocation="soap11-env.xsd" />
+
+      <xsd:import namespace="http://www.w3.org/2003/05/soap-envelope"
+              schemaLocation="soap12-env.xsd" />
+
+      <xsd:element name="doFaultTest" type="ts:doFaultTestType" nillable="true"/>
+      <xsd:complexType name="doFaultTestType">
+        <xsd:sequence>
+          <xsd:element name="reqString" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:element name="doFaultTestResponse" type="ts:doFaultTestResponseType"/>
+      <xsd:complexType name="doFaultTestResponseType">
+        <xsd:sequence>
+          <xsd:element name="result" type="xsd:boolean"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:element name="codeHeader" type="ts:codeHeaderType" nillable="true"/>
+      <xsd:complexType name="codeHeaderType">
+        <xsd:sequence>
+          <xsd:element name="code" type="xsd:string"/>
+        </xsd:sequence>
+        <xsd:attribute ref="env:mustUnderstand" />
+      </xsd:complexType>
+
+      <xsd:element name="codeHeaderSOAP12" type="ts:codeHeaderTypeSOAP12" nillable="true"/>
+      <xsd:complexType name="codeHeaderTypeSOAP12">
+        <xsd:sequence>
+          <xsd:element name="code" type="xsd:string"/>
+        </xsd:sequence>
+          <xsd:attribute ref="env12:mustUnderstand" />
+      </xsd:complexType>
+
+      <xsd:element name="namespaceHeader" type="ts:namespaceHeaderType" nillable="true"/>
+      <xsd:complexType name="namespaceHeaderType">
+        <xsd:sequence>
+          <xsd:element name="URI" type="xsd:string"/>
+          <xsd:element name="prefix" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:element name="processFault" type="ts:processFaultType"/>
+      <xsd:complexType name="processFaultType">
+        <xsd:sequence>
+          <xsd:element name="msgID" type="xsd:int"/>
+          <xsd:element name="msg" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:element name="validateFault" type="ts:validateFaultType"/>
+      <xsd:complexType name="validateFaultType">
+        <xsd:complexContent>
+          <xsd:extension base="ts:processFaultType">
+            <xsd:sequence>
+              <xsd:element name="field" type="xsd:string"/>
+            </xsd:sequence>
+          </xsd:extension>
+        </xsd:complexContent>
+      </xsd:complexType>
+
+    </xsd:schema>
+
+  </types>
+
+  <message name="doFaultTestSOAP11Request">
+    <part name="doFaultTest" element="ts:doFaultTest"/>
+    <part name="codeHeader" element="ts:codeHeader"/>
+    <part name="namespaceHeader" element="ts:namespaceHeader"/>
+  </message>
+
+  <message name="doFaultTestSOAP12Request">
+    <part name="doFaultTest" element="ts:doFaultTest"/>
+    <part name="codeHeader" element="ts:codeHeaderSOAP12"/>
+    <part name="namespaceHeader" element="ts:namespaceHeader"/>
+  </message>
+
+  <message name="doFaultTestResponse">
+    <part name="doFaultTestResult" element="ts:doFaultTestResponse"/>
+  </message>
+  
+  <message name="processFault">
+    <part name="theFault" element="ts:processFault"/>
+  </message>  
+
+  <message name="validateFault">
+    <part name="theFault" element="ts:validateFault"/>
+  </message>
+
+  <portType name="SOAP11FaultsPortType">
+    <operation name="doFaultTest">
+      <input message="tns:doFaultTestSOAP11Request"/>
+      <output message="tns:doFaultTestResponse"/>
+      <fault name="processFault" message="tns:processFault"/>
+      <fault name="validateFault" message="tns:validateFault"/>
+    </operation>  
+  </portType>
+
+  <portType name="SOAP12FaultsPortType">
+    <operation name="doFaultTest">
+      <input message="tns:doFaultTestSOAP12Request"/>
+      <output message="tns:doFaultTestResponse"/>
+      <fault name="processFault" message="tns:processFault"/>
+      <fault name="validateFault" message="tns:validateFault"/>
+    </operation>  
+  </portType>
+  
+  <binding name="SOAP11FaultsBinding" type="tns:SOAP11FaultsPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="doFaultTest">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:header use="literal" message="tns:doFaultTestSOAP11Request" part="codeHeader" /> 
+        <soap:header use="literal" message="tns:doFaultTestSOAP11Request" part="namespaceHeader" /> 
+        <soap:body use="literal" message="tns:doFaultTestSOAP11Request" parts="doFaultTest" />
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="processFault">
+        <soap:fault name="processFault" use="literal"/>
+      </fault>
+      <fault name="validateFault">
+        <soap:fault name="validateFault" use="literal"/>
+      </fault>
+    </operation>      
+  </binding>
+
+  <binding name="SOAP12FaultsBinding" type="tns:SOAP12FaultsPortType">
+    <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="doFaultTest">
+      <soap12:operation soapAction=""/>
+      <input>
+        <soap12:header use="literal" message="tns:doFaultTestSOAP12Request" part="codeHeader" /> 
+        <soap12:header use="literal" message="tns:doFaultTestSOAP12Request" part="namespaceHeader" /> 
+        <soap12:body use="literal" message="tns:doFaultTestSOAP12Request" parts="doFaultTest" />
+      </input>
+      <output>
+        <soap12:body use="literal"/>
+      </output>
+      <fault name="processFault">
+        <soap12:fault name="processFault" use="literal"/>
+      </fault>
+      <fault name="validateFault">
+        <soap12:fault name="validateFault" use="literal"/>
+      </fault>
+    </operation>      
+  </binding>
+
+  <service name="SOAP11FaultsService">
+    <port name="SOAP11FaultsPort" binding="tns:SOAP11FaultsBinding">
+      <soap:address location="http://@myHostTag@:@myPortTag@/jaxws-soapfaults/SOAP11FaultsService"/>
+    </port>
+  </service>
+
+  <service name="SOAP12FaultsService">
+    <port name="SOAP12FaultsPort" binding="tns:SOAP12FaultsBinding">
+      <soap12:address location="http://@myHostTag@:@myPortTag@/jaxws-soapfaults/SOAP12FaultsService"/>
+    </port>
+  </service>
+  
+</definitions>
+
+

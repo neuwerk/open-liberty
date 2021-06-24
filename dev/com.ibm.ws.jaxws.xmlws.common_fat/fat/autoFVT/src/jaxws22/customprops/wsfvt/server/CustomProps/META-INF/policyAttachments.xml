@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<psa:PolicySetAttachment xmlns:psa="http://www.ibm.com/xmlns/prod/websphere/200605/policysetattachment">
+
+   <psa:PolicySetReference name="CustomProps_PS" id="cPS">
+      <psa:PolicySetBinding name="MyBinding"/>
+        <psa:Resource pattern="WebService:/"/>
+   </psa:PolicySetReference>
+</psa:PolicySetAttachment>
+

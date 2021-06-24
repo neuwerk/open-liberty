@@ -1,0 +1,835 @@
+<!--
+   1.20.1.2, 12/16/10
+
+   Description:  This file contains targets that are common functions useful to many
+                 build/install/uninstall files.  The targets specified in this file
+                 are available to each test because this file is imported into all
+                 test build, install, and uninstall files.
+
+   Change History:
+   Date        UserId         Feature/Defect          Description
+   03/12/2003  ulbricht       LIDB1270.256.11         Add condition to verify IHS is installed
+   04/23/2003  ulbricht       D164100                 Remove SMInstall.true property
+   05/05/2003  ulbricht       D161842                 Location of samples changed for ptf
+   05/12/2003  ulbricht       D163811                 Add property for MQ
+   06/03/2003  ulbricht       D166543                 Add property for security enabled
+   06/05/2003  ulbricht       D167954                 MQ installs in /opt/mqm directory on Unix
+   08/15/2003  ulbricht       D174374                 zOS Changes
+   08/20/2003  ulbricht       D174754                 Using too much memory
+   09/09/2003  ulbricht       CVS_TD_M4               Run single test through Ant harness
+   10/05/2003  ulbricht       D178846                 Run PackageTests for single test
+   10/17/2003  ulbricht       D180147                 Use common init target from build files
+   10/19/2003  ulbricht       D179331.2               Add server trace properties
+   10/28/2003  ulbricht       D178750                 MQ no longer the JMS implementation
+   11/04/2003  ulbricht       D181672                 Allow for running with MKS on Windows
+   01/25/2004  ulbricht       D188549                 Add log file target
+   04/14/2004  vgoswami       D198553                 Modified directories to run IHS
+   04/19/2004  ulbricht       D199296                 Add ftp-get and component-run-proxy server targets
+   06/16/2004  mvu            D210083                 Add -trace
+   06/24/2004  ulbricht       D158794                 Add trace for unmanaged client
+   07/09/2004  ulbricht       D215233                 Add profile.name to printEnv target
+   07/15/2004  ulbricht       D217923                 Change hostName to cell.name
+   07/24/2004  ulbricht       D219005                 Add no args conversion for z/OS
+   07/30/2004  ulbricht       D220461                 No args conversion does not work on HP/Sun
+   08/09/2004  ulbricht       D223123                 Add start/stop server targets
+   08/19/2004  ulbricht       D225528                 Run with java.awt.headless set to true
+   11/17/2004  ulbricht       D246124                 Add fail on error attribute to print env
+   02/22/2005  ulbricht       D257111                 z/OS needs different user id/password
+   02/23/2005  ulbricht       D257389                 Add additional properties to printEnv
+   02/25/2005  ulbricht       D258191                 Add batch install/uninstall conditions
+   03/14/2005  ulbricht       D261009                 Add support for diff profiles
+   03/21/2005  ulbricht       D262613                 Change install mode for ulimit platforms
+   03/28/2005  ulbricht       D263952                 Make all platforms use same install mode
+   04/14/2005  ulbricht       D268461                 Change profile.name to profile
+   04/20/2005  ulbricht       D269183.1               iSeries does not have .sh on end of bin files
+   04/27/2005  ulbricht       D269183.3               Add property for iSeries detection
+   04/28/2005  ulbricht       D269183.5               Add profile to start/stop server targets
+   05/02/2005  ulbricht       D272639                 Add verbose foreach property to printEnv
+   06/05/2005  ulbricht       PK05310.1               Add setupIhs target
+   06/10/2005  ulbricht       D282781                 Add condition for which directories to build
+   07/29/2005  ulbricht       294431                  Add rmi port jvm arg to test calls
+   10/11/2005  ulbricht       311801                  Remove thin client properties
+   12/05/2005  ulbricht       328481                  Add soap connector address
+   02/10/2006  ulbricht       346502                  z/OS needs diff profile
+   03/02/2006  ulbricht       352109                  component run needs setenv
+   03/10/2006  ulbricht       308793.1                Add property for changing host and port
+   03/30/2006  vum	      	  359186		      	  Add in target component-run-debug
+   04/15/2006  ulbricht       362889                  Correct typo in server not setup conditonal
+   04/21/2006  ulbricht       364680                  Remove security.enabled available property
+   04/22/2006  ulbricht       308793.2                Change the way ports are altered
+   04/26/2006  ulbricht       365687                  Change port property names
+   05/23/2006  ulbricht       368616                  Modify for the WSFP Release
+   07/17/2006  ulbricht       375601                  Run *TestCase files 
+   10/11/2006  gkuo           391074.4                rename thye plugins/*wsfp*.jar to keep its file permissions and owner 
+   10/13/2006  gkuo           391074.6                run OSGI Init after we change the bundles
+   12/04/2006  gkuo           409722                  fix the move failure of ANT in Windows
+   01/12/2007  jramos         413702                  Remove target="all" from component-compile
+   01/23/2007  jramos         416386                  set conn.type inside setenv and add setHotInstall target
+   02/16/2007  jramos         416386.1                add startApps target
+   02/27/2007  ulbricht       421970                  correct misspelling
+   04/20/2007  ulbricht       433983                  add jvm args for getting jaxws and axis2 trace
+   05/23/2007  jramos         446691                  Updates for wssecurity
+   06/28/2007  jramos         449017                  load sliced.properties file for test.name
+   07/12/2007  jramos         451621                  apps.to.install is now keyed off of batchedApps.log
+   07/20/2007  jramos         453487                  Pass in release.filter to junit calls and change xml formatter class
+   09/17/2007  btiffany       467494                  Add echotime calls so we can start working on performance
+   11/01/2007  mzheng         479981                  Fix the component-run-client-trace
+   01/15/2008  ulbricht       426904                  Remove some unused properties
+   04/09/2008  btiffany                               pass conn.type to install target
+   04/29/2008  btiffany       516042                  Improve instructions for component-run-client-trace
+   06/22/2008  btiffany       527847                  Add a jvm var used by junit so STAF can handle hp- 64 bit. 
+   08/05/2008  syed           541336                  Look for jaas config files in AppServer profile, not in Dmgr.
+   09/8/2008   whsu           545966.1                utilize hp64 flag for solaris64  
+   09/24/2008  btiffany       553427                  fix component-run-proxy target, needs setenv dependency
+   11/07/2008  jramos         559143                  Remove setHotInstall, pass in Simplicity props to junit calls
+   07/29/2010  lizet          F1149.1-24048           set endorsed dir 
+   12/13/2010  btiffany       670291.1                update endorsed dir for Solaris and HP
+-->
+
+  <!-- This target sets properties that are useful while running the tests.
+  -->
+  <target name="setenv" > 
+	<!-- for STAF to access it's native libs correctly in 64 bit hp, we have to pass -d64 as a
+	     jvm arg to junit. HP64BIT is an environment variable that was set by unittest.sh.
+		 It has to always be defined to something, or junit will object. 
+    --> 
+	<condition property="hp64StafFlag" value="-d64" >
+		<isset property="${env.HP64BIT}" />
+	</condition>
+	<!--condition property="hp64StafFlag" value="-DHP64=no" >
+	  <not>
+		<isset property="${env.HP64BIT}" />
+	  </not>
+	</condition-->
+
+        <condition property="hp64StafFlag" value="-DHP64=no" >
+          <not>
+             <isset property="${hp64StafFlag}" />
+          </not>
+        </condition>
+  
+    <!-- This property will be set if IBM HTTP Server is found.
+    -->
+    <condition property="ihs.present">
+      <or>
+        <available file="${IHS.base.dir}/bin/Apache.exe"/>
+        <available file="${IHS.base.dir}/bin/apachectl"/>
+      </or>
+    </condition>
+    <basename property="base.user.dir" file="${user.dir}"/>
+    <!-- The next two condition elements are kind of an if-else clause
+         to determine what the security.user.name password should be.
+         The security user name and password will be set to the z/OS
+         id and password if the reportRelease contains ${zos.release.name}.  Otherwise,
+         the distributed password will be used.
+    -->
+    <condition property="security.user.name" value="${zos.security.user.name}">
+      <contains string="${reportRelease}" substring="${zos.release.name}" casesensitive="false"/>
+    </condition>
+    <condition property="security.user.name" value="${dist.security.user.name}">
+      <not>
+        <isset property="${security.user.name}"/>
+      </not>
+    </condition>
+    <!-- This is the same as the previous condition elements to set the
+         security.user.name, but this is for the security.password.
+    -->
+    <condition property="security.password" value="${zos.security.password}">
+      <contains string="${reportRelease}" substring="${zos.release.name}" casesensitive="false"/>
+    </condition>
+    <condition property="security.password" value="${dist.security.password}">
+      <not>
+        <isset property="${security.password}"/>
+      </not>
+    </condition>
+    <!-- If the install.mode is still not set than it must be a distributed test run.
+         Therefore, set the install.mode to the distributed default.
+    -->
+    <condition property="install.mode" value="${default.install.mode}">
+      <not>
+        <isset property="${install.mode}"/>
+      </not>
+    </condition>
+    <!-- The current implementation for batch uninstall is the BatchInstallImpl
+         class.  If the uninstall.mode property is also the BatchInstallImpl class
+         then this property will get set and we'll perform the postInstall target
+         in the src/build.xml file.
+    -->
+    <condition property="batch.install">
+      <contains string="${install.mode}" substring="BatchInstall" casesensitive="false"/> 
+    </condition>
+    <!-- The current implementation for batch uninstall is the BatchUninstallImpl
+         class.  If the uninstall.mode property is also the BatchUninstallImpl class
+         then this property will get set and we'll perform the postUninstall target
+         in the src/build.xml file.
+    -->
+    <condition property="batch.uninstall">
+      <equals arg1="com.ibm.ws.wsfvt.build.uninstall.BatchUninstallImpl" arg2="${uninstall.mode}"/>
+    </condition>
+    <!-- We don't want to bother with a wsadmin call if there isn't anything to install
+         in the install.jacl file.
+    -->
+    <condition property="apps.to.install">
+      <and>
+        <isset property="batch.install"/>
+        <!-- It is possible that the test that trying to be run does
+             not install anything, so look for an install.jacl file.
+        -->
+        <available file="${FVT.build.work.dir}/batchedApps"/>
+      </and>
+    </condition>
+    <!-- This property controls how we connect to wsadmin
+	   conn.type=true means no connection to the server is available.
+    -->
+    <condition property="conn.type" value="${default.conn.type}">
+      <not>
+        <isset property="is.hot.install"/>
+      </not>
+    </condition>
+    <condition property="conn.type" value="${hot.install.conn.type}">
+      <and>
+        <isset property="is.hot.install"/>
+        <equals arg1="${is.hot.install}" arg2="true"/>
+      </and>
+    </condition>
+    <!-- This property is the String value of conn.type
+    -->
+    <condition property="conn.type.value" value="NONE">
+      <equals arg1="${conn.type}" arg2="true"/>
+    </condition>
+    <condition property="conn.type.value" value="SOAP">
+      <equals arg1="${conn.type}" arg2="false"/>
+    </condition>
+    <!-- This condition will set a property if the tests are being run
+         on iSeries aka OS400 and AS/400.
+    -->
+    <condition property="os.400">
+      <contains string="${reportRelease}" substring="400" casesensitive="false"/>
+    </condition>
+    <!-- This will load the splice.properties file which contains test.name
+    -->
+    <property file ="${FVT.base.dir}/slice.properties"/>
+    <condition property="os.ext" value=".bat">
+      <os family="windows"/>
+    </condition>
+    <condition property="os.ext" value="">
+      <and>
+        <os family="os/400"/>
+        <not>
+          <isset property="${os.ext}"/>
+        </not>
+      </and>
+    </condition>
+    <condition property="os.ext" value=".sh">
+      <not>
+        <isset property="${os.ext}"/>
+      </not>
+    </condition>
+    <!--  z/OS uses "default" as the default profile instead of "AppSrv01"
+          which is used on the distributed platforms.
+    -->
+    <condition property="profile" value="${zos.profile.dir}">
+      <and>
+        <contains string="${reportRelease}" substring="${zos.release.name}" casesensitive="false"/>
+        <available file="${zos.profile.dir}" type="dir"/>
+      </and>
+    </condition>
+    <condition property="profile" value="${profile.dir}">
+      <not>
+        <isset property="${profile}"/>
+      </not>
+    </condition>
+    
+    <!-- This property will cause the main build.xml to do a replace on
+         the host and port used in the WSDL and Java files.  The new
+         host and port properties are defined in the properties.xml.
+    -->
+    <condition property="change.host.and.port">
+      <or>
+        <isset property="${os.400}"/>
+        <equals arg1="${use.non.default.ports}" arg2="true"/>
+      </or>
+    </condition>
+    <!-- This property will determine if the security tests are
+         run.
+    -->
+    <condition property="security.enabled">
+      <equals arg1="${enable.security}" arg2="true"/>
+    </condition>           
+    <!-- This property will determine if tests requiring security
+         and ihs should run.
+    -->
+    <condition property="security.and.ihs.enabled" value="true">
+      <and>
+        <isset property="${ihs.present}"/>
+        <isset property="${security.enabled}"/>
+      </and>
+    </condition>
+    <!-- This property will determine if the target to modify
+         the server default ports will run.
+    -->
+    <condition property="modify.server.default.ports.enabled">
+      <and>
+        <equals arg1="${modify.server.default.ports}" arg2="true"/>
+        <not>
+          <isset property="${os.400}"/>
+        </not>
+      </and>
+    </condition>
+
+    <setenvtask/>
+
+  </target>  
+
+  <!-- This target is used for displaying variables that will be used
+       during the test run.
+  -->
+  <target name="printEnv" depends="setenv">
+     <echo message="-------------------------------------------"/>
+     <echo message="        Construction Properties"/>
+     <echo message="-------------------------------------------"/>
+     <condition property="javac.executable" value="javac" else="javac.exe">
+        <not>
+          <os family="windows" />
+        </not>
+     </condition>
+     <available file="${java.home}/../bin/${javac.executable}" property="javac.present1"/>
+     <available file="${java.home}/bin/${javac.executable}" property="javac.present2"/>
+     <if if="javac.present1">        
+        <echo message="javac.present1 = ${javac.present1}"/>
+        <echo message="javac.file = ${java.home}/../bin/${javac.executable}"/>
+        <else>
+            <if if="javac.present2">
+                <echo message="javac.present2 = ${javac.present2}"/>
+                <echo message="javac.file = ${java.home}/bin/${javac.executable}"/>
+                <else>
+                    <echo message="Not found javac command from ant process jvm property java.home"/>
+                </else>
+            </if>
+        </else>
+     </if>
+     <available file="${java.home}/../lib/tools.jar" property="tools.jar.present1"/>
+     <available file="${java.home}/lib/tools.jar" property="tools.jar.present2"/>
+     <if if="tools.jar.present1">
+        <echo message="tools.jar.present1 = ${tools.jar.present1}"/>
+        <echo message="tools.jar.file = ${java.home}/../lib/tools.jar"/>
+        <else>
+            <if if="tools.jar.present2">
+                <echo message="tools.jar.present2 = ${tools.jar.present2}"/>
+                <echo message="tools.jar.file = ${java.home}/lib/tools.jar"/>
+                <else>
+                    <echo message="Not found tools.jar file based on ant process jvm property java.home"/>
+                </else>
+            </if>
+        </else>
+     </if>
+     <echo message="java.class.path = ${java.class.path}"/>
+     <echo message="java.home = ${java.home}"/>
+     <echo message="ANT.base.dir = ${ANT.base.dir}"/>
+     <echo message=""/>
+     <echo message="WAS.base.dir = ${WAS.base.dir}"/>
+     <echo message=""/>
+     <echo message="FVT.base = ${FVT.base}"/>
+     <echo message="FVT.base.dir = ${FVT.base.dir}"/>
+     <echo message="FVT.build.classes.dir = ${FVT.build.classes.dir}"/>
+     <echo message="FVT.test.reports.dir = ${FVT.test.reports.dir}"/>
+     <echo message="FVT.logs.dir = ${FVT.logs.dir}"/>
+     <echo message="FVT.build.installableApps.dir = ${FVT.build.installableApps.dir}"/>
+     <echo message="FVT.build.error.log = ${FVT.build.error.log}"/>
+     <echo message="FVT.install.error.log = ${FVT.install.error.log}"/>
+     <echo message="FVT.uninstall.error.log = ${FVT.uninstall.error.log}"/>
+     <echo message=""/>
+     <echo message="JUNIT.base.dir = ${JUNIT.base.dir}"/>
+     <echo message=""/>
+     <echo message="compile.foreach.fork = ${compile.foreach.fork}"/>
+     <echo message="failonerror.foreach.fork = ${failonerror.foreach.fork}"/>
+     <echo message="verbose.foreach.fork = ${verbose.foreach.fork}"/>
+	 <echo message="hp64StafFlag = ${hp64StafFlag}" />
+     <echo message=""/>
+     <echo message="debug.listener.port = ${debug.listener.port}"/>
+     <echo message=""/>
+     <echo message="proxy.host = ${proxy.host}"/>
+     <echo message="proxy.port = ${proxy.port}"/>
+     <echo message=""/>
+     <echo message="server.trace = ${server.trace}"/>
+     <echo message="server.trace.package.name = ${server.trace.package.name}"/>
+     <echo message=""/>
+     <echo message="test.name = ${test.name}"/>
+     <echo message="test.timeout = ${test.timeout}"/>
+     <echo message=""/>
+     <echo message="timed.restart.interval = ${timed.restart.interval}"/>
+     <echo message="framework.session.log = ${framework.session.log}"/>
+     <echo message=""/>
+     <echo message="junit.jvm.xms = ${junit.jvm.xms}"/>
+     <echo message="junit.jvm.xmx = ${junit.jvm.xmx}"/>
+     <echo message=""/>
+     <echo message="reportBuild = ${reportBuild}"/>
+     <echo message="reportRelease = ${reportRelease}"/>
+  </target>
+
+  <!-- This is just a generic message that some of the tests will
+       use when there is nothing to install or uninstall.
+  -->     
+  <target name="echo-no-iou-msg">
+    <echo message="There is not anything to install or uninstall for this test."/>
+  </target>
+  
+  <!-- This target will print the directory and file name.
+  -->
+  <target name="echo-file">
+    <basename property="fileName" file="${file}"/>
+    <dirname property="dirName" file="${file}"/>
+    <echo message="Dir: ${dirName} File: ${fileName}"/>
+  </target>
+
+  <!-- This target is used for compiling and building the tests.
+  -->
+  <target name="component-compile">
+    <echotime message="component-compile starting"/>
+    <antcall target="echo-file"/>
+    <basename property="fileName" file="${file}"/>
+    <dirname property="dirName" file="${file}"/>
+    <ant inheritAll="false" dir="${dirName}" antfile="${fileName}">
+      <property name="WAS.base.dir" value="${WAS.base.dir}"/>
+      <property name="FVT.base" value="${FVT.base}"/>
+      <property name="build.tests.with.java.level" value="${build.tests.with.java.level}"/>
+    </ant>
+    <echotime message="component-compile ending"/>
+  </target>  
+
+  <!-- This is a special axis-compile-compile because some of the tests
+       imported from the Axis (SOAP Engine) open source project needed
+       this target.  Other than its name, it's not any different than
+       the component-compile target.
+  -->
+  <target name="axis-component-compile">
+    <echo message="axis-component-compile starting"/>
+    <antcall target="echo-file"/>
+    <basename property="fileName" file="${file}"/>
+    <dirname property="dirName" file="${file}"/>
+    <ant inheritAll="false" dir="${dirName}" antfile="${fileName}" target="compile">
+      <property name="WAS.base.dir" value="${WAS.base.dir}"/>
+      <property name="FVT.base" value="${FVT.base}"/>
+      <property name="session.id" value="${session.id}"/>
+    </ant>
+    <echo message="axis-component-compile ending"/>
+  </target>
+
+  <!-- This target is called for installing an application in WebSphere.
+  -->
+  <target name="component-install">
+    <property name="connection.type" value="${start.apps}"/>
+
+    <echo message="component-install"/>
+    <antcall target="echo-file"/>
+    <echotime/>
+    <basename property="fileName" file="${file}"/>
+    <dirname property="dirName" file="${file}"/>
+    <ant inheritAll="false" dir="${dirName}" antfile="${fileName}" target="install">
+      <property name="WAS.base.dir" value="${WAS.base.dir}"/>
+      <property name="FVT.base" value="${FVT.base}"/>
+      
+    </ant>
+
+    <echotime/>
+  </target>
+
+  <!-- This target is called for uninstalling an application from WebSphere.
+  -->
+  <target name="component-uninstall">
+    <echo message="component-uninstall"/>
+    <antcall target="echo-file"/>
+    <echotime />
+    <basename property="fileName" file="${file}"/>
+    <dirname property="dirName" file="${file}"/>
+    <ant inheritAll="false" dir="${dirName}" antfile="${fileName}" target="uninstall">
+      <property name="WAS.base.dir" value="${WAS.base.dir}"/>
+      <property name="FVT.base" value="${FVT.base}"/>
+      
+    </ant>
+    <echotime/>
+  </target>
+
+  <!-- This target is used for creating directories on an ftp server.  This
+       target is currently used for creating the correct directories where
+       the reports will be ftp'd.
+  -->
+  <target name="ftp-mkdir">
+    <ftp action="mkdir"
+         server="${host}"
+         userid="${user}"
+         password="${passwd}"
+         ignoreNoncriticalErrors="true"
+         remotedir="${dir}"/>
+  </target>
+
+  <!-- This target will be used to ftp files to a target.  This is
+       currently used for ftp'ing the report to the report server.
+  -->
+  <target name="ftp-put">
+    <ftp action="put"
+         server="${host}"
+         userid="${user}"
+         password="${passwd}"
+         remotedir="${dir}"
+         binary="yes">
+      <fileset dir="${localdir}">
+	    <include name="${file}"/>
+      </fileset>
+     </ftp>
+   </target>
+
+  <!-- This target will be used to get files from the target
+       computer.  This is currently being used to get the
+       built tests from the ftp server.
+  -->
+  <target name="ftp-get">
+    <ftp action="get"
+         server="${host}"
+         userid="${user}"
+         password="${passwd}"
+         remotedir="${dir}"
+         binary="yes">
+      <fileset dir="${localdir}">
+        <include name="${file}"/>
+      </fileset>
+    </ftp>
+  </target>
+           
+  <!-- This target will run the tests that have the package name referenced
+       in the ${component-name} field.  The ${component-name} variable should
+       be specified in each test's buildTest.xml file.
+       
+       It is important that any changes to this or the junit task in the
+       ws/code/webservices/fvt/src/build.xml file are kept in sync.  Especially
+       with regard to jvmargs.
+  -->
+  <target name="component-run" depends="setenv">
+    <echo message="Inside component-run with component: ${componentName}"/>
+    <echotime/>
+    <if if="zos.environment">
+    			<!--  used for running on z/os -->
+			<echo message="run on z/OS"/>
+    		<property name="cr.file.encoding" value="ISO-8859-1" />
+    		<else>
+    				<echo message="not on z/OS"/>
+					<property name="cr.file.encoding" value="ISO-8859-1" />
+    		</else>
+    </if>   
+    <readCellConfig prefix="root" key="defaultServer" verbose="false"/>
+    <property name="auth.login.config" value="${root.profileDir}/properties/wsjaas_client.conf"/>
+    <mkdir dir="${FVT.logs.dir}"/>
+    <junit dir="${FVT.build.classes.dir}" printsummary="yes" haltonfailure="no" fork="yes" timeout="${test.timeout}">
+	  <jvmarg value="${hp64StafFlag}" />
+      <jvmarg value="${junit.jvm.xms}"/>
+      <jvmarg value="${junit.jvm.xmx}"/>
+      <jvmarg value="-DFVT.base.dir=${FVT.base.dir}"/>
+      <jvmarg value="-DWAS.base.dir=${WAS.base.dir}"/>
+	  <jvmarg value="-Dfile.encoding=${cr.file.encoding}" />
+      <jvmarg value="-DsimplicityConfigProps=${simplicityConfigProps}"/>
+      <jvmarg value="-DbootstrappingPropsFile=${bootstrappingPropsFile}"/>
+      <jvmarg value="-Dserver.trace=${server.trace}"/>
+      <jvmarg value="-Dserver.trace.package.name=${server.trace.package.name}"/>      
+      <jvmarg value="-Djava.security.auth.login.config=${auth.login.config}"/>
+      <jvmarg value="-Djava.awt.headless=true"/>
+      <jvmarg value="-Drelease.filter=${release.filter}"/>
+      <jvmarg value="-Dsession.id=${session.id}"/>
+      <jvmarg value="-Djava.endorsed.dirs=${WAS.endorsed.dirs}" />
+      <jvmarg value="-Dwebservices.unify.faults=false"/>
+      <jvmarg value="-Dlocal.properties=${dir.component.root}/local.properties"/>
+      <jvmarg value="-Dcom.ibm.websphere.thinclient=true"/>
+      <jvmarg value="-Dcom.ibm.websphere.webservices.soap.enable.legacy.get.behavior=true" />
+      <classpath refid="componentClasspath"/> 
+      <formatter classname="com.ibm.ws.wsfvt.test.framework.FVTJUnitXMLFilteredFormatter" 
+          extension=".xml" />
+      <batchtest todir="${FVT.logs.dir}">
+        <fileset dir="${FVT.build.classes.dir}">
+          <include name="${componentName}/**/*Test.class"/>
+          <include name="${componentName}/**/*Tests.class"/>
+          <include name="${componentName}/**/*TestCase.class"/>
+        </fileset>
+      </batchtest>
+    </junit>
+    <echotime message="component run ending"/>
+  </target>
+  
+  <!-- This target is the same as component-run but halts the engine to listen
+       for an external debugger to pick it up. Don't forget to get the external
+       debugger to listen on the same port specified here.
+  -->
+  <target name="component-run-debug" depends="setenv">
+    <mkdir dir="${FVT.logs.dir}"/>
+    <readCellConfig prefix="root" key="defaultServer" verbose="false"/>
+    <property name="auth.login.config" value="${root.profileDir}/properties/wsjaas_client.conf"/>
+    <junit dir="${FVT.build.classes.dir}" printsummary="yes" haltonfailure="no" fork="yes" timeout="${test.timeout}">
+	  <jvmarg value="${hp64StafFlag}" />	  
+      <jvmarg value="${junit.jvm.xms}"/>
+      <jvmarg value="${junit.jvm.xmx}"/>
+      <jvmarg value="-DFVT.base.dir=${FVT.base.dir}"/>
+      <jvmarg value="-DWAS.base.dir=${WAS.base.dir}"/>
+      <jvmarg value="-DsimplicityConfigProps=${simplicityConfigProps}"/>
+      <jvmarg value="-DbootstrappingPropsFile=${bootstrappingPropsFile}"/>
+      <jvmarg value="-Dserver.trace=${server.trace}"/>
+      <jvmarg value="-Dserver.trace.package.name=${server.trace.package.name}"/>            
+      <jvmarg value="-Djava.security.auth.login.config=${auth.login.config}"/>
+      <jvmarg value="-Djava.awt.headless=true"/>
+      <jvmarg value="-Djava.compiler=NONE"/>
+      <jvmarg value="-Drelease.filter=${release.filter}"/>
+      <jvmarg value="-Dsession.id=${session.id}"/>
+      <jvmarg value="-Xdebug"/>
+      <jvmarg value="-Xnoagent"/>      
+      <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=${debug.listener.port}"/>
+      <jvmarg value="-Djava.endorsed.dirs=${WAS.endorsed.dirs}" />
+      <jvmarg value="-Dwebservices.unify.faults=false"/>
+      <jvmarg value="-Dlocal.properties=${dir.component.root}/local.properties"/>
+      <jvmarg value="-Dcom.ibm.websphere.thinclient=true"/>
+      <jvmarg value="-Dcom.ibm.websphere.webservices.soap.enable.legacy.get.behavior=true" />
+      <classpath refid="componentClasspath"/> 
+      <formatter classname="com.ibm.ws.wsfvt.test.framework.FVTJUnitXMLFilteredFormatter" 
+          extension=".xml" />
+      <batchtest todir="${FVT.logs.dir}">
+        <fileset dir="${FVT.build.classes.dir}">
+          <include name="${componentName}/**/*Test.class"/>
+          <include name="${componentName}/**/*Tests.class"/>
+          <include name="${componentName}/**/*TestCase.class"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+  <!-- This target is the same as component-run but specifies proxy
+       server args to be used.  Don't forget to start the proxy server
+       on the host and port specified.  
+  -->
+  <target name="component-run-proxy" depends="setenv">
+    <mkdir dir="${FVT.logs.dir}"/>
+    <readCellConfig prefix="root" key="defaultServer" verbose="false"/>
+    <property name="auth.login.config" value="${root.profileDir}/properties/wsjaas_client.conf"/>
+    <echo message="The proxy host and port are ${proxy.host} and ${proxy.port}."/>
+    <junit dir="${FVT.build.classes.dir}" printsummary="yes" haltonfailure="no" fork="yes" timeout="${test.timeout}">
+	  <jvmarg value="${hp64StafFlag}" />
+      <jvmarg value="${junit.jvm.xms}"/>
+      <jvmarg value="${junit.jvm.xmx}"/>
+      <jvmarg value="-DFVT.base.dir=${FVT.base.dir}"/>
+      <jvmarg value="-DWAS.base.dir=${WAS.base.dir}"/>
+      <jvmarg value="-DsimplicityConfigProps=${simplicityConfigProps}"/>
+      <jvmarg value="-DbootstrappingPropsFile=${bootstrappingPropsFile}"/>
+      <jvmarg value="-Dserver.trace=${server.trace}"/>
+      <jvmarg value="-Dserver.trace.package.name=${server.trace.package.name}"/>
+      <jvmarg value="-Djava.security.auth.login.config=${auth.login.config}"/>
+      <jvmarg value="-Dhttp.proxyHost=${proxy.host}"/>
+      <jvmarg value="-Dhttp.proxyPort=${proxy.port}"/>      
+      <jvmarg value="-Djava.awt.headless=true"/>
+      <jvmarg value="-Drelease.filter=${release.filter}"/>
+      <jvmarg value="-Dsession.id=${session.id}"/>
+      <jvmarg value="-Djava.endorsed.dirs=${WAS.endorsed.dirs}" />
+      <jvmarg value="-Dwebservices.unify.faults=false"/>
+      <jvmarg value="-Dlocal.properties=${dir.component.root}/local.properties"/>
+      <classpath refid="componentClasspath"/> 
+      <formatter classname="com.ibm.ws.wsfvt.test.framework.FVTJUnitXMLFilteredFormatter" 
+          extension=".xml" />
+      <batchtest todir="${FVT.logs.dir}">
+        <fileset dir="${FVT.build.classes.dir}">
+          <include name="${componentName}/**/*Test.class"/>
+          <include name="${componentName}/**/*Tests.class"/>
+          <include name="${componentName}/**/*TestCase.class"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+  <!-- This target will initialize the main directories necessary
+       for executing the tests.
+  -->  
+  <target name="component-init">
+    <mkdir dir="${FVT.build.installableApps.dir}"/>
+    <mkdir dir="${FVT.build.lib.dir}"/>
+    <mkdir dir="${FVT.build.work.dir}"/>
+    <mkdir dir="${FVT.build.classes.dir}"/>
+    <mkdir dir="${FVT.logs.dir}"/>
+  </target>
+  
+  <!-- This target makes for easy logging with a time stamp prefixed
+       to the message.
+  -->
+  <target name="log-time-stamp">
+    <tstamp>
+      <format property="time_stamp" pattern="MM-dd-yyyy-hh:mm"/>
+    </tstamp>
+    <echo message="${time_stamp} ${reportRelease} ${reportBuild} : ${message.contents}${line.separator}"
+          file="${log.file.name}"
+          append="yes"/>
+  </target>
+
+  <!-- This target will start the server.
+  -->
+  <target name="start-server">
+    <echotime message="start-server starting"/>
+    <StartWAS/>
+    <echotime message="start-server ending"/>
+  </target>
+  
+  <target name="start-liberty">
+    <echotime message="start-liberty starting"/>
+    <StartLiberty/>
+    <echotime message="start-liberty ending"/>
+  </target>
+
+  <!-- This target will stop the server.
+  -->
+  <target name="stop-server">
+    <echotime message="stop-server starting"/>
+    <StopWAS/>
+    <echotime message="stop-server ending"/>
+  </target>
+  
+  <target name="stop-liberty">
+    <echotime message="stop-liberty starting"/>
+    <StopLiberty/>
+    <echotime message="stop-liberty ending"/>
+  </target>
+
+  <!-- This target will set up IHS because a default install does
+       not have the httpd.conf set up so that it can act as a
+       proxy server.
+  -->
+  <target name="setupIhs">
+    <!-- The default httpd.conf for IBM Http Server does not have
+         Proxy Requests enabled.  Therefore, I'm adding this replace
+         statement to enable proxy requests.
+    -->
+    <echotime/>
+    <replace file="${IHS.base.dir}/conf/httpd.conf"
+             token="#LoadModule proxy_module modules/mod_proxy.so"
+             value="LoadModule proxy_module modules/mod_proxy.so"/>
+    <replace file="${IHS.base.dir}/conf/httpd.conf"
+             token="#LoadModule proxy_connect_module modules/mod_proxy_connect.so"
+             value="LoadModule proxy_connect_module modules/mod_proxy_connect.so"/>
+    <replace file="${IHS.base.dir}/conf/httpd.conf"
+             token="#LoadModule proxy_http_module modules/mod_proxy_http.so"
+             value="LoadModule proxy_http_module modules/mod_proxy_http.so"/>
+    <replace file="${IHS.base.dir}/conf/httpd.conf"
+             token="#LoadModule proxy_ftp_module modules/mod_proxy_ftp.so"
+             value="LoadModule proxy_ftp_module modules/mod_proxy_ftp.so"/>
+    <replace file="${IHS.base.dir}/conf/httpd.conf"
+             token="#ProxyRequests On"
+             value="ProxyRequests On${line.separator}AllowCONNECT ${new.wc.defaulthost} ${new.wc.defaulthost.secure}"/>
+    <echotime/>
+  </target>
+
+  <!-- This target is the same as component-run but creates log traces
+         of client side code.
+         
+      To use:  check client.trace.package.name in properties.xml and
+      make sure it's what you want. 
+      If you need to trace on more than one package, update either
+      properties.xml or replace client.trace.package.name in the echo 
+      statement below like this:
+      <property name="client.trace.package.name"
+       value="org.apache.*=all=enabled${line.separator}com.ibm.websvcs.*=all=enabled" 
+       />
+      
+      
+      
+  -->
+  <target name="component-run-client-trace" depends="setenv">
+    <mkdir dir="${FVT.logs.dir}"/>
+    <!-- The following two echo statements create a file which is used
+         for getting trace when the client is unmanaged (ex. not running
+         through WAS_HOME/launchClient.bat/sh).  The WSTraceSettings.properties
+         is created and placed within the classpath of the client.
+         The -DtraceSettingsFile property is the trigger telling to collect
+         client trace for unmanaged client.
+
+         The managed clients run through a class called LaunchClient in the
+         harness.  It looks for the -Dclient.trace and -Dclient.trace.package.name
+         system properties.  If it finds those properties, it sets up the
+         launchClient.bat/sh invoke with the -CCtrace and -CCtracefile properties.
+    -->
+    <echo file="${FVT.build.classes.dir}/WSTraceSettings1.tmp"
+          message="traceFileName=${FVT.logs.dir}/CLIENT-${base.user.dir}-trace.log${line.separator}"/>
+    <echo file="${FVT.build.classes.dir}/WSTraceSettings2.tmp"
+          message="${client.trace.package.name}${line.separator}"/>
+    <concat destfile="${FVT.build.classes.dir}/WSTraceSettings.properties">
+      <filelist dir="${FVT.build.classes.dir}" files="WSTraceSettings1.tmp,WSTraceSettings2.tmp"/>
+    </concat>
+    <!-- On Windows, the path separator must either be double backslash or just
+         just use Unix style.  With Ant, the Unix style is easier...
+    -->
+    <replace file="${FVT.build.classes.dir}/WSTraceSettings.properties" token="\" value="/"/>
+
+    <readCellConfig prefix="root" key="defaultServer" verbose="false"/>
+    <property name="auth.login.config" value="${root.profileDir}/properties/wsjaas_client.conf"/>
+    <junit dir="${FVT.build.classes.dir}" printsummary="yes" haltonfailure="no" fork="yes" timeout="${test.timeout}">
+      <jvmarg value="${junit.jvm.xms}"/>
+      <jvmarg value="${junit.jvm.xmx}"/>
+      <jvmarg value="-DFVT.base.dir=${FVT.base.dir}"/>
+      <jvmarg value="-DWAS.base.dir=${WAS.base.dir}"/>
+      <jvmarg value="-DsimplicityConfigProps=${simplicityConfigProps}"/>
+      <jvmarg value="-DbootstrappingPropsFile=${bootstrappingPropsFile}"/>
+      <jvmarg value="-Dclient.trace=true"/>
+      <jvmarg value="-Dclient.trace.package.name=${client.trace.package.name}"/>
+      <jvmarg value="-DtraceSettingsFile=WSTraceSettings.properties"/>
+      <jvmarg value="-Djava.util.logging.manager=com.ibm.ws.bootstrap.WsLogManager"/>
+      <jvmarg value="-Djava.util.logging.configureByServer=true"/>
+      <jvmarg value="-Djava.security.auth.login.config=${auth.login.config}"/>
+      <jvmarg value="-Djava.awt.headless=true"/>
+      <jvmarg value="-Drelease.filter=${release.filter}"/>
+      <jvmarg value="-Dsession.id=${session.id}"/>
+      <jvmarg value="-Djava.endorsed.dirs=${WAS.endorsed.dirs}" />
+      <jvmarg value="-Dwebservices.unify.faults=false"/>
+      <jvmarg value="-Dlocal.properties=${dir.component.root}/local.properties"/>
+      <classpath refid="componentClasspath"/> 
+      <formatter classname="com.ibm.ws.wsfvt.test.framework.FVTJUnitXMLFilteredFormatter" 
+          extension=".xml" />
+      <batchtest todir="${FVT.logs.dir}">
+        <fileset dir="${FVT.build.classes.dir}">
+          <include name="${componentName}/**/*Test.class"/>
+          <include name="${componentName}/**/*Tests.class"/>
+          <include name="${componentName}/**/*TestCase.class"/>
+        </fileset>
+      </batchtest>
+    </junit>
+
+    <delete>
+      <fileset dir="${FVT.build.classes.dir}">
+        <include name="WSTraceSettings*"/>
+      </fileset>
+    </delete>
+
+  </target>
+
+  <target name="startApps">
+    <echotime message="startApps starting"/>
+    <startAppsTask/>
+    <echotime message="startApps ending"/>
+  </target>
+  
+  <target name="setSession">
+    <Session id="session"/>
+    <property name="session.id" refid="session"/>
+    <echo message="Current session ID: ${session.id}"/>
+  </target>
+  
+  <target name="killwlp">
+  	<condition property="isMacOrUnix">
+  	    <or>
+  	      <os family="mac"/>
+  	      <os family="unix"/>
+  	    </or>
+  	  </condition>
+  	
+  	<if if="isMacOrUnix">
+  	   <antcall target="dokill"/>  	   
+  	</if>
+  </target>
+	
+  <target name="dokill">
+  	<echo message="Kill wlp processes..."/>
+  	<!-- Use existing one to kill liberty process
+  	<chmod file="${FVT.base.dir}/killwlp.sh" perm="ugo+rx"/>
+  	<exec executable="${FVT.base.dir}/killwlp.sh"/>-->  	
+  	<!-- cleanupServers will kill -3 before kill -9 on servers that didn't shut down right -->
+  	<chmod file="${FVT.base}/../ant_build/resources/bin/cleanupServers" perm="ugo+rx"/>
+  	<exec dir="${basedir}" executable="${FVT.base}/../ant_build/resources/bin/cleanupServers" />
+  </target>

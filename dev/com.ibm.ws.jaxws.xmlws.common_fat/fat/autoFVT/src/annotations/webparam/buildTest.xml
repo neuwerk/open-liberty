@@ -1,0 +1,635 @@
+<?xml version="1.0"?>
+
+<!-- 
+     1.1.1.22, 12/19/11
+     Description: Build file for the WAS annotation tests.
+
+
+     Date        Author       Feature/Defect          Description
+     06/15/2006  btiffany     LIDB3296-31.01          New File
+     09/26/2006    "              "                    add a test for beta.
+     02/23/2007    "                                  remove zero byte wsdl file from headertest ear.
+     08/30/2007  ulbricht     445305.1                change thinclient names
+     12/05/2007  ulbricht     487717                  fix build failure     
+     9/11/2008   whsu         550219                  64bit flag     
+     03/13/10    lizet        D643070                 2.2 RI upgrade
+     12/06/11    jtnguyen     724041                  Change jar name from 8.0 to 8.5
+
+
+     To run this standalone, set WAS_HOME, ANT_HOME, JUNIT_HOME, FVT_TOP
+     and run unittest.bat long enough so that it creates instance.xml
+-->
+<project name="build" default="buildall" basedir=".">
+  <import file="../../xmls/common_imports.xml" />
+
+  <!-- This property should match the package name of the test class.  The
+       property is used in the targets.xml file when running any of the
+       component-run* targets for running a single test case class.
+  -->
+  <property name="componentName" value="annotations/webparam"/>
+
+  <!-- a variable to let us largely reuse this file without so many changes.
+       set it to the name of the subdir under annotations
+  -->
+  <property name="anno_subset"  value="webparam" />
+  <property name="workdir1" value="${FVT.build.work.dir}/WebParamRunTimeTestCase" />
+  <property name="workdir2" value="${FVT.build.work.dir}/WebParamTestCase" />
+  <property name="betaworkdir"  value="${FVT.build.work.dir}/webparambeta" />
+  <property name="hworkdir"  value="${FVT.build.work.dir}/webparamheaders" />
+  <property name="srcpath"       value="${FVT.base.dir}/src/annotations/webparam" />
+
+
+  <!-- This path id is used in the targets.xml file when running any of
+       the component-run* targets.  This allows setting the classpath
+       for an individual test.
+  -->
+  <path id="componentClasspath">
+    <path refid="thinclientclasspath"/>
+  </path>
+
+  <!-- need junit.jar explicitly in the path for setup to run -->
+  <path id="setupClasspath">
+    <pathelement location="${FVT.base.dir}/common/jars/junit.jar"/>
+    <path refid="classpath"/>
+  </path>
+
+
+  <!-- The buildall target will execute all of the targets necessary
+       before installing the test into WebSphere.
+       Note that junit doesn't get invoked here, that happens later
+       in src/build.xml.
+  -->
+  <target name="buildall" depends="setenv, clean, init, evilheadertestclient, server, serverbeta, clientbeta, headertestserver, headertestclient, test"/>
+
+  <!-- the setenv target is in src/xmls/targets.xml and sets up a the environment -->
+
+
+  <!-- The init target will initialize any directories, properties, etc.
+       that are needed for the test.
+  -->
+  <target name="init" depends="setenv">
+        <!-- component-init comes from targets.xml and makes the main directories
+            used by all tests.
+        -->
+    <antcall target="component-init"/>
+    <mkdir dir="${FVT.build.work.dir}/annotations/${anno_subset}"/>
+  </target>
+
+
+  <!-- The clean target will clean any files, classes, or directories
+       so that a new copy of the test can be built and run.
+  -->
+  <target name="clean" depends="setenv">
+    <delete dir="${FVT.build.classes.dir}/annotations/${anno_subset}"/>
+    <delete dir="${FVT.build.work.dir}/annotations/${anno_subset}"/>
+    <delete dir="${FVT.build.work.dir}/webparamheaders"/>
+    <delete>
+        <fileset dir="${FVT.build.lib.dir}" includes="webparam*.war"/>
+    </delete>
+    <delete>
+        <fileset dir="${FVT.build.installableApps.dir}" includes="webparam*.ear"/>
+    </delete>
+    <delete dir="${betaworkdir}"/>
+    <delete dir="${hworkdir}*" />
+        <delete dir="${FVT.build.work.dir}/WebParamRuntimeTestCase" />
+        <delete dir="${FVT.build.work.dir}/WebParamTestCase" />
+  </target>
+
+
+  <!-- The server target will build anything necessary for the server
+       piece of the test.  Typically this target builds the server side
+       EAR.
+  -->
+  <target name="server" depends="setenv">
+
+        <property name="workdir_imp" value="${FVT.build.work.dir}/WebParamRunTimeTestCase/server" />
+        <delete dir="${workdir_imp}" quiet="true" />
+        <mkdir dir="${workdir_imp}" />
+
+        <!-- compile for wsgen -->
+        <javac compiler="modern"
+                srcdir="${FVT.base.dir}/src/annotations/webparam/testdata"
+                destdir="${workdir_imp}"
+                deprecation="${deprecation}"
+                debug="${debug}"
+                source="${build.tests.with.java.level}"
+                target="${build.tests.with.java.level}"
+                failonerror="${failonerror}">
+                <classpath refid="thinclientclasspath" />
+                <include name="WebParamGeneralChecks.java" />
+        </javac>
+
+   <!-- generate gen classes from impl class.
+         We'll gen. wsdl for checking, but won't put it in war,  want server to generate wsdl on the fly.
+         We need it to gen the client though.
+   -->
+        <echo message="--wsgen--" />
+        <wsgen genwsdl="true" keep="true" verbose="false"
+                destdir="${workdir_imp}"
+                resourcedestdir="${workdir_imp}"
+                sei="annotations.webparam.testdata.WebParamGeneralChecks"
+                classpath="${workdir_imp}">
+                <classpath refid="classpath" />
+        </wsgen>
+
+
+   <!-- dev. says we have to have obj fac. for doc lit bare now... 409137.3 -->
+   <!-- generate objectfactory from wsdl here -->
+        <echo message="--xjc--" />
+        <xjc destdir="${workdir_imp}" >
+                <arg value="-wsdl" />
+                <schema dir="${workdir_imp}" includes="*.wsdl" />
+        </xjc>
+<!-- leaves a bit of a mess, beans and support files are now present twice,
+                from xjc in target-dir, and from wsgen in target-dir/jaxws.
+                However the ones from xjc are not compiled.
+
+                ObjectFactory.java does not contain an import statement for the jaxws
+                package, so we have to throw away the wsgen beans and use the xjc beans
+                instead.
+-->
+
+        <delete verbose="true">
+                <fileset dir="${workdir_imp}"
+                        includes="**/jaxws/*" >
+                </fileset>
+        </delete>
+
+        <javac compiler="modern" srcdir="${workdir_imp}"
+                destdir="${workdir_imp}"
+                deprecation="${deprecation}"
+                debug="${debug}"
+                source="${build.tests.with.java.level}"
+                target="${build.tests.with.java.level}"
+                failonerror="${failonerror}">
+                <classpath>
+                        <dirset dir="${workdir_imp}" />
+                        <path refid="thinclientclasspath" />
+                </classpath>
+                <include name="**/*java"/>
+        </javac>
+
+        <!-- copy in impl source -->
+        <copy file="${FVT.base.dir}/src/annotations/webparam/testdata/WebParamGeneralChecks.java" todir="${workdir_imp}" />
+
+        <!-- war/ear it up -->
+        <war warfile="${FVT.build.lib.dir}/webparamanno.war"
+                webxml="${FVT.base.dir}/src/annotations/webparam/testdata/dd/web.xml">
+                <!-- pick up compiled and generated classes -->
+                <classes dir="${workdir_imp}">
+                        <include name="**/*.class"/>
+                        <include name="**/*.java"/>
+                </classes>
+        </war>
+
+        <ear earfile="${FVT.build.installableApps.dir}/webparamanno.ear"
+                appxml="${FVT.base.dir}/src/annotations/webparam/testdata/dd/application.xml">
+                <fileset dir="${FVT.build.lib.dir}" includes="webparamanno.war" />
+        </ear>
+
+        <mkdir dir="${workdir2}/j2w" />
+
+        <javac compiler="modern"
+                srcdir="${FVT.base.dir}/src/annotations/webparam/testdata"
+                destdir="${workdir2}/j2w"
+                deprecation="${deprecation}"
+                debug="${debug}"
+        	    source="${build.tests.with.java.level}"
+        	    target="${build.tests.with.java.level}"
+                failonerror="${failonerror}">
+                <classpath refid="thinclientclasspath" />
+                <include name="WebParamGeneralChecks.java" />
+        </javac>
+
+        <wsgen genwsdl="true" keep="true" verbose="false"
+                destdir="${workdir2}/j2w"
+                resourcedestdir="${workdir2}/j2w"
+                sei="annotations.webparam.testdata.WebParamGeneralChecks"
+                classpath="${workdir_imp}">
+                <classpath refid="classpath" />
+        </wsgen>
+        <echo message="--wsgen--" />
+  </target>
+
+  <target name="serverbeta" depends="setenv" >
+
+    <echo message="removing ${betaworkdir}" />
+    <delete dir="${betaworkdir}" />
+    <mkdir dir="${betaworkdir}/wsgen" />
+
+    <javac compiler="modern" srcdir="${srcpath}/testdata"
+           destdir="${betaworkdir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+      <include name="**/WPB*.java"/>
+      <exclude name="**/WPBClient*.java"/>
+    </javac>
+
+    <!-- we're going to run this just to check the wsdl.
+      For beta, we have to use wsimport to get a fully annotated sei
+    -->
+
+
+
+    <!-- here we've manually copied the wsdl to the source tree, and patched up the schema file
+         Now we run wsimport against our patched wsdl and schema.
+     -->
+     <wsimport
+             destdir="${betaworkdir}"
+             sourcedestdir="${betaworkdir}"
+             wsdl="${srcpath}/testdata/WPBImplService.wsdl"
+             verbose="true"
+     >
+     </wsimport>
+
+     <!-- Miraculously, the generated SEI contains the
+          correct webparam annotations, so we don't have to replace it.
+     -->
+
+
+    <!-- at this point everything we need except the wsdl should be in betaworkdir... -->
+    <!-- create war file and ear file -->
+
+    <war warfile="${FVT.build.lib.dir}/WebParamAnnoBeta.war"
+         webxml="${srcpath}/testdata/web.xml">
+
+      <zipfileset dir="${srcpath}/testdata" prefix="WEB-INF/wsdl">
+        <include name="WPBI*wsdl" />
+        <include name="WPBI*xsd"  />
+      </zipfileset>
+      <!-- toss in the source too -->
+      <!-- use the workdir since we did some funny copy/rename stuff, don't want to confuse -->
+      <classes dir="${betaworkdir}">
+        <include name="**/*.java"/>
+        <include name="**/*.class"/>
+        <exclude name="wsgen/**/*"/>
+      </classes>
+      <!-- toss in impl source -->
+      <classes dir="${srcpath}/testdata">
+        <include name="**/WPBImpl.java"/>
+      </classes>
+    </war>
+
+    <ear earfile="${FVT.build.installableApps.dir}/WebParamAnnoBeta.ear"
+         appxml="${FVT.base.dir}/src/annotations/webparam/testdata/application.xml" >
+      <fileset dir="${FVT.build.lib.dir}" includes="WebParamAnnoBeta.war"/>
+    </ear>
+
+
+    <!-- ********* build another with a empty wsdl to check dynamic/partial wsdl generation on an sei ************ -->
+   <delete file="${betaworkdir}/WPBImplService.wsdl" />
+
+   <copy file="${FVT.base.dir}/src/annotations/webparam/testdata/WPBImplService.emptywsdl"
+         tofile="${betaworkdir}/WPBImplService.wsdl"
+         verbose="true"
+   />
+
+    <war warfile="${FVT.build.lib.dir}/WebParamAnnoBeta2.war"
+         webxml="${srcpath}/testdata/web.xml">
+      <zipfileset dir="${betaworkdir}" prefix="WEB-INF/wsdl">
+        <include name="WPBImplService.wsdl" />
+      </zipfileset>
+      <zipfileset dir="${srcpath}/testdata" prefix="WEB-INF/wsdl">
+        <include name="WPBI*xsd"  />
+      </zipfileset>
+      <!-- toss in the source too -->
+      <!-- use the workdir since we did some funny copy/rename stuff, don't want to confuse -->
+      <classes dir="${betaworkdir}">
+        <include name="**/*.java"/>
+        <include name="**/*.class"/>
+        <exclude name="wsgen/**/*"/>
+      </classes>
+      <!-- toss in impl source -->
+      <classes dir="${srcpath}/testdata">
+        <include name="**/WPBImpl.java"/>
+      </classes>
+    </war>
+
+    <ear earfile="${FVT.build.installableApps.dir}/WebParamAnnoBeta2.ear"
+         appxml="${FVT.base.dir}/src/annotations/webparam/testdata/application2.xml" >
+      <fileset dir="${FVT.build.lib.dir}" includes="WebParamAnnoBeta2.war"/>
+    </ear>
+
+  </target>
+
+
+  <!-- The client target will build anything necessary for the client
+       piece of the test.  This could just be compiling the client class
+       or in the case of a managed client, building a client side EAR
+       file.
+  -->
+  <target name="client" depends="setenv">
+        <delete dir="${workdir1}/client" />
+        <mkdir  dir="${workdir1}/client" />
+
+        <wsimport
+                destdir="${workdir1}/client/"
+                sourcedestdir="${workdir1}/client/"
+                wsdl="${workdir1}/server/WebParamGeneralChecksService.wsdl"
+                verbose="true"
+        >
+        </wsimport>
+
+        <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/webparam/testdata"
+            destdir="${workdir1}/client/"
+            deprecation="${deprecation}"
+            debug="${debug}"
+            source="${build.tests.with.java.level}"
+            target="${build.tests.with.java.level}"
+            failonerror="${failonerror}">
+                <classpath refid="classpath"/>
+                <include name="WebParamRuntimeClient.java" />
+        </javac>
+
+        <javac compiler="modern" srcdir="${workdir1}/client"
+            destdir="${workdir1}/client/"
+            deprecation="${deprecation}"
+            debug="${debug}"
+            source="${build.tests.with.java.level}"
+            target="${build.tests.with.java.level}"
+            failonerror="${failonerror}">
+                <classpath refid="classpath"/>
+                <include name="WebParamGeneralChecks.java" />
+        </javac>
+
+        <mkdir dir="${workdir2}/w2j" />
+
+        <wsimport
+                destdir="${workdir2}/w2j"
+                sourcedestdir="${FVT.build.classes.dir}"
+                wsdl="${workdir2}/j2w/WebParamGeneralChecksService.wsdl"
+                verbose="true"
+        >
+        </wsimport>
+
+        <javac compiler="modern" srcdir="${workdir2}/w2j"
+            destdir="${workdir2}/w2j"
+            deprecation="${deprecation}"
+            debug="${debug}"
+        	source="${build.tests.with.java.level}"
+        	target="${build.tests.with.java.level}"
+            failonerror="${failonerror}">
+                <classpath refid="classpath"/>
+                <include name="WebParamGeneralChecks.java" />
+        </javac>
+  </target>
+
+  <target name="clientbeta" depends="setenv">
+     <wsimport
+             destdir="${FVT.build.classes.dir}"
+             sourcedestdir="${FVT.build.classes.dir}"
+             wsdl="${srcpath}/testdata/WPBImplService.wsdl"
+             verbose="true"
+     >
+     </wsimport>
+
+
+      <javac compiler="modern" srcdir="${srcpath}/testdata"
+             destdir="${FVT.build.classes.dir}"
+             deprecation="${deprecation}"
+             debug="${debug}"
+             source="${build.tests.with.java.level}"
+             target="${build.tests.with.java.level}"
+             failonerror="${failonerror}">
+        <classpath>
+           <path refid="thinclientclasspath"/>
+           <pathelement path="${FVT.build.classes.dir}"/>
+        </classpath>
+        <include name="WPBClient.java" />
+      </javac>
+
+  </target>
+
+
+
+  <target name="headertestserver" depends="setenv">
+     <mkdir dir="${hworkdir}" />
+     <echo message="hworkdir=${hworkdir}"/>
+     <copy file="${FVT.base.dir}/src/annotations/webparam/headertests/HeaderTestImpl.java"
+        todir="${hworkdir}" />
+     <copy file="${FVT.base.dir}/src/annotations/webparam/headertests/HeaderTestIfGood.java_renameme"
+        tofile="${hworkdir}/HeaderTestIf.java" />
+
+    <javac compiler="modern" srcdir="${hworkdir}"
+           destdir="${hworkdir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+	       source="${build.tests.with.java.level}"
+	       target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+       <classpath refid="classpath"/>
+     </javac>
+
+     <echo message="wsgen..." />
+     <mkdir dir="${hworkdir}/wsgen" />
+     <wsgen
+             genwsdl="true"
+             keep="true"
+             verbose="true"
+             destdir="${hworkdir}/wsgen"
+             resourcedestdir="${hworkdir}/wsgen"
+             sourcedestdir="${hworkdir}/wsgen"
+             sei="annotations.webparam.headertests.HeaderTestImpl"
+             >
+             <classpath>
+                     <path refid="classpath"/>
+                     <pathelement path="${hworkdir}"/>
+          </classpath>
+     </wsgen>
+
+     <!-- this should cause our sei to get overlaid with a generated one, which has all annotation
+          attributes defined and will let us run for now until we support defaults.
+          This should work out ok since it will get the header info from the wsdl.
+     -->
+     <wsimport
+             destdir="${hworkdir}"
+             sourcedestdir="${hworkdir}"
+             wsdl="${hworkdir}/wsgen/HeaderTestImplService.wsdl"
+     >
+     </wsimport>
+
+    <!-- using dynamic wsdl generation at runtime -->
+
+    <war warfile="${FVT.build.lib.dir}/WebParamHeaderTest.war"
+         webxml="${srcpath}/testdata/web_empty.xml">
+      <!-- toss in the source too -->
+      <!-- use the workdir since we did some funny copy/rename stuff, don't want to confuse -->
+      <classes dir="${hworkdir}">
+        <include name="**/*.java"/>
+        <include name="**/*.class"/>
+        <exclude name="wsgen*/**/*"/>
+      </classes>
+    </war>
+
+    <ear earfile="${FVT.build.installableApps.dir}/WebParamHeaderTest.ear"
+         appxml="${FVT.base.dir}/src/annotations/webparam/testdata/application_headertest.xml" >
+      <fileset dir="${FVT.build.lib.dir}" includes="WebParamHeaderTest.war"/>
+    </ear>
+
+
+  </target>  <!-- end headertestserver -->
+
+  <target name="headertestclient" depends="setenv" >
+     <echo message="wsimport..." />
+     <wsimport
+             destdir="${FVT.build.classes.dir}"
+             sourcedestdir="${FVT.build.classes.dir}"
+             wsdl="${hworkdir}/wsgen/HeaderTestImplService.wsdl"
+     >
+     </wsimport>
+    <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/webparam/headertests/"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+       <classpath refid="classpath"/>
+       <include name="**/HeaderTestClient.java"/>
+    </javac>
+ </target>
+
+  <target name="evilheadertestclient" depends="setenv">
+    <!--
+    We have to build the evil client before we compile the server, because build/classes is in wsgen's taskdef
+    classpath, and it cannot be avoided.  The wsdl generated will pick up the wrong server class if we don't build first.
+    now for the evil client, we have to replace the interface and regen the wsdl,
+     which will cause the wsimport generated sei to swap the header and body locations of some of the parameters.
+    -->
+
+     <echo message="......evil client......" />
+     <delete dir="${hworkdir2}" verbose="true" />
+     <mkdir dir="${hworkdir}2" />
+     <copy file="${FVT.base.dir}/src/annotations/webparam/headertests/HeaderTestImpl.java"
+        todir="${hworkdir}2" />
+     <copy file="${FVT.base.dir}/src/annotations/webparam/headertests/HeaderTestIfEvil.java_renameme"
+        tofile="${hworkdir}2/HeaderTestIf.java" />
+
+     <echo message="..javac..." />
+    <javac compiler="modern" srcdir="${hworkdir}2"
+           destdir="${hworkdir}2"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+           <classpath>
+                <pathelement location="${WAS.base.dir}/runtimes/com.ibm.jaxws.thinclient_8.5.0.jar"/>
+           </classpath>
+     </javac>
+
+     <!-- wsgen is picking up wrong class, from build/classes, but I can't see why.
+          Runs correctly from command line
+     -->
+     <echo message="...wsgen..." />
+     <delete dir="${hworkdir}2/wsgen_evil" />
+     <mkdir dir="${hworkdir}2/wsgen_evil" />
+     <wsgen
+             genwsdl="true"
+             keep="true"
+             verbose="true"
+             destdir="${hworkdir}2/wsgen_evil"
+             resourcedestdir="${hworkdir}2/wsgen_evil"
+             sourcedestdir="${hworkdir}2/wsgen_evil"
+             sei="annotations.webparam.headertests.HeaderTestImpl"
+             >
+             <classpath>
+                     <pathelement location="${hworkdir}2"/>
+                     <path refid="classpath"/>
+          </classpath>
+     </wsgen>
+
+
+
+     <echo message="..wsimport..." />
+     <wsimport
+             destdir="${hworkdir}2"
+             sourcedestdir="${hworkdir}2"
+             wsdl="${hworkdir}2/wsgen_evil/HeaderTestImplService.wsdl"
+     >
+     </wsimport>
+
+
+
+     <!-- then, to make the client "see" these changes, the client will need to
+     run with nonstandard classpath and have hworkdir2 in the front.
+     -->
+
+
+  </target>
+
+  <!-- The test target will build anything necessary for the test
+       piece of the test.  Often this will just include compiling the
+       the JUnit test case file.
+  -->
+  <target name="test" depends="setenv, client">
+
+    <javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/${anno_subset}:${FVT.base.dir}/src/annotations/support"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+      <exclude name="**/testdata/*"/>
+    </javac>
+  </target>
+
+
+   <!-- Run all the setUp() methods in the tests.
+        These tests were developed self-contained, and have their own setup methods external
+        to ant.  We have to call them when we run inside ant.
+        They will call annotations/support/antSupport.xml and produce wars, ears, etc.
+   -->
+   <target name="runsetups">
+       <echo message="annotations setUp target running..." />
+       <java classname="annotations.support.RunSetupMethods"
+             fork="true"
+             dir="${FVT.base.dir}"
+             failonerror="true"
+       >
+           <classpath refid="setupClasspath"/>
+           <jvmarg line="-DRun_Setup=true ${hp64StafFlag}" />
+           <arg line="${FVT.build.classes.dir}/annotations/${anno_subset}" />
+       </java>
+
+   </target>
+
+
+  <!-- The preinstall target will perform any tasks necessary before the
+       application is installed into WebSphere.  This could include running
+       ejbdeploy or endptenabler for an EAR that contains an EJB.
+  -->
+  <target name="preinstall" depends="setenv">
+  </target>
+
+
+  <!-- The install target will install the server side piece of the test
+       into WebSphere.  This target calls the installTest.xml file for
+       the test.
+  -->
+  <target name="install" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/annotations/${anno_subset}/installTest.xml"
+         dir="${FVT.base.dir}/src/annotations/${anno_subset}">
+      <property name="install.mode" value="${rt.install.mode}"/>
+    </ant>
+  </target>
+
+
+  <!-- The uninstall target will uninstall the server side piece of the test
+       from WebSphere.  This target calls the uninstallTest.xml file for
+       the test.
+  -->
+  <target name="uninstall" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/annotations/${anno_subset}/uninstallTest.xml"
+         dir="${FVT.base.dir}/src/annotations/${anno_subset}">
+      <property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+    </ant>
+  </target>
+
+</project>

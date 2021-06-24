@@ -1,0 +1,15 @@
+<!--
+   1.2, 9/1/06
+   
+   Change History:
+   Date        UserId         Feature/Defect          Description
+   05/23/2006  ulbricht       368616                  New File
+-->
+
+<serviceGroup>
+ <service name="WebFaultCustomizationService">
+  <parameter locked="false" name="ServiceClass">annotations.webfault.customization.server.WebFaultCustomization</parameter>
+  <parameter locked="false" name="WsdlLocation">WEB-INF/wsdl/WebFaultCustomizationService.wsdl</parameter>
+ </service>
+</serviceGroup>
+

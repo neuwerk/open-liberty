@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.0
+Created-By: 2.4 (IBM Corporation)
+Main-Class: jaxws22.mtom.client.ManagedClientDriver
+

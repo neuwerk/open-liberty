@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <web-app id="WebApp_webserviceinterfaces"
+   xmlns="http://java.sun.com/xml/ns/javaee"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+   version="2.5"> 
+   	<display-name>
+	HandlerTest</display-name>
+	
+	
+	<servlet>
+		<display-name>WarEchoAnnoImplService</display-name>
+		<servlet-name>WarEchoAnnoImplService</servlet-name>
+		<servlet-class>
+			jaxwsejb30.handlerchain.server.WarEchoAnnoImpl
+		</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>WarEchoAnnoImplService</servlet-name>
+		<url-pattern>/warechoannoimplservice</url-pattern>
+	</servlet-mapping>
+	
+	
+	<!-- probably
+	 http://localhost:9081/jaxwsejb30handlerchain_warechoannoimpl/warechoannoimplservice
+	 -->
+	
+ 
+</web-app>

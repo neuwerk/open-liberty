@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://testdata.webparam.annotations/" name="WPBImplService" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://testdata.webparam.annotations/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://testdata.webparam.annotations/" schemaLocation="WPBImplService_schema1.xsd"/>
+    </xsd:schema>
+    <xsd:schema>
+      <xsd:import namespace="annotations.webparam.testdata2" schemaLocation="WPBImplService_schema2.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="echo">
+    <part name="parameters" element="tns:echo"/>
+  </message>
+  <message name="echoResponse">
+    <part name="parameters" element="tns:echoResponse"/>
+  </message>
+  <message name="echo2">
+    <part name="parameters" element="tns:echo2"/>
+  </message>
+  <message name="echo2Response">
+    <part name="parameters" element="tns:echo2Response"/>
+  </message>
+  <message name="echo3">
+    <part name="parameters" element="tns:echo3"/>
+  </message>
+  <message name="echo3Response">
+    <part name="parameters" element="tns:echo3Response"/>
+  </message>
+  <portType name="WPBIf">
+    <operation name="echo">
+      <input message="tns:echo"/>
+      <output message="tns:echoResponse"/>
+    </operation>
+    <operation name="echo2">
+      <input message="tns:echo2"/>
+      <output message="tns:echo2Response"/>
+    </operation>
+    <operation name="echo3">
+      <input message="tns:echo3"/>
+      <output message="tns:echo3Response"/>
+    </operation>
+  </portType>
+  <binding name="WPBImplPortBinding" type="tns:WPBIf">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="echo">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="echo2">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="echo3">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="WPBImplService">
+    <port name="WPBImplPort" binding="tns:WPBImplPortBinding">
+      <soap:address location="REPLACE_WITH_ACTUAL_URL"/>
+    </port>
+  </service>
+</definitions>
+

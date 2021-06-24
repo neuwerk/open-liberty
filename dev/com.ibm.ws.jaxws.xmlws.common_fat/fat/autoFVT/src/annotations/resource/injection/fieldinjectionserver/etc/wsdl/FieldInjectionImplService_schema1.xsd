@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" targetNamespace="http://fieldinjectionserver.injection.resource.annotations/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="getServletContextName" type="ns1:getServletContextName" xmlns:ns1="http://fieldinjectionserver.injection.resource.annotations/"/>
+
+  <xs:complexType name="getServletContextName"/>
+
+  <xs:element name="getServletContextNameResponse" type="ns2:getServletContextNameResponse" xmlns:ns2="http://fieldinjectionserver.injection.resource.annotations/"/>
+
+  <xs:complexType name="getServletContextNameResponse">
+    <xs:sequence>
+      <xs:element name="return" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="isPCvisited" type="ns3:isPCvisited" xmlns:ns3="http://fieldinjectionserver.injection.resource.annotations/"/>
+
+  <xs:complexType name="isPCvisited"/>
+
+  <xs:element name="isPCvisitedResponse" type="ns4:isPCvisitedResponse" xmlns:ns4="http://fieldinjectionserver.injection.resource.annotations/"/>
+
+  <xs:complexType name="isPCvisitedResponse">
+    <xs:sequence>
+      <xs:element name="return" type="xs:boolean"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+

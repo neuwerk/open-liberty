@@ -1,0 +1,35 @@
+<?xml version="1.0"?>                     
+<!--
+  @(#) 1.1 autoFVT/src/jaxws/proxy/javatypes_jar/uninstallTest.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01 1/19/07 11:28:31 [8/8/12 06:56:16]
+
+  Description: Build file for the JAX-WS Dispatch API tests
+ 
+  Date        Author       Feature/Defect          Description
+  01/19/07    sedov        D415799                 New File
+-->
+
+<project default="uninstall" basedir=".">
+   
+	<property name="componentName" value="jaxws/proxy/javatypes_jar"/>
+	<property name="test.name" value="jwpr.jar" />
+	
+    <import file="../../jaxws-commons.xml" />
+
+	<path id="componentClasspath">
+	   <path refid="jaxws.classpath"/>
+	</path>	
+
+  <!-- The uninstall target will uninstall the EAR or WAR file from
+       WebSphere.
+  -->
+  <target name="uninstall" depends="setenv">
+   <echo message="Uninstalling ${test.name}App.ear ..." />
+    <UninstallApp appName="${test.name}"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>  	
+    	
+  </target>
+  
+</project>

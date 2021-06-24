@@ -1,0 +1,753 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+
+	xmlns="http://wsdltypes.wsfvt.wsdltypes.proxy.jaxws"
+	xmlns:tns="http://wsdltypes.wsfvt.wsdltypes.proxy.jaxws"
+	xmlns:tns1="http://wsdltypes1.wsfvt.wsdltypes.proxy.jaxws"
+	xmlns:tns2="http://wsdltypes2.wsfvt.wsdltypes.proxy.jaxws"
+	targetNamespace="http://wsdltypes.wsfvt.wsdltypes.proxy.jaxws">
+	
+	<!-- 
+		WSDL to test wsdl type support when starting from a wsdl
+	-->
+	<wsdl:types>
+	    <xsd:schema>
+		      <xsd:import namespace="http://wsdltypes1.wsfvt.wsdltypes.proxy.jaxws"
+		                  schemaLocation="proxy_wsdltypes1.xsd"/>
+		      <xsd:import namespace="http://wsdltypes2.wsfvt.wsdltypes.proxy.jaxws"
+		                  schemaLocation="proxy_wsdltypes2.xsd"/>
+		      <xsd:import namespace="http://wsdltypes3.wsfvt.wsdltypes.proxy.jaxws"
+		                  schemaLocation="proxy_wsdltypes3.xsd"/>		                  
+	    </xsd:schema>
+	</wsdl:types>
+
+	<wsdl:message name="typesLongListRequest">
+		<wsdl:part name="typesLongListRequest" element="tns1:typesLongList">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesLongListResponse">
+		<wsdl:part name="typesLongListResponse" element="tns1:typesLongListResponse">
+		</wsdl:part>
+	</wsdl:message>
+
+	<wsdl:message name="typesHexBinaryRequest">
+		<wsdl:part name="typesHexBinaryRequest" element="tns1:typesHexBinary">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesHexBinaryResponse">
+		<wsdl:part name="typesHexBinaryResponse" element="tns1:typesHexBinaryResponse">
+		</wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="typesBase64BinaryRequest">
+		<wsdl:part name="typesBase64BinaryRequest" element="tns1:typesBase64Binary">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesBase64BinaryResponse">
+		<wsdl:part name="typesBase64BinaryResponse" element="tns1:typesBase64BinaryResponse">
+		</wsdl:part>
+	</wsdl:message>	
+
+	<wsdl:message name="typesQNameRequest">
+		<wsdl:part name="typesQNameRequest" element="tns1:typesQName">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesQNameResponse">
+		<wsdl:part name="typesQNameResponse" element="tns1:typesQNameResponse">
+		</wsdl:part>
+	</wsdl:message>
+
+	<wsdl:message name="typesAnyRequest">
+		<wsdl:part name="typesAnyRequest" element="tns1:typesAny">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesAnyResponse">
+		<wsdl:part name="typesAnyResponse" element="tns1:typesAnyResponse">
+		</wsdl:part>
+	</wsdl:message>
+
+	<wsdl:message name="typesIntRequest">
+		<wsdl:part name="typesIntRequest" element="tns1:typesInt">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesIntResponse">
+		<wsdl:part name="typesIntResponse" element="tns1:typesIntResponse">
+		</wsdl:part>
+	</wsdl:message>
+
+	<wsdl:message name="typesIntegerRequest">
+		<wsdl:part name="typesIntegerRequest" element="tns1:typesInteger">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesIntegerResponse">
+		<wsdl:part name="typesIntegerResponse" element="tns1:typesIntegerResponse">
+		</wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="typesCharRequest">
+		<wsdl:part name="typesCharRequest" element="tns1:typesChar" />
+	</wsdl:message>
+	<wsdl:message name="typesCharResponse">
+		<wsdl:part name="typesCharResponse" element="tns1:typesCharResponse" />
+	</wsdl:message>
+	
+	<wsdl:message name="typesDateRequest">
+		<wsdl:part name="typesDateRequest" element="tns1:typesDate" />
+	</wsdl:message>
+	<wsdl:message name="typesDateResponse">
+		<wsdl:part name="typesDateResponse" element="tns1:typesDateResponse" />
+	</wsdl:message>
+
+	<wsdl:message name="typesDateTimeRequest">
+		<wsdl:part name="typesDateTimeRequest" element="tns1:typesDateTime" />
+	</wsdl:message>
+	<wsdl:message name="typesDateTimeResponse">
+		<wsdl:part name="typesDateTimeResponse" element="tns1:typesDateTimeResponse" />
+	</wsdl:message>
+	
+	<wsdl:message name="typesGDateRequest">
+		<wsdl:part name="typesGDateRequest" element="tns1:typesGDate" />
+	</wsdl:message>
+	<wsdl:message name="typesGDateResponse">
+		<wsdl:part name="typesGDateResponse" element="tns1:typesGDateResponse" />
+	</wsdl:message>
+
+	<wsdl:message name="typesJava1DArrayRequest">
+		<wsdl:part name="part" element="tns1:typesJava1DArray" />
+	</wsdl:message>
+	<wsdl:message name="typesJava1DArrayResponse">
+		<wsdl:part name="part" element="tns1:typesJava1DArrayResponse" />
+	</wsdl:message>
+
+	<wsdl:message name="types1DArrayRequest">
+		<wsdl:part name="types1DArrayRequest" element="tns1:types1DArray" />
+	</wsdl:message>
+	<wsdl:message name="types1DArrayResponse">
+		<wsdl:part name="types1DArrayResponse" element="tns1:types1DArrayResponse" />
+	</wsdl:message>
+
+	<wsdl:message name="types2DArrayRequest">
+		<wsdl:part name="types2DArrayRequest" element="tns1:types2DArray" />
+	</wsdl:message>
+	<wsdl:message name="types2DArrayResponse">
+		<wsdl:part name="types2DArrayResponse" element="tns1:types2DArrayResponse" />
+	</wsdl:message>
+	
+	<wsdl:message name="typesArrayWithNullsRequest">
+		<wsdl:part name="typesArrayWithNullsRequest" element="tns1:typesArrayWithNulls"/>
+	</wsdl:message>
+	<wsdl:message name="typesArrayWithNullsResponse">
+		<wsdl:part name="typesArrayWithNullsResponse" element="tns1:typesArrayWithNullsResponse" />
+	</wsdl:message>
+
+	<wsdl:message name="typesPolymorphicArrayRequest">
+		<wsdl:part name="typesPolymorphicArrayRequest" element="tns1:typesPolymorphicArray" />
+	</wsdl:message>
+	<wsdl:message name="typesPolymorphicArrayResponse">
+		<wsdl:part name="typesPolymorphicArrayResponse" element="tns1:typesPolymorphicArrayResponse" />
+	</wsdl:message>
+	
+	<wsdl:message name="typesAbstractPolymorphicArrayRequest">
+		<wsdl:part name="typesAbstractPolymorphicArrayRequest" element="tns1:typesAbstractPolymorphicArray" />
+	</wsdl:message>
+	<wsdl:message name="typesAbstractPolymorphicArrayResponse">
+		<wsdl:part name="typesAbstractPolymorphicArrayResponse" element="tns1:typesAbstractPolymorphicArrayResponse" />
+	</wsdl:message>
+	
+	<wsdl:message name="typesWrappedArrayRequest">
+		<wsdl:part name="typesWrappedArrayRequest" 	element="tns1:typesWrappedArray" />
+	</wsdl:message>
+	<wsdl:message name="typesWrappedArrayResponse">
+		<wsdl:part name="typesWrappedArrayResponse" element="tns1:typesWrappedArrayResponse" />
+	</wsdl:message>
+	
+	<wsdl:message name="typesGraphRequest">
+		<wsdl:part name="typesGraphRequest" element="tns1:typesGraph" />
+	</wsdl:message>
+	<wsdl:message name="typesGraphResponse">
+		<wsdl:part name="typesGraphResponse" element="tns1:typesGraphResponse" />
+	</wsdl:message>
+
+	<wsdl:message name="typesElementIsNamedComplexTypeRequest">
+		<wsdl:part name="request" element="tns1:typesElementIsNamedComplexType" />
+	</wsdl:message>
+	<wsdl:message name="typesElementIsNamedComplexTypeResponse">
+		<wsdl:part name="response" element="tns1:typesElementIsNamedComplexTypeResponse" />
+	</wsdl:message>
+
+	<wsdl:message name="typesExtensionRequest">
+		<wsdl:part name="request" element="tns1:typesExtension">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesExtensionResponse">
+		<wsdl:part name="response"
+			element="tns1:typesExtensionResponse">
+		</wsdl:part>
+	</wsdl:message>
+
+	<wsdl:message name="typesStringListRequest">
+		<wsdl:part name="request" element="tns1:typesStringList">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesStringListResponse">
+		<wsdl:part name="response" element="tns1:typesStringListResponse">
+		</wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="typesIntListRequest">
+		<wsdl:part name="request" element="tns1:typesIntList">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesIntListResponse">
+		<wsdl:part name="response" element="tns1:typesIntListResponse">
+		</wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="typesDecimalListRequest">
+		<wsdl:part name="request" element="tns1:typesDecimalList">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesDecimalListResponse">
+		<wsdl:part name="response" element="tns1:typesDecimalListResponse">
+		</wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="typesIntegerListRequest">
+		<wsdl:part name="request" element="tns1:typesIntegerList">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesIntegerListResponse">
+		<wsdl:part name="response" element="tns1:typesIntegerListResponse">
+		</wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="typesByteListRequest">
+		<wsdl:part name="request" element="tns1:typesByteList">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesByteListResponse">
+		<wsdl:part name="response" element="tns1:typesByteListResponse">
+		</wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="typesAttributeRequest">
+		<wsdl:part name="request" element="tns1:typesAttribute">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesAttributeResponse">
+		<wsdl:part name="response" element="tns1:typesAttributeResponse">
+		</wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="typesRestrictionEnumRequest">
+		<wsdl:part name="request" element="tns1:typesRestrictionEnum">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesRestrictionEnumResponse">
+		<wsdl:part name="response" element="tns1:typesRestrictionEnumResponse">
+		</wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="typesRestrictionMinMaxRequest">
+		<wsdl:part name="request" element="tns1:typesRestrictionMinMax">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesRestrictionMinMaxResponse">
+		<wsdl:part name="response" element="tns1:typesRestrictionMinMaxResponse">
+		</wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="typesRestrictionPatternRequest">
+		<wsdl:part name="request" element="tns1:typesRestrictionPattern">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesRestrictionPatternResponse">
+		<wsdl:part name="response" element="tns1:typesRestrictionPatternResponse">
+		</wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="typesElementRefRequest">
+		<wsdl:part name="request" element="tns1:typesElementRef">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="typesElementRefResponse">
+		<wsdl:part name="response" element="tns1:typesElementRefResponse">
+		</wsdl:part>
+	</wsdl:message>
+
+	<wsdl:portType name="WsdlTypesPort">
+		<wsdl:operation name="typesLongList">
+			<wsdl:input message="tns:typesLongListRequest"></wsdl:input>
+			<wsdl:output message="tns:typesLongListResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesBase64Binary">
+			<wsdl:input message="tns:typesBase64BinaryRequest"></wsdl:input>
+			<wsdl:output message="tns:typesBase64BinaryResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesHexBinary">
+			<wsdl:input message="tns:typesHexBinaryRequest"></wsdl:input>
+			<wsdl:output message="tns:typesHexBinaryResponse"></wsdl:output>
+		</wsdl:operation>					
+		<wsdl:operation name="typesQName">
+			<wsdl:input message="tns:typesQNameRequest"></wsdl:input>
+			<wsdl:output message="tns:typesQNameResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesAny">
+			<wsdl:input message="tns:typesAnyRequest"></wsdl:input>
+			<wsdl:output message="tns:typesAnyResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesChar">
+			<wsdl:input message="tns:typesCharRequest"></wsdl:input>
+			<wsdl:output message="tns:typesCharResponse"></wsdl:output>
+		</wsdl:operation>		
+		<wsdl:operation name="typesInt">
+			<wsdl:input message="tns:typesIntRequest"></wsdl:input>
+			<wsdl:output message="tns:typesIntResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesInteger">
+			<wsdl:input message="tns:typesIntegerRequest"></wsdl:input>
+			<wsdl:output message="tns:typesIntegerResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesDate">
+			<wsdl:input message="tns:typesDateRequest"></wsdl:input>
+			<wsdl:output message="tns:typesDateResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesDateTime">
+			<wsdl:input message="tns:typesDateTimeRequest"></wsdl:input>
+			<wsdl:output message="tns:typesDateTimeResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesGDate">
+			<wsdl:input message="tns:typesGDateRequest"></wsdl:input>
+			<wsdl:output message="tns:typesGDateResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesJava1DArray">
+			<wsdl:input message="tns:typesJava1DArrayRequest"></wsdl:input>
+			<wsdl:output message="tns:typesJava1DArrayResponse"></wsdl:output>
+		</wsdl:operation>		
+		<wsdl:operation name="types1DArray">
+			<wsdl:input message="tns:types1DArrayRequest"></wsdl:input>
+			<wsdl:output message="tns:types1DArrayResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="types2DArray">
+			<wsdl:input message="tns:types2DArrayRequest"></wsdl:input>
+			<wsdl:output message="tns:types2DArrayResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesArrayWithNulls">
+			<wsdl:input message="tns:typesArrayWithNullsRequest"></wsdl:input>
+			<wsdl:output message="tns:typesArrayWithNullsResponse"></wsdl:output>
+		</wsdl:operation>		<wsdl:operation name="typesPolymorphicArray">
+			<wsdl:input message="tns:typesPolymorphicArrayRequest"></wsdl:input>
+			<wsdl:output message="tns:typesPolymorphicArrayResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesAbstractPolymorphicArray">
+			<wsdl:input
+				message="tns:typesAbstractPolymorphicArrayRequest">
+			</wsdl:input>
+			<wsdl:output
+				message="tns:typesAbstractPolymorphicArrayResponse">
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="typesWrappedArray">
+			<wsdl:input message="tns:typesWrappedArrayRequest"></wsdl:input>
+			<wsdl:output message="tns:typesWrappedArrayResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesGraph">
+			<wsdl:input message="tns:typesGraphRequest"></wsdl:input>
+			<wsdl:output message="tns:typesGraphResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesElementIsNamedComplexType">
+			<wsdl:input
+				message="tns:typesElementIsNamedComplexTypeRequest">
+			</wsdl:input>
+			<wsdl:output
+				message="tns:typesElementIsNamedComplexTypeResponse">
+			</wsdl:output>
+		</wsdl:operation>		<wsdl:operation name="typesExtension">
+			<wsdl:input message="tns:typesExtensionRequest" />
+			<wsdl:output message="tns:typesExtensionResponse" />
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesStringList">
+			<wsdl:input message="tns:typesStringListRequest" />
+			<wsdl:output message="tns:typesStringListResponse" />
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesIntList">
+			<wsdl:input message="tns:typesIntListRequest" />
+			<wsdl:output message="tns:typesIntListResponse" />
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesDecimalList">
+			<wsdl:input message="tns:typesDecimalListRequest" />
+			<wsdl:output message="tns:typesDecimalListResponse" />
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesIntegerList">
+			<wsdl:input message="tns:typesIntegerListRequest" />
+			<wsdl:output message="tns:typesIntegerListResponse" />
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesByteList">
+			<wsdl:input message="tns:typesByteListRequest" />
+			<wsdl:output message="tns:typesByteListResponse" />
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesAttribute">
+			<wsdl:input message="tns:typesAttributeRequest" />
+			<wsdl:output message="tns:typesAttributeResponse" />
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesRestrictionEnum">
+			<wsdl:input message="tns:typesRestrictionEnumRequest" />
+			<wsdl:output message="tns:typesRestrictionEnumResponse" />
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesRestrictionMinMax">
+			<wsdl:input message="tns:typesRestrictionMinMaxRequest" />
+			<wsdl:output message="tns:typesRestrictionMinMaxResponse" />
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesRestrictionPattern">
+			<wsdl:input message="tns:typesRestrictionPatternRequest" />
+			<wsdl:output message="tns:typesRestrictionPatternResponse" />
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesElementRef">
+			<wsdl:input message="tns:typesElementRefRequest" />
+			<wsdl:output message="tns:typesElementRefResponse" />
+		</wsdl:operation>
+
+	</wsdl:portType>
+
+	<wsdl:binding name="WsdlTypesBinding" type="tns:WsdlTypesPort">
+		<soap:binding style="document"
+			transport="http://schemas.xmlsoap.org/soap/http" />
+		<wsdl:operation name="typesLongList">
+			<soap:operation soapAction="typesLogList" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesBase64Binary">
+			<soap:operation soapAction="typesBase64Binary" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesHexBinary">
+			<soap:operation soapAction="typesHexBinary" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>							
+		<wsdl:operation name="typesQName">
+			<soap:operation soapAction="typesQName" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesAny">
+			<soap:operation soapAction="typesAny" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesChar">
+			<soap:operation soapAction="typesChar" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>			
+		<wsdl:operation name="typesInt">
+			<soap:operation soapAction="typesInt" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesInteger">
+			<soap:operation
+				soapAction="typesInteger" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesDate">
+			<soap:operation
+				soapAction="typesDate" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesDateTime">
+			<soap:operation
+				soapAction="typesDateTime" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesGDate">
+			<soap:operation
+				soapAction="typesGDate" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="typesJava1DArray">
+			<soap:operation
+				soapAction="typesJava1DArray" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>			
+		
+		<wsdl:operation name="types1DArray">
+			<soap:operation
+				soapAction="types1DArray" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="types2DArray">
+			<soap:operation
+				soapAction="types2DArray" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesArrayWithNulls">
+			<soap:operation
+				soapAction="typesArrayWithNulls" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesPolymorphicArray">
+			<soap:operation
+				soapAction="typesPolymorphicArray" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesAbstractPolymorphicArray">
+			<soap:operation
+				soapAction="typesAbstractPolymorphicArray" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="typesWrappedArray">
+			<soap:operation
+				soapAction="typesWrappedArray" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesGraph">
+			<soap:operation
+				soapAction="typesGraph" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesElementIsNamedComplexType">
+			<soap:operation
+				soapAction="typesElementIsNamedComplexType" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="typesExtension">
+			<soap:operation
+				soapAction="typesExtension" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesStringList">
+			<soap:operation
+				soapAction="typesStringList" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesIntList">
+			<soap:operation
+				soapAction="typesIntList" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="typesDecimalList">
+			<soap:operation
+				soapAction="typesDecimalList" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="typesIntegerList">
+			<soap:operation
+				soapAction="typesIntegerList" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		
+		<wsdl:operation name="typesByteList">
+			<soap:operation
+				soapAction="typesByteList" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="typesAttribute">
+			<soap:operation
+				soapAction="typesAttribute" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="typesRestrictionEnum">
+			<soap:operation
+				soapAction="typesRestrictionEnum" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="typesRestrictionMinMax">
+			<soap:operation
+				soapAction="typesRestrictionMinMax" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="typesRestrictionPattern">
+			<soap:operation
+				soapAction="typesRestrictionPattern" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="typesElementRef">
+			<soap:operation
+				soapAction="typesElementRef" />
+			<wsdl:input>
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+
+	</wsdl:binding>
+
+	<wsdl:service name="ProxyWsdlTypesService">
+		<wsdl:port name="WsdlTypesPort" binding="tns:WsdlTypesBinding">
+			<soap:address location="http://@HOST@:@PORT@/jwpr.wsdltypesy/services/ProxyWsdlTypesService" />
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

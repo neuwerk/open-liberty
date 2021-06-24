@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://gen/" name="OneWayDefaultsService" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://gen/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+     <xs:schema version="1.0" targetNamespace="http://gen/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+       <xs:element name="doSomething" type="ns1:doSomething" xmlns:ns1="http://gen/"/>
+
+       <xs:complexType name="doSomething">
+         <xs:sequence>
+           <xs:element name="arg0" type="xs:string" maxOccurs="unbounded" minOccurs="0"/>
+         </xs:sequence>
+       </xs:complexType>
+     </xs:schema>
+  </types>
+  <message name="doSomething">
+    <part name="parameters" element="tns:doSomething"/>
+  </message>
+    <message name="didIt">
+    <part name="parameters" element="tns:doSomething"/>
+  </message>
+  <portType name="OneWayDefaults">
+    <operation name="doSomething">
+      <input message="tns:doSomething"/>
+      <output message="tns:didIt"/>
+    </operation>
+  </portType>
+  <binding name="OneWayDefaultsPortBinding" type="tns:OneWayDefaults">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="doSomething">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="OneWayDefaultsService">
+    <port name="OneWayDefaultsPort" binding="tns:OneWayDefaultsPortBinding">
+      <soap:address location="tbd"/>
+    </port>
+  </service>
+</definitions>
+

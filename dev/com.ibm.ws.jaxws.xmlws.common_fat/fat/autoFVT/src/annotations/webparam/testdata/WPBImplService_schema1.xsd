@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" targetNamespace="http://testdata.webparam.annotations/" xmlns:ns1="annotations.webparam.testdata2" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:import namespace="annotations.webparam.testdata2" schemaLocation="WPBImplService_schema2.xsd"/>
+
+  <xs:element name="echo2" type="ns2:echo2" xmlns:ns2="http://testdata.webparam.annotations/">
+  <xs:complexType >
+    <xs:sequence>
+      <xs:element name="s2" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  </xs:element>
+
+  <xs:element name="echo2Response" type="ns3:echo2Response" xmlns:ns3="http://testdata.webparam.annotations/">
+  <xs:complexType >
+    <xs:sequence>
+      <xs:element name="notreturn" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  </xs:element>
+
+  <xs:element name="echo3" type="ns4:echo3" xmlns:ns4="http://testdata.webparam.annotations/">
+  <xs:complexType >
+    <xs:sequence>
+      <xs:element ref="ns1:arg0" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  </xs:element>
+
+  <xs:element name="echo3Response" type="ns5:echo3Response" xmlns:ns5="http://testdata.webparam.annotations/">
+  <xs:complexType >
+    <xs:sequence>
+      <xs:element name="notreturn" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  </xs:element>
+
+  <xs:element name="echo" type="ns6:echo" xmlns:ns6="http://testdata.webparam.annotations/">
+  <xs:complexType >
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  </xs:element>
+
+  <xs:element name="echoResponse" type="ns7:echoResponse" xmlns:ns7="http://testdata.webparam.annotations/">
+  <xs:complexType >
+    <xs:sequence>
+      <xs:element name="notreturn" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  </xs:element>
+
+</xs:schema>
+

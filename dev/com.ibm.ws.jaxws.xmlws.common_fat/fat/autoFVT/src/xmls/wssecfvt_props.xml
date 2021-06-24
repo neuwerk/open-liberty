@@ -1,0 +1,25 @@
+<!--
+   
+   1.1, FVT/ws/code/websvcs.fvt/src/xmls/wssecfvt_props.xml, WAS.wssecurity.fvt, WAS85.FVT, cf011231.01, 10/12/11
+
+   Description:  This file contains properties that are specific to wssecfvt.
+
+   Change History:
+   Date          UserId    Feature/Defect   Description
+   09/26/2011    syed      718227           Created for SAML Web SSO 
+-->
+
+ <property file ="${FVT.base.dir}/src/samlwebsso/IdpInfo.properties"/>
+ <property name="IDP.hostname" value="${idpHostname}"/>
+ <property name="IDP.domain" value="${idpDomainName}"/>
+ <property name="IDP.HttpPort" value="${idpHttpPortnumber}"/>
+ <property name="IDP.SslPort"  value="${idpSslPortnumber}"/>
+ <property name="IDP.SoapPort" value="${idpSoapPortnumber}"/>
+ <property name="IDP.adminID" value="${idpAdminID}"/>
+ <property name="IDP.adminPswd" value="${idpAdminPswd}"/>
+ <property name="IDP.wasadminID" value="${idpWasAdminID}"/>
+ <property name="IDP.wasadminPswd" value="${idpWasAdminPswd}"/>
+ <property name="IDP.wasProfileDir" value="${idpWasProfileDir}"/>
+ <property name="IDP.federation1" value="${idpFederation1}"/>
+ <property name="IDP.federation2" value="${idpFederation2}"/>
+

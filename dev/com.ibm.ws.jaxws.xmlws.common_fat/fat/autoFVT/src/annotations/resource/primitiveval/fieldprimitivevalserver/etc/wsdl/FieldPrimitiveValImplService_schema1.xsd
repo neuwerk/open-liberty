@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" targetNamespace="http://fieldprimitivevalserver.primitiveval.resource.annotations/" xmlns:tns="http://fieldprimitivevalserver.primitiveval.resource.annotations/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="getInjectedNumber" type="tns:getInjectedNumber"/>
+
+  <xs:element name="getInjectedNumberResponse" type="tns:getInjectedNumberResponse"/>
+
+  <xs:complexType name="getInjectedNumber">
+    <xs:sequence/>
+  </xs:complexType>
+
+  <xs:complexType name="getInjectedNumberResponse">
+    <xs:sequence>
+      <xs:element name="return" type="xs:int"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+

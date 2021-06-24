@@ -1,0 +1,1172 @@
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>Migration Changes</title>
+</head>
+<body>
+<hr size="1">
+<h1>Changes of tWAS Cases</h1>
+<table width="95%" cellspacing="2" cellpadding="5" border="0" class="details">
+<tr valign="top" halign="left">
+<td width="5%">#</td><td width="40%">Artifacts</td><td width="40%">Changes & Reasons</td><td width="15%">By Who</td>
+</tr>
+<tr valign="top">
+<td>1</td>
+<td>annotations.support.IBM_ImplementationAdapter.java</td>
+<td>
+<li>Path to FVT_base_dir to make it runnable in Liberty environment
+<li>Definitions of -Djava.endorsed.dirs to work around jaxb and jaxws 2.2 API use
+<li>Add -Dcom.ibm.websphere.thinclient=true property to fix 6 failures in annotations.handlerchain.checkdefaults.test.HandlerChainCheckDefaultsTest
+
+</td>
+<td>
+Ming Xia/China/IBM
+</td>
+</tr>
+<tr valign="top">
+<td>2</td>
+<td>com.ibm.ws.wsfvt.build.tools.utils.TopologyDefaults.java</td>
+<td>
+
+<li>Comment defaultAdminAgent, defaultAdminAgentNode, and defaultAdminAgentCell out
+<li>Add logic to restart liberty server before cases run to make it runnable on linux/unix platform
+
+</td>
+<td>
+Ming Xia/China/IBM
+</td>
+</tr>
+<tr valign="top">
+<td>3</td>
+<td>common.utils.topology.Ports.java</td>
+<td>
+
+<li>Add some PortType definitions for liberty
+
+</td>
+<td>
+Ming Xia/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>4</td>
+<td>jaxws.proxy.javatypes.wsfvt.test.TypesFromJavaTest.java</td>
+<td>
+
+<li>Comment out tWAS specific trace logic
+
+</td>
+<td>
+Ming Xia/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>5</td>
+<td>jaxws22.respectbinding.test.RespectBindingServiceSideMetadataTest.java</td>
+<td>
+
+<li>Correct the "required" attribute of the customized binding element by specifying its namespace with http://schemas.xmlsoap.org/wsdl/
+<li>Modify the org.apache.cxf.wsdl11.WSDLManagerImpl to load the META-INF/extensions.xml from the webservices application.
+<li>Define the extensibility element "GoodBindingElement" to map the binding extension {http://server.respectbinding.jaxws22/}goodBinding
+<li>Add the extensions.xml to set the javax.wsdl.Binding as the GoodBindingElement's parent type, and put it in the META-INF folder when build.
+
+</td>
+<td>
+Min SH Yang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>6</td>
+<td>jaxws.provider.common.Constants.java</td>
+<td>
+
+<li>Modify toStreamSource(String) method behavior when input String is null or empty to follow spec statement
+
+</td>
+<td>
+Hong Fang Han/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>7</td>
+<td>soapendpoint.wsfvt.server.SoapMessageProvider</td>
+<td>
+
+<li>Change the axis2 specific BindingType org.apache.axis2.jaxws.Constants.SOAP_HTTP_BINDING to javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_MTOM_BINDING
+<li>Content-Id in server side is not <xxx> style. Fix defect with <xxx> style Content-Id
+
+</td>
+<td>
+Hong Fang Han/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>8</td>
+<td>mtom21/enablejaxb/etc/wsdl/EnableJAXBProxyDataHandler.wsdl</td>
+<td>
+
+<li>Change out parameter name from "sendImageResponse" to "sendImageResponseVerify" in binding ImageServiceSoapVerifyMTOM
+   Reason: out parameter name should be consistent with the name defined in service interface. Otherwise, there will be a duplicated method definition error.
+   tWAS behavior: tWAS works well even with the wrong parameter name. 
+   Cannot find any specs regarding this kind of mismatch. tWAS/axis2 is more tolerant.
+
+</td>
+<td>
+Peng PH Zhang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>9</td>
+<td>mtom21/enablesoapbinding/etc/wsdl/EnableSBProxyDataHandler.wsdl, EnableSBProxyDataHandlerSOAP12.wsdl</td>
+<td>
+
+<li>Fill soapAction attribute with "sendImage" to be consistent with what is specified in client side.
+ - Reason: SOAPACTION_USE_PROPERTY and SOAPACTION_URI_PROPERTY are specified in client side code. They force the soapAction to match
+   with wsdl action.
+   tWAS works well with soapAction empty. tWAS/axis2 is more tolerant.
+
+</td>
+<td>
+Peng PH Zhang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>10</td>
+<td>override/autoFVT/src/xml/targets.xml</td>
+<td>
+
+<li>Add "<jvmarg value="-Dcom.ibm.websphere.webservices.soap.enable.legacy.get.behavior=true" />" to target 'component-run' 
+   and 'component-run-debug'.
+ - Reason: Starting in tWAS 8, the SOAP with Attachments API for Java (SAAJ) methods SOAPMessage.getSOAPHeader and getSOAPBody now throw a SOAPException if there is no corresponding element in the message.
+   Previously these methods would return a null if there was no corresponding element in the message. To revert the behavior to returning a null, we should set the jvm arg to be true.
+
+</td>
+<td>
+Peng PH Zhang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>11</td>
+<td>jaxws.handlersflow.wsfvt.test.HandlersFlowServerTest.java</td>
+<td>
+
+<li>remove the "Server_sendString:" from "String expServerFlow =" in testcase: testLogicalInMessageFalseOneWay, testSOAPInMessageFalseOneWay, testPropInMessageFalseOneWay. As the specification is not clear in the handlerchain process the message in inbound, return false and oneway situation, the tWAS, cxf and RI has different behavior.
+
+</td>
+<td>
+Yi YY Xiao/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>12,14,15,16</td>
+<td>
+<li>soapendpoint.wsfvt.server.JAXBPayloadProvider.java
+<li>soapendpoint.wsfvt.server.SOAPBindingProvider.java
+<li>soapendpoint.wsfvt.server.SOAPBindingSourceProvider.java
+<li>soapendpoint.wsfvt.server.SourcePayloadProvider.java
+
+</td>
+<td>
+<li>Change the axis2 specific BindingType org.apache.axis2.jaxws.Constants.SOAP_HTTP_BINDING to javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING
+</td>
+<td>
+Hong Fang Han/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>13</td>
+<td>soapendpoint.wsfvt.server.OMElementProvider.java</td>
+<td>
+
+<li>Change the axis2 specific BindingType org.apache.axis2.jaxws.Constants.SOAP_HTTP_BINDING to javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING
+<li>Change implemented interface from Provider<OMElement> to Provider<SoapMessage>, and update the invoke method accordingly
+</td>
+<td>
+Hong Fang Han/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>17,18</td>
+<td>
+<li>soapendpoint.wsfvt.server.StringNoWSDLPayloadProvider.java
+<li>soapendpoint.wsfvt.server.StringWSDL11PayloadProvider.java
+</td>
+<td>
+<li>Change the axis2 specific BindingType org.apache.axis2.jaxws.Constants.SOAP_HTTP_BINDING to javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING
+<li>Change implemented interface from Provider<String> to Provider<DOMSource>, and update the invoke method accordingly
+
+</td>
+<td>
+Hong Fang Han/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>19</td>
+<td>
+<li>jaxws22.mtom.client.CommonMTOMClient
+<li>jaxws22.mtom.test.MtomJsr109V13ServiceSideMetadataTest.java
+<li>jaxws22.mtom.test.MtomJsr224v22FactoryMethodsTest.java
+<li>annotations.webmethod_g2.runtime_beta.test.WebMethod_g2RuntimeBetaTest.java
+<li>jaxws.dynamicbeangen.test.DynamicBeanTest.java
+</td>
+<td>
+
+<li>Change wsdl url from 'xxx/xxx.wsdl' to 'xxx?wsdl', Resolving url ending with 'xxx/xxx.wsdl' is an extensional feature of tWAS and not part of the specs
+   In addition, it will not influence the migration from liberty to tWAS
+
+</td>
+<td>
+<li>Peng PH Zhang/China/IBM
+<li>Hong Fang Han/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>20</td>
+<td>saaj/server/etc/wsdl/SOAPMessage12Service.wsdl,SOAPMessage13Service.wsdl</td>
+<td>
+
+<li>There is no soap binding element in provided wsdl which is complaint with JAXWS specification. Add soap binding to wsdl file.
+
+</td>
+<td>
+Jin Hua SH Wang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>21</td>
+<td>
+<li>saaj/server/provider/String12Provider.java
+<li>saaj/server/provider/StringProvider.java</td>
+<td>
+
+<li>Provider&lt;String&gt; is not supported by CXF. Change generic type from String to DOMSource
+
+</td>
+<td>
+Jin Hua SH Wang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>22</td>
+<td>
+<li>saaj/server/provider/com/ibm/ws/websvcs/jaxws/server/response/Attachment12Response.java
+<li>saaj/server/provider/com/ibm/ws/websvcs/jaxws/server/response/Attachment13Response.java</td>
+<td>
+<li>Add iter1.hasNext() statement to work around iteration bug in jdk implementation.
+</td>
+<td>
+Jin Hua SH Wang/China/IBM
+</td>
+</tr>
+
+
+<tr valign="top">
+<td>23</td>
+<td>
+saaj/server/provider/com/ibm/ws/saaj/SAAJUtil12.java</td>
+<td>
+<li>Change namespace(env) compare case insensitive.
+</td>
+<td>
+Jin Hua SH Wang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>24</td>
+<td>
+<li>saaj/client/simple12/Simple12Test.java
+<li>saaj/client/simple13/Simple13Test.java</td>
+<td>
+<li>Disable the verification for ibm server class.
+</td>
+<td>
+Jin Hua SH Wang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>25</td>
+<td>
+<li>saaj/client/simple12/Simple12Test.java
+<li>saaj/client/simple13/Simple13Test.java
+<li>saaj/server/provider/com/ibm/ws/websvcs/jaxws/server/response/Simple12Response.java
+<li>saaj/server/provider/com/ibm/ws/websvcs/jaxws/server/response/Simple13Response.java</td>
+<td>
+<li>"TexasSize" is not correct encoding style. Fix defect with correct style like "http://TexasSize"
+</td>
+<td>
+Jin Hua SH Wang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>26</td>
+<td>
+<li>com/ibm/ws/websvcs/jaxws/server/response/Attachment12Response.java
+<li>com/ibm/ws/websvcs/jaxws/server/response/Attachment13Response.java</td>
+<td>
+<li>Content-Id in server side is not <xxx> style. Fix defect with <xxx> style Content-Id
+</td>
+<td>
+Jin Hua SH Wang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>27</td>
+<td>
+<li>faultbean/wsfvt/test/AddNumbersCustomBindingTest.java</li>
+<li>faultbean/wsfvt/test/AddNumbersTest.java</li></td>
+<td>
+<li>Comment assertEquals("faultbean.binding.wsfvt.server.AddNumbersException",e.getMessage) as this is tWAS specific.</li>
+<li>Change wsdl url from 'xxx.wsdl' to 'xxx/?wsdl' to use the one generated by CXF runtime as 'wsgen' in tWAS has problems when there is customization for faultbean.
+</li>
+</td>
+<td>
+Shao Jun Ding/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>28</td>
+<td>
+jaxws22/customprops/wsfvt/test/CustomPropsTest.java
+</td>
+<td>
+<li>Comment WS-security policy as there is no such certificate in Liberty to only use custom property policy
+</li>
+<li>Comment case test_callLaunchClient() case as there is no such command in Liberty.
+</li>
+</td>
+<td>
+Shao Jun Ding/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>29</td>
+<td>
+annotations/webserviceprovider/server/ProvFq.java
+</td>
+<td>
+<li>Provider&ltString&gt is not supported by CXF. Change generic type from String to DOMSource
+</li>
+</td>
+<td>
+Hong Fang Han/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>30</td>
+<td>
+annotations/webserviceprovider/client/ProviderTestClient.java
+</td>
+<td>
+<li>Namespaces are inconsistent bewteen wsdl and message. Change the namespace in mesage to be consistent with wsdl's.
+</li>
+</td>
+<td>
+Hong Fang Han/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>31</td>
+<td>
+<li>jaxws/proxy/doclit/etc/proxy_doclit.wsdl
+<li>jaxws/proxy/doclit/etc/proxy_doclit_unwr.wsdl
+<li>jaxws/proxy/doclit/wsfvt/test/SoapActionTest.java
+</td>
+<td>
+<li>Modify soapAction attrributes of element "soap:operation" or soapAction in test cases so that
+    soapAction headers of soap message match those in wsdl definition.
+<li>Comment out test methods testSOAPAction_bare_reqCtxt_invalid  testSOAPAction_wrapped_reqCtxt_invalid in SoapActionTest.java
+<li>Reason: CXF force exact match of soapAction without tolerance. twas/axis2 is more tolerant.
+    The methods commented out are used to test those tolerance rules.
+</td>
+<td>
+Peng PH Zhang/China/IBM
+</td>
+</tr>
+
+
+<tr valign="top">
+<td>32</td>
+<td>
+<li>jaxws/provider/nullreturn/server/*.java
+<li>jaxws/provider/nullretrun/test/*.java</td>
+<td>
+<li>Remove tWAS admin command code from test cases. Provider&lt;String&gt; is not supported by CXF. Change generic type from String to SOAPMessage and DOMSource.
+</td>
+<td>
+Dan D Lu/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>33</td>
+<td>
+<li>jaxws/proxy/msgctxt/wsfvt/test/WebServiceContextTest</li></td>
+<td>
+<li>As different understanding of wsdl adrress in tWAS and CXF, fix tWAS test case from "WEB-INF/wsdl/proxy_msgctxt.wsdl" to "/services/ProxyMsgCtxtService?wsdl"</li>
+</td>
+<td>
+Peng PH Zhang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>34</td>
+<td>
+<li>annotations/support/IBM_ImplementationAdapter.java
+<li>annotations/webservice/testdata/WebServiceRuntimeIfc.java
+<li>annotations/webservice/testdata/WebServiceRuntimeIfc.java_nowsdl
+</td>
+<td>
+<li>add "" to wsgenName in case there is space in name of jdk installation folder
+<li>Modify the name attribute of @WebResult to match the definition in wsdl
+<li>Reason: proxy code are generated according to wsdl. If the name of return parameter are different between
+wsdl and @WebResult. The mismatch will result in a null response in cxf. 
+No explicit description regarding this mismatch in specs.
+</td>
+<td>
+Peng PH Zhang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>35</td>
+<td>
+<li>jaxws.dispatch.wsfvt.test.DOMSourceTest.java
+<li>jaxws.dispatch.wsfvt.test.SOAPMessage.java
+<li>jaxws.dispatch.wsfvt.test.StringTest.java
+</td>
+<td>
+<li>Remove redundant string "http://" from namespace to be consistent with those defined in wsdl.
+<li>The correct namespace name is 'http://xxxx' but are written as 'http://http://' during string concatenation.
+</td>
+<td>
+Peng PH Zhang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>36</td>
+<td>
+<li>annotations/partialwsdl/test/PartialWsdlTest.java</li>
+<td>
+<li>Change wsdl.contains("port name=\"AddNumbersImplPartial2Port\"" )) in test_runtime_Partial2ddNumbersException() to wsdl.contains("name=\"AddNumbersImplPartial2Port\"" )</br>
+as port sequence is changed in CXF wsdl</li>
+</td>
+<td>
+Shao Jun Ding/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>37</td>
+<td>annotations.oneway.OneWayRuntimeTestCase.testTrueOnewayBetaDynamicWsdl</td>
+<td>
+<li>Change wsdl url from "/?wsdl" to "?wsdl" because Liberty does not support tWAS extended url style.
+</td>
+<td>
+Ming Xia/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>38</td>
+<td>
+<li>jaxws/soapfaults/wsfvt/test/SOAP12FaultsTest.java</li>
+<td>
+<li>Comment testServerCodeVersionMismatch() out. as Per jax-ws 2.2 spec,  when you send a soap11 message to a soap12 endpoint, you can either
+     * 1. throw a versionMismatch exception.
+     * 2. process the message and return a soap11 response.
+     * In tWAS, it use the approach 1, while in Liberty CXF, it use approach 2.</li>
+</li>
+</td>
+<td>
+Shao Jun Ding/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>39</td>
+<td>
+<li>annotations/soapbinding/SOAPBindingTestCase.java</li>
+<li>override/src/annotations/soapbinding/buildTest.xm</li>
+<td>
+<li>Remove java code for compling java source code in java test code</li>
+<li>Add compling java source code in ant script in compling phase</li>
+</td>
+<td>
+Bin BB Zhu/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>40</td>
+<td>
+<li>jaxws/proxy/doclit/etc/provider_doclitwr.wsdl</li>
+<li>jaxws/proxy/doclit/wsfvt/server/DocLitWrappedProviderPortImpl.java</li>
+<td>
+<li>Modify soapAction in wsdl so that soapAction headers of soap message matches the one in wsdl definition. Reason: CXF forces exact match of soapAction without tolerance. twas/axis2 is more tolerant.</li>
+<li>Provider&ltString&gt is not supported by CXF. Change generic type from String to DOMSource</li>
+</td>
+<td>
+Hong Fang Han/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>41</td>
+<td>
+<li>jaxws\defaultpackage\wsfvt\test\DefaultPackageTest.java
+<li>jaxb\types\wsfvt\test\PK88316Test.java
+<li>jaxb\types\wsfvt\test\PK88316CharsetTest.java
+</td>
+<td>
+<li>Skip those cases if running on z/OS, because they are not suitable for z/OS in terms of CharSet/Encoding issues.
+</td>
+<td>
+Ming Xia/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>42</td>
+<td>
+<li>jaxwsejbinwar\test\EjbInWarTest.java
+<li>jaxwsejbinwar\buildTest.xml
+<li>jaxwsejbinwar\server\dd_jar_in_war\web-fragment.xml
+
+</td>
+<td>
+<li>Change faultstring for NameNotFoundExcetpion
+<li>correct the web-fragment.xml path to /META-INFO folder
+<li>correct the namespace in web-fragment.xml to "http://java.sun.com/xml/ns/javaee"
+</td>
+<td>
+Bin BB Zhu/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>43</td>
+<td>
+<li>mtom\security\wsfvt\test\Security_ProxyTest.java
+<li>mtom21\security\wsfvt\test\Security_ProxyTest.java
+
+</td>
+<td>
+<li>Add the check ssl port started code in <b>suiteSetup</b> method
+</td>
+<td>
+Yi YY Xiao/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>44</td>
+<td>
+<li>mtom21\security\etc\wsdl\SecurityMtomOffProxySOAP12.wsdl
+</td>
+<td>
+<li>Modify the <b>soapAction</b> from "" to "send" for the element <b>wsdlsoap:operation</b> in <b>wsdl:binding</b>
+</td>
+<td>
+Yi YY Xiao/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>45</td>
+<td>
+<li>mtom21\security\wsfvt\server\SecurityMtomOffVerifyMTOMOn.java
+</td>
+<td>
+<li>Using the SAAJ api to get the base64 content of the attament.
+</td>
+<td>
+Yi YY Xiao/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>46</td>
+<td>
+<li>common\utils\topology\INodeContainer.java
+</td>
+<td>
+<li>Modify the <b>getJsseSslProps</b> method, add the ssl related props only support by Sun JDK.
+</td>
+<td>
+Yi YY Xiao/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>47</td>
+<td>
+<li>annotations\webmethod\testdata\WebMethodRuntime.java
+</td>
+<td>
+<li>Change the soap action for method fullAnno from 'invokeme' to 'idunno' to keep consistence with the wsdl
+</td>
+<td>
+Min SH Yang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>48</td>
+<td>
+<li>jaxws22/xmlelement/wsfvt/test/XmlElementTest.java
+</td>
+<td>
+<li>We should not valid the result with a specific namespace, and in XML, the &lt;abc/&gt; and &lt;abc&gt;&lt;/abc&gt; are same, so use regular expression to validate the result.
+</td>
+<td>
+Lei SO Wang/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>49</td>
+<td>
+saaj/server/provider/com/ibm/ws/saaj/SAAJUtil12.java</td>
+<td>
+<li>Check the namespace regardless of prefix name.
+</td>
+<td>
+Hong Fang Han/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>50</td>
+<td>
+<li>mtom\defaultsetting\wsfvt\client\SOAPMessageClient.java
+<li>mtom\defaultsetting\wsfvt\client\SOAPMessageSOAP12Client.java
+<li>mtom\enableJAXB\wsfvt\client\SOAPMessageSOAP12Client.java
+<li>mtom\enableJAXB\wsfvt\client\SOAPMessageClient.java
+<li>mtom\enableSOAPBinding\wsfvt\client\SOAPMessageClient.java
+<li>mtom\enableSOAPBinding\wsfvt\client\SOAPMessageSOAP12Client.java
+<li>mtom21\enablejaxb\wsfvt\client\SOAPMessageClient.java
+<li>mtom21\enablejaxb\wsfvt\client\SOAPMessageSOAP12Client.java
+<li>mtom21\enablesoapbinding\wsfvt\client\SOAPMessageClient.java
+<li>mtom21\enablesoapbinding\wsfvt\client\SOAPMessageSOAP12Client.java
+</td>
+<td>
+<li>Liberty returned message will change the namespace from soapenv to soap
+</td>
+<td>
+Ming Xia/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>51</td>
+<td>annotations\handlerchain\checkdefaults\test\HandlerChainCheckDefaultsTest.java</td>
+<td>
+<li>Use  LibertyServer.restartDropinsApplication(String appfilename) to restart the test app
+</td>
+<td>
+Ming Xia/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>52</td>
+<td>annotations\support\IBM_ImplementationAdapter.java</td>
+<td>
+<li>Use temp jar with manifest only to solve the classpath too long issue.
+</td>
+<td>
+Bin BB Zhu/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>53</td>
+<td>
+<li>scopedrefs\server\app1\mod3_real\B2.java
+<li>scopedrefs\buildTest.xml
+</td>
+<td>
+<li>add @Stateless to work around the hang issue when there is a webserviceRef reference to himself.
+<li>remove test\ScopedRefs2ServersTest.java, since this test reqires an ND topology in tWAS.
+<li>modify buildTest.xml to use the wsdllocation = "http://${myhostname}:${server1.WC_defaulthost}/scopedrefsapp2mod1/B1Service?wsdl".
+</td>
+<td>
+Shao Jun Ding/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>54</td>
+<td>
+<li>annotations/**
+<li>jaxws22/**
+<li>jaxws/**
+<li>jaxwsejbinwar/**
+<li>jaxwsejb30/**
+</td>
+<td>
+<li>Move Topoloy initialization logic before liberty server start
+<li>Clean some compilation errors found in execution log
+</td>
+<td>
+Ming Xia/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>55</td>
+<td>
+<li>jaxwsejb30/ejbapps/serverdepdesc/server/echowar/etc/webservices.xml
+<li>jaxwsejb30/ejbapps/serverdepdesc/test/WebservicesXmlOverrideTest.java
+</td>
+<td>
+<li>Modify test case initialization logic so that target web service is available after server started
+<li>Use fully qualified class name as servlet-link in webservices.xml to follow the spec
+</td>
+<td>
+Ming Xia/China/IBM
+</td>
+</tr>
+
+<tr valign="top">
+<td>56</td>
+<td>
+<li>jaxws/badprovider/wsfvt/common/LogCommands.java
+<li>jaxws/badprovider/wsfvt/server/LogViewerPortImpl.java
+<li>jaxws/badprovider/wsfvt/test/BadProvidersTest.java
+</td>
+<td>
+<li>Modify test application restart method using the liberty way rather than the AdminCommand way in tWAS test framework.
+<li>Modify the log file path for standard console output by using path of console.log in Liberty rather than the systemout.log in tWAS.
+<li>Modify the validation string in log file by using fault string in Liberty log rather the the WebServiceException string in tWAS log.
+</td>
+<td>
+Bin BB Zhu/China/IBM
+</td>
+</tr>
+
+
+<tr valign="top">
+<td>template</td>
+<td>artifacts</td>
+<td>
+<li>Changes
+</td>
+<td>
+Who
+</td>
+</tr>
+
+</table>
+
+<hr size="1">
+<h1>Excluded List of tWAS Cases</h1>
+<ul>Category
+<li>a. tWAS specific commands/features required
+<li>b. AXIS2 specific
+<li>c. Feature not ready, but planned for future release
+</ul>
+<table width="95%" cellspacing="2" cellpadding="5" border="0" class="details">
+<tr valign="top" halign="left">
+<td width="5%">#</td><td width="5%">Category</td><td width="40%">Specific Reason</td><td width="30%">Excluded Cases</td><td width="20%">Comments</td>
+</tr>
+
+<tr valign="top">
+<td>1</td>
+<td>c</td>
+<td>
+Required web service ejb support
+</td>
+<td>
+<li>jaxws/xmlcatalog/**
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>2</td>
+<td>a</td>
+<td>
+require "runWSClientBundle.sh"
+</td>
+<td>
+<li>jaxws/osgiclient/**
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>3</td>
+<td>c</td>
+<td>
+Web services transport security function is not ready yet, will need re-enable it when it's ready.
+</td>
+<td>
+<li>mtom/security/** 
+<li>mtom21/security/**
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>4</td>
+<td>a</td>
+<td>
+require "wsdeploy"
+</td>
+<td>
+<li>wsdeploy/jython/**
+</td>
+<td>
+</td>
+</tr>
+
+
+<tr valign="top">
+<td>6</td>
+<td>c</td>
+<td>
+xjc and schemagen commands not available in alpha
+</td>
+<td>
+<li>jaxb/scripts/**
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>7</td>
+<td>a</td>
+<td>
+tWAS specific feature
+</td>
+<td>
+<li>jaxws/async/wsfvt/test/asyncmep
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>8</td>
+<td>a</td>
+<td>
+Need tWAS specific command: runWSClientBundle.sh
+</td>
+<td>
+<li>jaxws22/respectbinding/test/RespectBindingClientSideMetadataTest.java 
+<li>jaxws22/mtom/test/MtomJsr109V13ClientSideMetadataTest.java 
+<li>jaxws22/addressing/test/AddressingClientSideMetadataTest.java
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>9</td>
+<td>a</td>
+<td>
+Need tWAS specific command: wsadmin
+</td>
+<td>
+<li>annotations/webmethod_g2/runtime/test/WebMethodLegacyModeTest.java
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>10</td>
+<td>a</td>
+<td>
+Install test applications in test cases via ApplicationManager simplicity API, liberty fattest.simplicity API does not work with it yet
+</td>
+<td>
+<li>annotations/ammfilter/** 
+<li>annotations/scanning/**
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>11</td>
+<td>a</td>
+<td>
+Need tWAS specific command: launchClient.sh
+</td>
+<td>
+<li>jaxws/threadcontext/**
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>12</td>
+<td>b</td>
+<td>
+Axis2 client specific behavior is tested
+</td>
+<td>
+<li>soapendpoint/SOAPMessageProviderTest.testSoap11RequestWithSoap12Response()
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>13</td>
+<td>a</td>
+<td>
+Need tWAS specific command: launchClient.sh
+</td>
+<td>
+<li>jaxws22/customprops/wsfvt/test/CustomPropsTest.test_callLaunchClient()
+</td>
+<td>
+</td>
+</tr>
+
+
+<tr valign="top">
+<td>14</td>
+<td>b</td>
+<td>
+    CXF force exact match of soapAction without tolerance. axis2 is more tolerant. 
+</td>
+<td>
+<li>jaxws/proxy/doclit/wsfvt/test/SoapActionTest.java
+      testSOAPAction_bare_reqCtxt_invalid
+      testSOAPAction_wrapped_reqCtxt_invalid 
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>15</td>
+<td>a</td>
+<td>
+<li>Liberty does not support UnifySOAPFaults feature as tWAS did 
+<li>Require wsadmin command
+</td>
+<td>
+<li>jaxws/soapfaults/wsfvt/test/UnifySOAPFaultsTest.java (2 cases excluded)
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>16</td>
+<td>b</td>
+<td>
+CXF allows the portName/serviceName in annotation and wsdl are inconsistent for web service provider, but tWAS expects WebServiceException being thrown.
+</td>
+<td>
+<li>annotations/webserviceprovider/WebServiceProviderTest.testPortNameMismatch()
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>17</td>
+<td>b</td>
+<td>
+Provider&lt;String&gt is not supported by CXF. This test case is about the usuage of Provider&lt;String&gt.
+(Test sending/receivned  messages from SOAP11/SOAP12/Payload/Message String Provider.)
+</td>
+<td>
+<li>jaxws/provider/string/**
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>18</td>
+<td>a</td>
+<td>
+As the limitation of Liberty's simplify API and client can not control app state via already existing API based on JMX, exclude jaxws/badproxy/**.
+But the scenario of wsdl and annotation mismach is useful, so we implement the validation and add the corresponding test - BindingTypeWsdlMismatchTest in com.ibm.ws.jaxws.webcontainer_fat_lWAS.
+</td>
+<td>
+<li>jaxws/badproxy/**
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>19</td>
+<td>b</td>
+<td>
+Provider&lt;OMElement&gt; is Axis2 specific feature. CXF doesn't support Provider&lt;OMElement&gt;from its offical doc: https://cxf.apache.org/docs/provider-services.html
+</td>
+<td>
+<li>jaxws/provider/omelementsoapfault/**
+<li>jaxws/provider/omelementmtom/**
+<li>jaxws/provider/omelement/**
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>20</td>
+<td>b</td>
+<td>
+Axis2 incorrectly adds an extra "/" in wsdl location, i.e., "http://host:port/context-root/servicename/?wsdl" which is not complied with spec which requires the wsdl location to be "http://host:port/context-root/servicename?wsdl"
+</td>
+<td>
+<li>jaxws22/mtom/test/MtomJsr224v22FactoryMethodsTest.testDynamicGetPortWithEndpointReference()
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>21</td>
+<td>a</td>
+<td>
+If customer uses tWAS thin client jar, they cannot use "com.ibm.ws.websvcs.wsdl.WASWSDLGenerator" utility class 
+to generate WSDL file. Because Liberty's jaxws tools jar does not include com.ibm.jtc.jax.tools.ws.spi.WSToolsObjectFactory. 
+</td>
+<td>
+<li>annotations.jaxwstooling.test.JaxwsToolingTest.test_PK92522_WASWSDLGenerator
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>22</td>
+<td>c</td>
+<td>
+This error occurs when you use XMLGregorianCalendar in gMonth format as part of your soap request on client side and the jaxws-2.2 feature is enabled on the Liberty profile with the Oracle jvm. The root cause is that the Oracle jvm supports the new standard format "--MM" for xsd:gMonth while the latest jaxb RI (Reference Implementation) runtime still only supports the old format "--MM--". 
+</td>
+<td>
+<li>jaxws.proxy.wsdltypes.wsfvt.test.TypesFromWsdlTest.testTypes_xsd_gDate
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>23</td>
+<td>b</td>
+<td>
+<li>The test cases depend on axi2 specific class: org.apache.axis2.jaxws.handler.LogicalMessageContext.</li>
+<li>The test cases depend on axi2 specific property: "jaxws.binding.soap.headers.outbound".</li>
+CXF also has a similar property: "org.apache.cxf.headers.Header.list", but should add other cxf specific classes, such as org.apache.cxf.headers.Header, so just exclude the test cases.
+</td>
+<td>
+<li>jaxws/handlerextensions/**
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>24</td>
+<td>b</td>
+<td>
+Due to a Axis2 thin client's defect on wrong parameter "/?wsdl" for wsdl url construction.
+The interface "getPort(epr, Echo.class, new AddressingFeature(true,true))" can't create endpoint reference object.
+The fix should take in the latest Axis2 code.
+</td>
+<td>
+<li>jaxws22/addressing/AddressingJsr224v22FactoryMethodsTest/testGetPort3ArgEpr
+</td>
+<td>
+</td>
+</tr>
+
+<tr valign="top">
+<td>#</td>
+<td>category</td>
+<td>
+specific reason
+</td>
+<td>
+<li>artifacts
+</td>
+<td>
+</td>
+</tr>
+</table>
+
+<hr size="1">
+<h1>Other Important Changes</h1>
+<ol>
+<li>Redefined some ant targets: Localbuild, localrun, buildandrun
+<li>Add liberty FAT ant properties: src/ant/properties.xml, src/ant/launch.xml
+<li>Redefined classpathes with moving tWAS jars into RTC project
+<li>Redefined/Added some key ant taskdefs: StartLiberty/StopLiberty, InstallApp/UninstallApp, ReadCellConfig
+<li>Adding reports publish logic for RTC environment
+<li>Transform wrong namespaces with "j2ee" to "javaee" in web.xml and application.xml
+<li>Transform version 2.4 to 2.5 in web.xml
+<li>Transform version 1.4 to 5 in application.xml
+<li>Enable debug for javac jobs
+ <ul>
+ <li>jaxws/dispatch/buildTest.xml
+ <li>jaxws/handlerdeploy/buildTest.xml
+ <li>jaxws/handlersflow/buildTest.xml
+ </ul>
+<li>Manually update buildTest.xml of these testings for jaxws and jaxb 2.2 API issue. 
+ <ul>
+ <li>annotations/partialwsdl/** (3)
+ <li>annotations/reqrespwrappers/** (4)
+ <li>annotations/webfault/customization/** (1)
+ <li>annotations/webfault/multipleexceptions/** (1)
+ <li>annotations/webfault/exceptionnaming/** (3)
+ <li>jaxws22/mtom/** (32)
+ <li>jaxws22/respectbinding/** (32)
+ <li>jaxws22/xmlelement/** (14)
+ <li>jaxws/attachment/** (2)
+ <li>jaxws/badproxy/** (9)
+ <li>jaxws/clienthandlers/** (13)
+ <li>jaxws/handlersflow/** (68)
+ <li>jaxws/soapfaults/** (20)
+ <li>jaxws/wsdlfaults/** (24)
+ </ul>
+<li>Update override/autoFVT/buildTest.xml to find the log information in the messages.log file(change SERVER_NAME/console.log->SERVER_NAME/messages.log).
+<li>Support the Transport Level Security.
+ <ul>
+ <li>override/autoFVT/fatTestPorts.xml
+ <li>add key.p12 and trust.p12 to publish/servers/jaxws_fat_server/etc/ directory
+ </ul>
+</ol>
+</body>
+</html>

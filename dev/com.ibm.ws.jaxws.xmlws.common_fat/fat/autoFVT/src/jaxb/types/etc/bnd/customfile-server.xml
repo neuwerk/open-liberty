@@ -1,0 +1,25 @@
+<!-- 1.1, 7/10/07
+
+     Date        Author       Feature/Defect          Description
+     02/11/2007  ulbricht     450943                  New File
+-->
+<jaxws:bindings wsdlLocation="../wsdl/war2/wsdl/SwaTestService.wsdl"  version="2.0" 
+    xmlns:jaxws="http://java.sun.com/xml/ns/jaxws" 
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:jxb="http://java.sun.com/xml/ns/jaxb">    
+    
+    <jaxws:bindings node="wsdl:definitions">
+        <jaxws:package name="swatest.server"/>
+        <jaxws:enableMIMEContent>true</jaxws:enableMIMEContent>
+    </jaxws:bindings>
+
+    <jaxws:bindings node="wsdl:definitions/wsdl:types/xs:schema[@targetNamespace='http://SwaTestService.org/xsd']"
+     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+        <jxb:schemaBindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb">
+            <jxb:package name="swatest.server"/>
+        </jxb:schemaBindings>
+    </jaxws:bindings>
+   
+</jaxws:bindings>            

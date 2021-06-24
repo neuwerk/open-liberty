@@ -1,0 +1,25 @@
+<?xml version="1.0"?>                     
+<!DOCTYPE project [
+        <!ENTITY instance SYSTEM "instance.xml">
+]>
+
+<!--
+   %i% %g%
+-->
+
+<project default="enableSecurity" basedir=".">
+  &instance;
+
+  <taskdef name="enableLTPA"
+           classname="EnableLTPA">
+    <classpath>
+      <pathelement location="${ez.user.home}/autoFVT/acute.jar"/>
+      <pathelement path="${ez.user.home}/autoFVT/zos/classes"/>
+    </classpath>
+  </taskdef>
+
+  <target name="enableSecurity">
+     <enableLTPA zosFvtDir="${ez.user.home}/autoFVT"/> <!-- using all the default value -->
+  </target>
+
+</project>

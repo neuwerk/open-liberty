@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions 
+	targetNamespace="http://servernowsdl.partialwsdl.annotations/" 
+	name="AddNumbersImplNoWsdlService" 
+	xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:tns="http://servernowsdl.partialwsdl.annotations/" 
+	xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://servernowsdl.partialwsdl.annotations/" schemaLocation="AddNumbersImplNoWsdlService_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="addTwoNumbers">
+    <part name="parameters" element="tns:addTwoNumbers"/>
+  </message>
+  <message name="addTwoNumbersResponse">
+    <part name="parameters" element="tns:addTwoNumbersResponse"/>
+  </message>
+  <portType name="AddNumbersImplNoWsdl">
+    <operation name="addTwoNumbers">
+      <input message="tns:addTwoNumbers"/>
+      <output message="tns:addTwoNumbersResponse"/>
+    </operation>
+  </portType>
+  <binding name="AddNumbersImplNoWsdlPortBinding" type="tns:AddNumbersImplNoWsdl">
+    <soap12:binding transport="http://www.w3.org/2003/05/soap/bindings/HTTP/" style="document"/>
+    <operation name="addTwoNumbers">
+      <soap12:operation soapAction=""/>
+      <input>
+        <soap12:body use="literal"/>
+      </input>
+      <output>
+        <soap12:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="AddNumbersImplNoWsdlService">
+    <port name="AddNumbersImplNoWsdlPort" binding="tns:AddNumbersImplNoWsdlPortBinding">
+      <soap12:address location="http://@REPLACE_WITH_HOST_NAME@:@REPLACE_WITH_PORT_NUM@/partialwsdlnw/services/AddNumbersImplNoWsdlService"/>
+    </port>
+  </service>
+</definitions>
+

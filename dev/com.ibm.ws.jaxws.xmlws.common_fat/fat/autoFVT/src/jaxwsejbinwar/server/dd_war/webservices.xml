@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configure the web services 
+     
+     Normally this file is optional, but we want to check that
+     it works with ejb's in a war, so we will use it to specify a packaged wsdl.
+-->    
+
+<!-- need v1.3 for this stuff to work  -->
+<webservices version="1.3" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+	http://java.sun.com/xml/ns/javaee/javaee_web_services_1_3.xsd">	
+
+	<webservice-description>
+	  <!-- the name can be used for jndi lookup, although we won't be doing that -->
+	  <webservice-description-name>services/EjbInWarClassesHello</webservice-description-name>
+         <wsdl-file>WEB-INF/webservicesxml/EjbInWarClassesHelloService.wsdl</wsdl-file>
+         <port-component>  <!-- pc name must match name of port type in wsdl, not name of port. Go figure. -->
+            <port-component-name>EjbInWarClassesHello</port-component-name>
+            <service-impl-bean>
+                <ejb-link>EjbInWarClassesHello</ejb-link>
+            </service-impl-bean>
+        </port-component>
+	</webservice-description>	
+
+    <!-- We could add more webservices here if we had them.  
+     -->
+
+</webservices>

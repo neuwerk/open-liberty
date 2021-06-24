@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application-client xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+        http://java.sun.com/xml/ns/javaee/application-client_6.xsd"
+	version="6">
+
+	<display-name>CustomPropsManagedClient</display-name>
+	
+	<service-ref>
+		<service-ref-name>service/CustomProps</service-ref-name>
+		<service-interface>jaxws22.customprops.wsfvt.server.CustomPropsService</service-interface>
+		<service-ref-type>jaxws22.customprops.wsfvt.server.CustomProps</service-ref-type>
+	 
+		<wsdl-file>META-INF/wsdl/CustomPropsService.wsdl</wsdl-file>
+		<port-component-ref>
+			<service-endpoint-interface>jaxws22.customprops.wsfvt.server.CustomProps</service-endpoint-interface>		
+		</port-component-ref>
+	</service-ref>	
+ 
+
+</application-client>

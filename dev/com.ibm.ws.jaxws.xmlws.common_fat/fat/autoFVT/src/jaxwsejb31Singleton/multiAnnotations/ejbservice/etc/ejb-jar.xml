@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     1.1, 11/19/09
+    
+    Change History:
+    Date       UserId              Feature/Defect          Description
+    ****************************************************************************
+    11/19/09   varadan             F743-17947-01           New file
+-->
+
+<ejb-jar id="ejb-jar_ID" metadata-complete="false" version="3.0"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd">
+
+    <enterprise-beans>
+        <session id="ResSession1">
+            <ejb-name>HelloRefSupplier</ejb-name>
+        </session>
+    </enterprise-beans>
+</ejb-jar>

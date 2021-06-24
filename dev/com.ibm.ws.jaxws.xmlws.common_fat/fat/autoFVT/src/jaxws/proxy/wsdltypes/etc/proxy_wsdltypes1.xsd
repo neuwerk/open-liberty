@@ -1,0 +1,639 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:tns="http://wsdltypes1.wsfvt.wsdltypes.proxy.jaxws"
+	xmlns:tns2="http://wsdltypes2.wsfvt.wsdltypes.proxy.jaxws"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="2.0"
+	targetNamespace="http://wsdltypes1.wsfvt.wsdltypes.proxy.jaxws">
+
+	<!-- xsd:import namespace="http://wsdltypes2.wsfvt.wsdltypes.proxy.jaxws"
+			    schemaLocation="proxy_wsdltypes2.xsd" /-->
+
+  <!-- test sending a simpleType list -->
+   <xsd:simpleType name="LongList">
+      <xsd:list>
+          <xsd:simpleType>
+             <xsd:restriction base="xsd:unsignedInt"/>
+          </xsd:simpleType>
+      </xsd:list>
+   </xsd:simpleType>
+   
+   <xsd:element name="typesLongList">
+   		<xsd:complexType>
+			<xsd:sequence>
+		    	<xsd:element name="in" type="tns:LongList"/>
+		    </xsd:sequence>
+	    </xsd:complexType>
+	</xsd:element>
+	
+   <xsd:element name="typesLongListResponse">
+   		<xsd:complexType>
+			<xsd:sequence>
+		    	<xsd:element name="out" type="tns:LongList"/>
+		    </xsd:sequence>
+	    </xsd:complexType>
+	</xsd:element>	
+
+	<!-- test xsd:hexBinary -->
+	<xsd:element name="typesHexBinary">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="in" type="xsd:hexBinary" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="typesHexBinaryResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="out" type="xsd:hexBinary" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test xsd:hexBinary -->
+	<xsd:element name="typesBase64Binary">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="in" type="xsd:base64Binary" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="typesBase64BinaryResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="out" type="xsd:base64Binary" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+      
+	<!-- test primitive char/unsignedShort -->
+	<xsd:element name="typesChar">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="inChar" type="xsd:unsignedShort"></xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="typesCharResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="outChar" type="xsd:unsignedShort"></xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test primitive int -->
+	<xsd:element name="typesInt">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myInt" type="xsd:int"></xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesIntResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myInt_ret" type="xsd:int">
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test QName -->
+	<xsd:element name="typesQName">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="inQName" type="xsd:QName" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesQNameResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="outQName" type="xsd:QName" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test anyType -->
+	<xsd:element name="typesAny">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="any" type="xsd:anyType" />
+				<xsd:element name="type" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesAnyResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="any" type="xsd:anyType" />
+				<xsd:element name="type" type="xsd:string" />				
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test object Integer -->
+	<xsd:element name="typesInteger">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myInteger" type="xsd:integer">
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesIntegerResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myInteger_ret" type="xsd:integer">
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test date and time types -->
+	<xsd:element name="typesDate">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myDate" type="xsd:date" />
+				<xsd:element name="myTime" type="xsd:time" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesDateResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myDate_ret" type="xsd:date" />
+				<xsd:element name="myTime_ret" type="xsd:time" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test dateTime type -->
+	<xsd:element name="typesDateTime">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myDateTime" type="xsd:dateTime">
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesDateTimeResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myDateTime_ret"
+					type="xsd:dateTime">
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test gDay, gMonth, gYear types -->
+	<xsd:element name="typesGDate">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myGDay" type="xsd:gDay" />
+				<xsd:element name="myGMonth" type="xsd:gMonth" />
+				<xsd:element name="myGYear" type="xsd:gYear" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesGDateResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myGDay_ret" type="xsd:gDay" />
+				<xsd:element name="myGMonth_ret" type="xsd:gMonth" />
+				<xsd:element name="myGYear_ret" type="xsd:gYear" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- tests for arrays mapped to java arrays -->
+	<xsd:element name="typesJava1DArray">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="inArray" minOccurs="0"
+					maxOccurs="unbounded" type="xsd:string">
+					<xsd:annotation>
+						<xsd:appinfo>
+							<jaxb:property collectionType="indexed" />
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesJava1DArrayResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="outArray" minOccurs="0"
+					maxOccurs="unbounded" type="xsd:string">
+					<xsd:annotation>
+						<xsd:appinfo>
+							<jaxb:property collectionType="indexed" />
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test arrays mapped to List-->
+	<xsd:complexType name="myStringArray">
+		<xsd:sequence>
+			<xsd:element name="array" minOccurs="0"
+				maxOccurs="unbounded" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="types1DArray">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myArray" type="tns:myStringArray" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="types1DArrayResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myArray_ret" type="tns:myStringArray" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test 2D array types -->
+	<xsd:element name="types2DArray">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myArray" minOccurs="0"
+					maxOccurs="unbounded" type="tns:myStringArray" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="types2DArrayResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myArray_ret" minOccurs="0"
+					maxOccurs="unbounded" type="tns:myStringArray" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test array that can have nils -->
+	<xsd:complexType name="myNillableStringArray">
+		<xsd:sequence>
+			<xsd:element name="array" minOccurs="0"
+				maxOccurs="unbounded" nillable="true" type="xsd:string" />
+			<!--  xsd:element name="array" minOccurs="0"
+				maxOccurs="unbounded" nillable="true" type="xsd:string" /-->
+
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="typesArrayWithNulls">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myArray"
+					type="tns:myNillableStringArray" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesArrayWithNullsResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="myArray_ret"
+					type="tns:myNillableStringArray" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test polymorphic types types with a concrete base type-->
+	<xsd:complexType name="myBaseType">
+		<xsd:sequence>
+			<xsd:element name="myString" type="xsd:string" />
+			<xsd:element name="myInt" type="xsd:int" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="myDerrivedType1">
+		<xsd:complexContent>
+			<xsd:extension base="tns:myBaseType">
+				<xsd:sequence>
+					<xsd:element name="myBoolean" type="xsd:boolean" />
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="myDerrivedType2">
+		<xsd:complexContent>
+			<xsd:extension base="tns:myBaseType">
+				<xsd:sequence>
+					<xsd:element name="myDecimal" type="xsd:decimal" />
+					<xsd:element name="myLong" type="xsd:long" />
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="typesPolymorphicArray">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="polyArray" minOccurs="0"
+					maxOccurs="unbounded" type="tns:myBaseType" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesPolymorphicArrayResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="polyArray_ret" minOccurs="0"
+					maxOccurs="unbounded" type="tns:myBaseType" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test polymorphic types types with an abstract base type-->
+	<xsd:complexType name="myAbstractBaseType" abstract="true">
+		<xsd:sequence>
+			<xsd:element name="myString" type="xsd:string" />
+			<xsd:element name="myInt" type="xsd:int" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="myConcreteDerrivedType1">
+		<xsd:complexContent>
+			<xsd:extension base="tns:myAbstractBaseType">
+				<xsd:sequence>
+					<xsd:element name="myBoolean" type="xsd:boolean" />
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="myConcreteDerrivedType2">
+		<xsd:complexContent>
+			<xsd:extension base="tns:myAbstractBaseType">
+				<xsd:sequence>
+					<xsd:element name="myDecimal" type="xsd:decimal" />
+					<xsd:element name="myLong" type="xsd:long" />
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="typesAbstractPolymorphicArray">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="polyAbstractArray" minOccurs="0"
+					maxOccurs="unbounded" type="tns:myAbstractBaseType" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesAbstractPolymorphicArrayResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="polyAbstractArray_ret" minOccurs="0"
+					maxOccurs="unbounded" type="tns:myAbstractBaseType" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test wrapped array type-->
+	<xsd:complexType name="ArrayOfString">
+		<xsd:sequence>
+			<xsd:element name="array" minOccurs="0"
+				maxOccurs="unbounded" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="typesWrappedArray">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="strArray" type="tns:ArrayOfString" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesWrappedArrayResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="strArray_ret"
+					type="tns:ArrayOfString" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test graph type, tests for StackOverflow detection -->
+	<xsd:complexType name="BinaryTreeElement">
+		<xsd:sequence>
+			<xsd:element name="right" type="tns:BinaryTreeElement"
+				nillable="true" />
+			<xsd:element name="left" type="tns:BinaryTreeElement"
+				nillable="true" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="typesGraph">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="binaryTree"
+					type="tns:BinaryTreeElement" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesGraphResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="binaryTree_ret"
+					type="tns:BinaryTreeElement" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- test wsgen style wsdl where element does not use
+		an anonymous complexType, instead references a named
+		complexType.
+	-->
+	<xsd:complexType name="NamedComplexType1">
+		<xsd:sequence>
+			<xsd:element name="xsdString" type="xsd:string" />
+			<xsd:element name="xsdLong" type="xsd:long" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="typesElementIsNamedComplexType"
+		type="tns:NamedComplexType1" />
+
+	<xsd:element name="typesElementIsNamedComplexTypeResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="response"
+					type="tns:NamedComplexType1" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!--
+		test for ability to use polymorphic definitions, e.g., when one type
+		is an xsd:extension of another type
+	-->
+	<xsd:complexType name="BasePolyType">
+		<xsd:sequence>
+			<xsd:element name="amount" type="xsd:float" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="PositivePolyType">
+		<xsd:complexContent>
+			<xsd:extension base="tns:BasePolyType">
+				<xsd:sequence>
+					<xsd:element name="isPositive" type="xsd:boolean" />
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="NegativePolyType">
+		<xsd:complexContent>
+			<xsd:extension base="tns:BasePolyType">
+				<xsd:sequence>
+					<xsd:element name="strNegative" type="xsd:string" />
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:simpleType name="TypesMode">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="roundtrip" />
+			<xsd:enumeration value="base" />
+			<xsd:enumeration value="derrivedSamePackage" />
+			<xsd:enumeration value="derrivedDiffPackage" />
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:element name="typesExtension">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="request" type="tns:BasePolyType" />
+				<xsd:element name="mode" type="tns:TypesMode" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="typesExtensionResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="response" type="tns:BasePolyType" />
+				<xsd:element name="receivedType" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+  <!-- Tests for various xsd:list types -->
+  <xsd:element name="typesStringList" type="tns:typesStringListType" />
+  <xsd:element name="typesStringListResponse" type="tns:typesStringListType" />
+    
+  <xsd:simpleType name="typesStringListType">
+    <xsd:list itemType="xsd:string"/>
+  </xsd:simpleType>
+  
+  <xsd:element name="typesIntList" type="tns:typesIntListType" />
+  <xsd:element name="typesIntListResponse" type="tns:typesIntListType" />
+  
+  <xsd:simpleType name="typesIntListType">
+    <xsd:list itemType="xsd:int"/>
+  </xsd:simpleType>
+ 
+  <xsd:element name="typesDecimalList" type="tns:typesDecimalListType" />
+  <xsd:element name="typesDecimalListResponse" type="tns:typesDecimalListType" />
+ 
+  <xsd:simpleType name="typesDecimalListType">
+    <xsd:list itemType="xsd:decimal"/>
+  </xsd:simpleType>
+  
+  <xsd:element name="typesIntegerList" type="tns:typesIntegerListType" />
+  <xsd:element name="typesIntegerListResponse" type="tns:typesIntegerListType" />
+  
+  <xsd:simpleType name="typesIntegerListType">
+    <xsd:list itemType="xsd:integer"/>
+  </xsd:simpleType>
+
+  <xsd:element name="typesByteList" type="tns:typesByteListType" />
+  <xsd:element name="typesByteListResponse" type="tns:typesByteListType" />
+  
+  <xsd:simpleType name="typesByteListType">
+    <xsd:list itemType="xsd:byte"/>
+  </xsd:simpleType>
+
+  <!--  Test for a type with attributes -->
+  <xsd:element name="typesAttribute" type="tns:typesAttributeType" />
+  <xsd:element name="typesAttributeResponse" type="tns:typesAttributeType" />
+  
+  <xsd:complexType name="typesAttributeType">
+      <xsd:attribute name="required" type="xsd:string" use="required"/>
+      <xsd:attribute name="optional" type="xsd:int" />
+      <xsd:attribute name="fixed" type="xsd:integer" fixed="41" />
+      <xsd:attribute name="default" type="xsd:string" default="default" />
+  </xsd:complexType>
+  
+  <!--  Test for various xsd:restriction types -->
+  <xsd:element name="typesRestrictionEnum" type="tns:typesRestrictionEnumType" />
+  <xsd:element name="typesRestrictionEnumResponse" type="tns:typesRestrictionEnumType" />
+  
+    <xsd:simpleType name="typesRestrictionEnumType">
+    <xsd:restriction base="xsd:int">
+      <xsd:enumeration value="2"/>
+      <xsd:enumeration value="3"/>
+      <xsd:enumeration value="5"/>
+      <xsd:enumeration value="7"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  
+  <xsd:element name="typesRestrictionMinMax" type="tns:typesRestrictionMinMaxType" />
+  <xsd:element name="typesRestrictionMinMaxResponse" type="tns:typesRestrictionMinMaxType" />
+  
+    <xsd:simpleType name="typesRestrictionMinMaxType">
+    <xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="0"/>
+      <xsd:maxInclusive value="1234567890"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  
+  <xsd:element name="typesRestrictionPattern" type="tns:typesRestrictionPatternType" />
+  <xsd:element name="typesRestrictionPatternResponse" type="tns:typesRestrictionPatternType" />
+  
+  <xsd:simpleType name="typesRestrictionPatternType">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="[Hh]ello[ \t-_][Ww]orld[\.!\?]"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  
+   <!-- Test for element ref -->
+  <xsd:element name="typesElementRef" type="tns:typesElementRefType" />
+  <xsd:element name="typesElementRefResponse" type="tns:typesElementRefType" />
+  
+	<xsd:complexType name="typesElementRefType">
+		<xsd:sequence>
+			<xsd:element name="in" type="xsd:string" />
+			<xsd:element ref="tns:typesQName" />
+			<xsd:element ref="tns:types1DArray" />
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

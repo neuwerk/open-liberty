@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/"
+        xmlns:tns="http://fvt.saaj"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="provider"
+        targetNamespace="http://fvt.saaj">
+        <wsdl:types>
+                <xsd:schema
+                        targetNamespace="http://fvt.saaj"
+                        xmlns:tns="http://fvt.saaj"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+                        <xsd:complexType name="StringArray">
+                                <xsd:sequence>
+                                        <xsd:element name="value" type="xsd:string"
+                                                minOccurs="0" maxOccurs="unbounded" />
+
+                                </xsd:sequence>
+                        </xsd:complexType>
+
+                        <xsd:element name="twoWay" type="tns:StringArray" />
+                        <xsd:element name="twoWayResponse" type="tns:StringArray" />
+
+                </xsd:schema>
+        </wsdl:types>
+
+
+        <wsdl:message name="twoWayResponse">
+                <wsdl:part name="twoWayResponse" element="tns:twoWayResponse" />
+        </wsdl:message>
+
+        <wsdl:message name="twoWayRequest">
+                <wsdl:part name="twoWayRequest" element="tns:twoWay" />
+        </wsdl:message>
+
+        <wsdl:portType name="ProviderPortType">
+                <wsdl:operation name="twoWay">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="Simple13">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="Attachment13_1">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="AttachmentBody13">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="Header13_1">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="Header13_2">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="Header13_3">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="Header13_4">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="Header13_5">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="Header13_6">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="Header13_8">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="Header13_9">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="Fault13">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+                <wsdl:operation name="xlxp">
+                        <wsdl:input message="tns:twoWayRequest" />
+                        <wsdl:output message="tns:twoWayResponse" />
+                </wsdl:operation>
+        </wsdl:portType>
+
+        <wsdl:binding name="ProviderSOAP" type="tns:ProviderPortType">
+                <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+                <wsdl:operation name="twoWay">
+                        <soap:operation
+                                soapAction="http://saaj.server/twoWay" />
+                        <wsdl:input>
+                                <soap:body use="literal" parts=" twoWayRequest" />
+                        </wsdl:input>
+                        <wsdl:output>
+                                <soap:body use="literal" parts=" twoWayResponse" />
+                        </wsdl:output>
+                </wsdl:operation>
+        </wsdl:binding>
+
+        <wsdl:service name="SOAPMessage13Service">
+                <wsdl:port binding="tns:ProviderSOAP" name="SOAPMessage13Port">
+                       <soap:address location="http://localhost:9080/soapmessagefvt/SOAPMessage13Service" />
+                </wsdl:port>
+        </wsdl:service>
+</wsdl:definitions>

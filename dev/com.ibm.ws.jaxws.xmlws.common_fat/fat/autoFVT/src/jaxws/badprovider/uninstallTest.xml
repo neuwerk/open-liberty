@@ -1,0 +1,122 @@
+<?xml version="1.0"?>                     
+<!--
+  @(#) 1.1 WautoFVT/src/jaxws/badprovider/uninstallTest.xml, WAS.websvcs.fvt, WSFP.WFVT 9/20/06 16:59:23 [11/3/06 09:01:58]
+
+  Description: Build file for the JAX-WS Dispatch API tests
+ 
+  Date        Author       Feature/Defect          Description
+  05/31/06    sedov        LIDB3296.42             New File
+-->
+
+<project default="uninstall" basedir=".">
+   
+	<property name="componentName" value="jaxws/badprovider"/>
+	<property name="test.name" value="jaxws.badprovider" />
+	
+    <import file="..\jaxws-commons.xml" />
+
+	<property name="test.base.dir" value="${FVT.base.dir}/src/${componentName}" />
+	
+	<path id="componentClasspath">
+	   <path refid="jaxws.classpath"/>
+	</path>	
+
+  <!-- The uninstall target will uninstall the EAR or WAR file from
+       WebSphere.
+  -->
+  <target name="uninstall" depends="setenv">
+   <echo message="Uninstalling ${test.name}App.ear ..." />
+   
+    <UninstallApp appName="${test.name}.Defaults"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>
+	
+    <UninstallApp appName="${test.name}.HTTPMessageSoapMessage"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>	
+	
+    <UninstallApp appName="${test.name}.InvalidBinding"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>		
+	
+    <UninstallApp appName="${test.name}.logger"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>		
+	
+    <UninstallApp appName="${test.name}.NoAnnotation"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>		
+
+    <UninstallApp appName="${test.name}.NonProviderWSP"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>		
+	
+    <UninstallApp appName="${test.name}.PrivateConstructor"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>	
+
+	<UninstallApp appName="${test.name}.SOAP11MessageDataSource"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>	
+	
+	<UninstallApp appName="${test.name}.SOAP11PayloadSoapMessage"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>	
+	
+	<UninstallApp appName="${test.name}.SOAP12PayloadDataSource"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>		
+	
+	<UninstallApp appName="${test.name}.SOAP12PayloadSoapMessage"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>		
+	
+	<UninstallApp appName="${test.name}.UnsupportedType"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>		
+	
+	<UninstallApp appName="${test.name}.UntypedProvider"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>		
+	
+	<UninstallApp appName="${test.name}.WSPandWS"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>		
+	
+	<UninstallApp appName="${test.name}.WSProvider"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>		
+	
+  </target>
+  
+</project>

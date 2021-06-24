@@ -1,0 +1,21 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:tns1="http://wsdltypes1.wsfvt.wsdltypes.proxy.jaxws"
+	xmlns:tns2="http://wsdltypes2.wsfvt.wsdltypes.proxy.jaxws"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="2.0"
+	targetNamespace="http://wsdltypes3.wsfvt.wsdltypes.proxy.jaxws">
+
+	<xsd:import namespace="http://wsdltypes1.wsfvt.wsdltypes.proxy.jaxws"
+			    schemaLocation="proxy_wsdltypes1.xsd" />
+
+	<!-- this type is in a customized package -->
+	<xsd:complexType name="LargeNegativePolyType">
+		<xsd:complexContent>
+			<xsd:extension base="tns1:NegativePolyType">
+				<xsd:sequence>
+					<xsd:element name="isVeryNegative" type="xsd:boolean" />
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+</xsd:schema>

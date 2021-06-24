@@ -1,0 +1,3 @@
+grant codeBase "file:${application}" {
+  permission java.io.FilePermission "${user.install.root}${/}logs${/}@SERVER_NAME@${/}SystemOut.log", "read";
+};

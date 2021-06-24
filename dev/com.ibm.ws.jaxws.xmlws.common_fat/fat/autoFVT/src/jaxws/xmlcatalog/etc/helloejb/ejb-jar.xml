@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    
+    @(#) 1.1 autoFVT/src/jaxws/xmlcatalog/etc/helloejb/ejb-jar.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01 6/30/09 10:50:27 [8/8/12 06:09:25]
+    
+    Change History:
+    Date       UserId              Feature/Defect          Description
+    ****************************************************************************
+    06/29/2009 samerrel            552420                  New File
+    
+-->
+
+<ejb-jar id="ejb-jar_ID" metadata-complete="false" version="3.0"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd">
+
+    <enterprise-beans>
+        <session id="xmlcatSession1">
+            <ejb-name>HelloEjb</ejb-name>
+            <ejb-class>jaxws.xmlcatalog.wsfvt.service.HelloEjb</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
+    </enterprise-beans>
+</ejb-jar>

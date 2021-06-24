@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Interface-Version:2.0-->
+<!--Implementation-Version:@implementation.version@-->
+<wsdl:definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/"
+			 xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+			 xmlns:tns="http://server.attachment.jaxws"
+			 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+			 xmlns:jaxws="http://java.sun.com/xml/ns/jaxws/" 
+			 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			 targetNamespace="http://server.attachment.jaxws">
+			 
+			 
+  <!-- enable MIME content-->  
+  <jaxws:bindings>
+      <jaxws:enableMIMEContent>true</jaxws:enableMIMEContent>
+  </jaxws:bindings>
+  
+  
+  <wsdl:types>
+	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		targetNamespace="http://server.attachment.jaxws" >
+		<xsd:element name="request" type="xsd:string" />
+		<xsd:element name="response" type="xsd:string" />
+	    <xsd:element name="mimeAttachment" type="xsd:hexBinary" >
+        <xsd:annotation>
+            <xsd:documentation>
+				This represents document text returned as a MIME attachment.
+            </xsd:documentation>
+        </xsd:annotation>
+	</xsd:element>
+	</xsd:schema>
+  </wsdl:types>
+  
+  
+  <wsdl:message name="retrieveRequest">
+      <wsdl:documentation>
+			Document retrieval request.
+      </wsdl:documentation>
+      <wsdl:part element="tns:request" name="request"/>      
+  </wsdl:message>
+  
+  <wsdl:message name="retrieveResponse">
+      <wsdl:documentation>
+			Document retrieval response, including optional multi-part MIME
+			attachment.
+	  </wsdl:documentation>
+      <wsdl:part element="tns:response" name="response"/>
+      <wsdl:part element="tns:mimeAttachment" name="mimeAttachment"/>      
+  </wsdl:message>
+  
+  <wsdl:portType name="CheckAttachmentPortType">
+      <wsdl:operation name="retrieve">
+          <wsdl:input message="tns:retrieveRequest" name="retrieveRequest"/>
+          <wsdl:output message="tns:retrieveResponse" name="retrieveResponse"/>
+      </wsdl:operation>
+  </wsdl:portType>
+  
+  <wsdl:binding name="CheckAttachmentServiceSoapBinding" type="tns:CheckAttachmentPortType">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+      <wsdl:operation name="retrieve">
+          <soap:operation soapAction=""/>
+          <wsdl:input name="retrieveRequest">
+              <!--<soap:header message="tns:retrieveRequest" part="EASIReq" use="literal"/> -->
+              <soap:body parts="request" use="literal"/>
+          </wsdl:input>
+          <wsdl:output name="retrieveResponse">
+            <!-- <soap:header message="tns:retrieveResponse" part="EASIResp" use="literal"/> -->
+		    <mime:multipartRelated>
+			    <mime:part>
+                    <soap:body parts="response" use="literal"/>
+			    </mime:part>
+			    <mime:part>
+				    <mime:content part="mimeAttachment" type="multipart/*"/>
+			    </mime:part>
+		    </mime:multipartRelated>
+          </wsdl:output>
+      </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:service name="CheckAttachmentService">
+        <wsdl:port binding="tns:CheckAttachmentServiceSoapBinding" name="CheckAttachmentServicePort">
+            <soap:address location="http://REPLACE_WITH_HOST_NAME:REPLACE_WITH_PORT_NUMBER/attachment/CheckAttachmentImpl"/>
+        </wsdl:port>
+  </wsdl:service>
+  
+
+</wsdl:definitions>
+		
+

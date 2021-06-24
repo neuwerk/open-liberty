@@ -1,0 +1,644 @@
+<?xml version="1.0"?>
+
+<!--
+
+    autoFVT/src/jaxwsejb30/ejbapps/annotations/wsr/buildTest.xml, WAS.websvcs.fvt, WAS85.FVT, cf011231.01
+
+   Change History:
+   Date       UserId              Feature/Defect          Description
+   ****************************************************************************
+   01/25/2008 samerrel            LIDB4511.45             New File
+   04/30/2008 samerrel            LIDB4511.45             Cleaned up build process
+   07/07/2008 samerrel            534715                  Fixed over eager clean target
+   07/31/2008 samerrel            538865                  Fixed wsdl location problems
+   08/26/2010 lizet               F1149.1-32025           update tests for java endorsed dir.
+
+-->
+
+<project default="buildall" basedir=".">
+
+    <import file="../../../../xmls/common_imports.xml" />
+
+    <!-- 
+         This property should match the package name of the test class.  The
+         property is used in the targets.xml file when running any of the
+         component-run* targets for running a single test case class.
+    -->
+    <property name="componentName"
+              value="jaxwsejb30/ejbapps/annotations/wsr/test" />
+
+
+    <property name="subpath" value="jaxwsejb30/ejbapps/annotations/wsr" />
+    <property name="src.dir" value="${FVT.base.dir}/src/${subpath}" />
+    <property name="work.dir" value="${FVT.build.work.dir}/${subpath}" />
+    <property name="ear.name" value="jwsejb30-anno-wsr" />
+    <property name="verbose.output" value="false" />
+    <property name="test.dir" value="${src.dir}/test" />
+
+    <!-- EAR FILE NAMES -->
+    <property name="client.ear" value="${ear.name}-client" />
+    <property name="ejbsvc.ear" value="${ear.name}-ejbservice" />
+    <property name="warsvc.ear" value="${ear.name}-warservice" />
+    <property name="ejbref.ear" value="${ear.name}-ejbrefchecker" />
+    <!-- WORK DIR SHORTCUTS -->
+    <property name="work.dir.ejbsvc" value="${work.dir}/ejbservice" />
+    <property name="work.dir.ejbrefchecker" value="${work.dir}/ejbrefchecker" />
+    <property name="work.dir.warsvc" value="${work.dir}/warservice" />
+    <property name="work.dir.client" value="${work.dir}/client" />
+    <property name="work.dir.test" value="${work.dir}/test" />
+
+    <!-- 
+         This path id is used in the targets.xml file when running any of
+         the component-run* targets.  This allows setting the classpath 
+         for an individual test.
+    -->
+    <path id="componentClasspath">
+        <path refid="thinclientclasspath" />
+    </path>
+
+    <!-- =================================
+          target: init
+         ================================= -->
+    <target name="init"
+            depends="setenv"
+            description="--> initialize any directories, properties, etc.
+           that are needed for the test.">
+        <antcall target="component-init" />
+        <mkdir dir="${work.dir}" />
+        <mkdir dir="${work.dir.ejbrefchecker}" />
+        <mkdir dir="${work.dir.ejbsvc}" />
+        <mkdir dir="${work.dir.warsvc}" />
+        <mkdir dir="${work.dir.client}" />
+        <mkdir dir="${work.dir.test}" />
+    </target>
+
+    <!-- ================================= 
+          target: clean              
+         =================================
+-->
+    <target name="clean"
+            description="--> clean any files, classes, or directories
+           so that a new copy of the test can be built and run">
+
+        <delete dir="${FVT.build.classes.dir}/${subpath}" />
+        <delete dir="${work.dir}" />
+        <delete file="${FVT.build.installableApps.dir}/${ejbsvc.ear}.ear" />
+        <delete file="${FVT.build.installableApps.dir}/${ejbref.ear}.ear" />
+        <delete file="${FVT.build.installableApps.dir}/${warsvc.ear}.ear" />
+        <delete file="${FVT.build.lib.dir}/${ejbsvc.ear}.jar" />
+        <delete file="${FVT.build.lib.dir}/${ejbref.ear}.jar" />
+        <delete file="${FVT.build.lib.dir}/${warsvc.ear}.war" />
+        <delete file="${FVT.build.lib.dir}/${client.ear}.jar" />
+    </target>
+
+    <!-- =================================
+          target: buildall
+         =================================
+-->
+    <target name="buildall"
+            depends="setenv, clean, init, ejbservice, warservice, ejbrefchecker, test, preinstall"
+            description="--> execute all of the targets necessary
+           before installing the test into WebSphere" />
+
+    <!-- =================================
+          target: ejbservice
+         =================================
+-->
+    <target name="ejbservice"
+            depends="compile_ejbservice, wsgen_ejbservice, pkg_ejbservice"
+            description="--> Compiles, wsgen, and packages ejbservice" />
+
+    <!-- =================================
+          target: compile_ejbservice
+         =================================
+-->
+    <target name="compile_ejbservice"
+            depends="setenv"
+            description="--> Compiles ejbservice">
+        <javac compiler="modern" srcdir="${src.dir}/ejbservice"
+               destdir="${work.dir.ejbsvc}"
+               deprecation="${deprecation}"
+               verbose="${verbose.output}"
+               debug="${debug}"
+   	           source="${build.tests.with.java.level}"
+   	           target="${build.tests.with.java.level}"
+               failonerror="${failonerror}">
+            <compilerarg line="-endorseddirs ${WAS.base.dir}/runtimes/endorsed"/>
+            <classpath >
+                <path refid="classpath"/>
+            </classpath>
+            <include name="**/*.java" />
+        </javac>
+    </target>
+
+    <!-- =================================
+          target: wsgen_ejbservice
+         =================================
+-->
+    <target name="wsgen_ejbservice"
+            depends="setenv"
+            description="--> Runs wsgen on ejbservice">
+        <wsgen genwsdl="true"
+               keep="true"
+               verbose="${verbose.output}"
+               destdir="${work.dir.ejbsvc}"
+               resourcedestdir="${work.dir.ejbsvc}"
+               sei="jaxwsejb30.ejbapps.annotations.wsr.ejbservice.ReferenceSupplier">
+            <classpath>
+                <pathelement location="${work.dir.ejbsvc}" />
+                <path refid="classpath" />
+            </classpath>
+        </wsgen>
+    </target>
+
+    <!-- =================================
+          target: pkg_ejbservice
+         =================================
+-->
+    <target name="pkg_ejbservice"
+            depends="setenv"
+            description="--> Packages ejbservice in an ear file">
+
+        <!-- Get the cells config info -->
+        <readCellConfig prefix="server1"
+                        key="defaultServer"
+                        verbose="${verbose.output}" />
+
+        <mkdir dir="${work.dir.ejbsvc}/wsdl" />
+
+        <!-- Move the wsdl and xsd because I can't seem to get an inline replacement for the url
+-->
+        <copy todir="${work.dir.ejbsvc}/wsdl">
+            <fileset dir="${work.dir.ejbsvc}">
+                <include name="ReferenceSupplierService.wsdl" />
+                <include name="ReferenceSupplierService_schema1.xsd" />
+            </fileset>
+        </copy>
+
+        <replace file="${work.dir.ejbsvc}/wsdl/ReferenceSupplierService.wsdl"
+                 value="http://${server1.hostName}:${server1.WC_defaulthost}/jwsejb30-anno-wsr-ejbservice/ReferenceSupplierService">
+            <replacefilter token="REPLACE_WITH_ACTUAL_URL" />
+        </replace>
+
+        <jar jarfile="${FVT.build.lib.dir}/${ejbsvc.ear}.jar">
+            <fileset dir="${work.dir.ejbsvc}">
+                <include name="**/*class" />
+                <include name="**/*java" />
+            </fileset>
+            <zipfileset dir="${src.dir}/ejbservice/etc/" prefix="META-INF/">
+                <include name="ejb-jar.xml" />
+            </zipfileset>
+            <zipfileset dir="${work.dir.ejbsvc}/wsdl" prefix="META-INF/wsdl">
+                <include name="*.wsdl" />
+                <include name="*.xsd" />
+            </zipfileset>
+        </jar>
+
+        <ear earfile="${FVT.build.installableApps.dir}/${ejbsvc.ear}.ear"
+             appxml="${src.dir}/ejbservice/etc/application.xml">
+            <fileset dir="${FVT.build.lib.dir}">
+                <include name="${ejbsvc.ear}.jar" />
+            </fileset>
+        </ear>
+    </target>
+
+    <!-- =================================
+          target: ejbrefchecker
+          
+          ejbrefchecker is actually both a client and a servier.
+          We use it to read the web services references that were
+          created by deploying servers 1 and 3.
+         =================================
+-->
+
+    <target name="ejbrefchecker"
+            depends="wsimport_ejbservice, wsimport_warservice, compile_ejbrefchecker,
+                           wsgen_ejbrefchecker, pkg_ejbrefchecker"
+            description="--> Compiles, wsgen, and packages ejbrefchecker" />
+
+    <!-- =================================
+          target: wsimport_ejbservice
+         =================================
+-->
+    <!-- need client artifacts from ejbservice for ejbrefchecker -->
+    <target name="wsimport_ejbservice"
+            depends="setenv"
+            description="--> Runs wsimport on ejbrefchecker">
+        <wsimport keep="true"
+                  verbose="${verbose.output}"
+                  extension="true"
+                  sourcedestdir="${work.dir.ejbrefchecker}"
+                  destdir="${work.dir.ejbrefchecker}"
+                  wsdl="${work.dir.ejbsvc}/wsdl/ReferenceSupplierService.wsdl"
+                  wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/jwsejb30-anno-wsr-ejbservice/ReferenceSupplierService?wsdl">
+        </wsimport>
+    </target>
+
+    <!-- =================================
+          target: wsimport_warservice
+         =================================
+-->
+    <!-- need client artifacts from warservice for ejbrefchecker -->
+    <target name="wsimport_warservice"
+            depends="setenv"
+            description="--> Runs wsimport on warservice">
+        <wsimport keep="true"
+                  verbose="${verbose.output}"
+                  extension="true"
+                  sourcedestdir="${work.dir.ejbrefchecker}"
+                  destdir="${work.dir.ejbrefchecker}"
+                  wsdl="${work.dir.warsvc}/wsdl/WebReferenceSupplierService.wsdl"
+                  wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/ReferenceSupplierService3/WebReferenceSupplierService?wsdl">
+        </wsimport>
+    </target>
+
+    <!-- =================================
+          target: compile_ejbrefchecker
+         =================================
+-->
+    <target name="compile_ejbrefchecker"
+            depends="setenv"
+            description="--> Compiles ejbrefchecker">
+        <javac compiler="modern" srcdir="${src.dir}/ejbrefchecker"
+               destdir="${work.dir.ejbrefchecker}"
+               deprecation="${deprecation}"
+               verbose="${verbose.output}"
+               debug="${debug}"
+               source="${build.tests.with.java.level}"
+               target="${build.tests.with.java.level}"
+               failonerror="${failonerror}">
+            <compilerarg line="-endorseddirs ${WAS.base.dir}/runtimes/endorsed"/>
+            <classpath>
+                <path refid="classpath" />
+                <pathelement location="${work.dir.ejbrefchecker}" />
+            </classpath>
+            <include name="**/*.java" />
+        </javac>
+    </target>
+
+    <!-- =================================
+          target: wsgen_ejbrefchecker
+         =================================
+-->
+    <target name="wsgen_ejbrefchecker"
+            depends="setenv"
+            description="--> Runs wsgen on ejbrefchecker">
+        <wsgen genwsdl="true"
+               keep="true"
+               verbose="${verbose.output}"
+               destdir="${work.dir.ejbrefchecker}"
+               resourcedestdir="${work.dir.ejbrefchecker}"
+               sei="jaxwsejb30.ejbapps.annotations.wsr.ejbrefchecker.ReferenceChecker">
+            <classpath>
+                <pathelement location="${work.dir.ejbrefchecker}" />
+                <path refid="classpath" />
+            </classpath>
+        </wsgen>
+    </target>
+
+    <!-- =================================
+          target: pkg_ejbrefchecker
+         =================================
+-->
+    <target name="pkg_ejbrefchecker"
+            depends="setenv"
+            description="--> Packages ejbrefchecker in an ear file">
+
+        <!-- Get the cells config info -->
+        <readCellConfig prefix="server1"
+                        key="defaultServer"
+                        verbose="${verbose.output}" />
+
+        <mkdir dir="${work.dir.ejbrefchecker}/wsdl" />
+
+        <!-- Move the wsdl and xsd because I can't seem to get an inline replacement for the url
+-->
+        <copy todir="${work.dir.ejbrefchecker}/wsdl">
+            <fileset dir="${work.dir.ejbrefchecker}">
+                <include name="ReferenceCheckerService.wsdl" />
+                <include name="ReferenceCheckerService_schema1.xsd" />
+            </fileset>
+        </copy>
+
+        <replace file="${work.dir.ejbrefchecker}/wsdl/ReferenceCheckerService.wsdl"
+                 value="http://${server1.hostName}:${server1.WC_defaulthost}/jwsejb30-anno-wsr-ejbrefchecker/ReferenceCheckerService">
+            <replacefilter token="REPLACE_WITH_ACTUAL_URL" />
+        </replace>
+
+        <jar jarfile="${FVT.build.lib.dir}/${ejbref.ear}.jar">
+            <fileset dir="${work.dir.ejbrefchecker}">
+                <include name="**/*class" />
+                <include name="**/*java" />
+            </fileset>
+            <zipfileset dir="${src.dir}/ejbrefchecker/etc/" prefix="META-INF/">
+                <include name="ejb-jar.xml" />
+            </zipfileset>
+            <zipfileset dir="${work.dir.ejbrefchecker}/wsdl"
+                        prefix="META-INF/wsdl">
+                <include name="*.wsdl" />
+                <include name="*.xsd" />
+            </zipfileset>
+        </jar>
+
+        <ear earfile="${FVT.build.installableApps.dir}/${ejbref.ear}.ear"
+             appxml="${src.dir}/ejbrefchecker/etc/application.xml">
+            <fileset dir="${FVT.build.lib.dir}">
+                <include name="${ejbref.ear}.jar" />
+            </fileset>
+        </ear>
+    </target>
+
+    <!-- =================================
+          target: warservice
+         =================================
+-->
+    <target name="warservice"
+            depends="compile_warservice, wsgen_warservice, pkg_warservice"
+            description="--> Compiles, wsgen, and packages warservice" />
+
+    <!-- =================================
+          target: compile_warservice
+         =================================
+-->
+    <target name="compile_warservice"
+            depends="setenv"
+            description="--> Compiles warservice">
+        <javac compiler="modern" srcdir="${src.dir}/warservice"
+               destdir="${work.dir.warsvc}"
+               deprecation="${deprecation}"
+               verbose="${verbose.output}"
+               debug="${debug}"
+               source="${build.tests.with.java.level}"
+               target="${build.tests.with.java.level}"
+               failonerror="${failonerror}">
+            <compilerarg line="-endorseddirs ${WAS.base.dir}/runtimes/endorsed"/>
+            <classpath >
+                <path refid="classpath"/>
+            </classpath>
+            <include name="**/*.java" />
+        </javac>
+    </target>
+
+    <!-- =================================
+              target: wsgen_warservice
+             =================================
+-->
+    <target name="wsgen_warservice"
+            depends="setenv"
+            description="--> Runs wsgen on warservice">
+        <wsgen genwsdl="true"
+               keep="true"
+               verbose="${verbose.output}"
+               destdir="${work.dir.warsvc}"
+               resourcedestdir="${work.dir.warsvc}"
+               sei="jaxwsejb30.ejbapps.annotations.wsr.warservice.WebReferenceSupplier">
+            <classpath>
+                <path refid="classpath" />
+                <pathelement location="${work.dir.ejbsvc}" />
+                <pathelement location="${work.dir.ejbrefchecker}" />
+                <pathelement location="${work.dir.warsvc}" />
+            </classpath>
+        </wsgen>
+    </target>
+
+    <!-- =================================
+          target: pkg_warservice
+         =================================
+-->
+    <target name="pkg_warservice"
+            depends="setenv"
+            description="--> Packages warservice in an ear file">
+
+        <!-- Get the cells config info -->
+        <readCellConfig prefix="server1"
+                        key="defaultServer"
+                        verbose="${verbose.output}" />
+
+        <mkdir dir="${work.dir.warsvc}/wsdl" />
+
+        <!-- Move the wsdl and xsd because I can't seem to get an inline replacement for the url
+-->
+        <copy todir="${work.dir.warsvc}/wsdl">
+            <fileset dir="${work.dir.warsvc}">
+                <include name="WebReferenceSupplierService.wsdl" />
+                <include name="WebReferenceSupplierService_schema1.xsd" />
+            </fileset>
+        </copy>
+
+        <replace file="${work.dir.warsvc}/wsdl/WebReferenceSupplierService.wsdl"
+                 value="http://${server1.hostName}:${server1.WC_defaulthost}/ReferenceSupplierService3/WebReferenceSupplierService">
+            <replacefilter token="REPLACE_WITH_ACTUAL_URL" />
+        </replace>
+
+        <war destfile="${FVT.build.lib.dir}/${warsvc.ear}.war"
+             webxml="${src.dir}/warservice/etc/web.xml">
+            <classes dir="${work.dir.warsvc}">
+                <exclude name="**/ejbservice/**" />
+                <exclude name="*.wsdl" />
+                <exclude name="*.xsd" />
+            </classes>
+            <zipfileset dir="${work.dir.warsvc}/wsdl/" prefix="WEB-INF/wsdl">
+                <include name="*.xsd" />
+                <include name="*.wsdl" />
+            </zipfileset>
+        </war>
+
+        <ear earfile="${FVT.build.installableApps.dir}/${warsvc.ear}.ear"
+             appxml="${src.dir}/warservice/etc/application.xml">
+            <fileset dir="${FVT.build.lib.dir}">
+                <include name="${warsvc.ear}.war" />
+            </fileset>
+        </ear>
+    </target>
+
+    <!-- ================================= 
+          target: preinstall              
+         =================================
+-->
+    <target name="preinstall"
+            depends="setenv"
+            description="--> performs ejbdeploy and endptenabler for the ear files">
+        <!--<endpointenable earfile="${FVT.build.installableApps.dir}/${ejbsvc.ear}.ear" />
+        <ejbdeploy inputEar="${FVT.build.installableApps.dir}/${ejbsvc.ear}.ear"
+                   workDir="${FVT.build.work.dir}"
+                   outputEar="${FVT.build.installableApps.dir}/${ejbsvc.ear}.temp.ear">
+        </ejbdeploy>
+        <move file="${FVT.build.installableApps.dir}/${ejbsvc.ear}.temp.ear"
+              tofile="${FVT.build.installableApps.dir}/${ejbsvc.ear}.ear"
+              overwrite="yes" />
+        <endpointenable earfile="${FVT.build.installableApps.dir}/${ejbref.ear}.ear" />
+        <ejbdeploy inputEar="${FVT.build.installableApps.dir}/${ejbref.ear}.ear"
+                   workDir="${FVT.build.work.dir}"
+                   outputEar="${FVT.build.installableApps.dir}/${ejbref.ear}.temp.ear">
+        </ejbdeploy>
+        <move file="${FVT.build.installableApps.dir}/${ejbref.ear}.temp.ear"
+              tofile="${FVT.build.installableApps.dir}/${ejbref.ear}.ear"
+              overwrite="yes" />-->
+    </target>
+
+
+    <!-- ================================= 
+          target: client              
+         =================================
+-->
+    <target name="client"
+            depends="wsimport_client, compile_client, pkg_client"
+            description="--> Compiles, imports, and packages client" />
+
+
+    <!-- ================================= 
+          target: compile_client              
+         =================================
+-->
+    <target name="compile_client"
+            depends="setenv"
+            description="--> Compiles the test client">
+        <javac compiler="modern" srcdir="${src.dir}/client"
+               destdir="${work.dir.client}"
+               deprecation="${deprecation}"
+               verbose="${verbose.output}"
+               debug="${debug}"
+               source="${build.tests.with.java.level}"
+               target="${build.tests.with.java.level}"
+               failonerror="${failonerror}">
+            <compilerarg line="-endorseddirs ${WAS.base.dir}/runtimes/endorsed"/>
+            <classpath>
+                <path refid="classpath" />
+                <pathelement path="${work.dir}/test" />
+            </classpath>
+            <include name="**/*.java" />
+        </javac>
+    </target>
+    <!-- ================================= 
+          target: wsimport_client              
+         =================================
+-->
+    <target name="wsimport_client"
+            depends="setenv"
+            description="--> Runs wsimport on services the client consumes">
+        <wsimport keep="true"
+                  verbose="${verbose.output}"
+                  extension="true"
+                  sourcedestdir="${work.dir.client}"
+                  destdir="${work.dir.client}"
+                  wsdl="${work.dir.ejbsvc}/wsdl/ReferenceSupplierService.wsdl"
+                  wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/jwsejb30-anno-wsr-ejbservice/ReferenceSupplierService?wsdl">
+        </wsimport>
+        <wsimport keep="true"
+                  verbose="${verbose.output}"
+                  extension="true"
+                  sourcedestdir="${work.dir.client}"
+                  destdir="${work.dir.client}"
+                  wsdl="${work.dir.ejbrefchecker}/wsdl/ReferenceCheckerService.wsdl"
+                  wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/jwsejb30-anno-wsr-ejbrefchecker/ReferenceCheckerService?wsdl">
+        </wsimport>
+        <wsimport keep="true"
+                  verbose="${verbose.output}"
+                  extension="true"
+                  sourcedestdir="${work.dir.client}"
+                  destdir="${work.dir.client}"
+                  wsdl="${work.dir.warsvc}/wsdl/WebReferenceSupplierService.wsdl"
+                  wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/ReferenceSupplierService3/WebReferenceSupplierService?wsdl">
+        </wsimport>
+    </target>
+
+    <!-- =================================
+          target: pkg_client
+         =================================
+-->
+    <target name="pkg_client"
+            depends="setenv"
+            description="--> Packages client1 in a jar file">
+        <delete file="${FVT.build.lib.dir}/${client.ear}.jar" />
+        <jar jarfile="${FVT.build.lib.dir}/${client.ear}.jar">
+            <fileset dir="${work.dir.client}">
+                <include name="**/*class" />
+                <include name="**/*java" />
+            </fileset>
+            <zipfileset dir="${src.dir}/client" prefix="${subpath}/client">
+                <include name="**/*java" />
+            </zipfileset>
+        </jar>
+    </target>
+
+    <!-- ================================= 
+              target: wsimport_test              
+             =================================
+-->
+    <target name="wsimport_test"
+            depends="setenv"
+            description="--> Runs wsimport on services the client consumes">
+        <wsimport keep="true"
+                  verbose="${verbose.output}"
+                  extension="true"
+                  sourcedestdir="${FVT.build.classes.dir}"
+                  destdir="${FVT.build.classes.dir}"
+                  wsdl="${work.dir.ejbsvc}/wsdl/ReferenceSupplierService.wsdl"
+                  wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/jwsejb30-anno-wsr-ejbservice/ReferenceSupplierService?wsdl">
+        </wsimport>
+        <wsimport keep="true"
+                  verbose="${verbose.output}"
+                  extension="true"
+                  sourcedestdir="${FVT.build.classes.dir}"
+                  destdir="${FVT.build.classes.dir}"
+                  wsdl="${work.dir.ejbrefchecker}/wsdl/ReferenceCheckerService.wsdl"
+                  wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/jwsejb30-anno-wsr-ejbrefchecker/ReferenceCheckerService?wsdl">
+        </wsimport>
+        <wsimport keep="true"
+                  verbose="${verbose.output}"
+                  extension="true"
+                  sourcedestdir="${FVT.build.classes.dir}"
+                  destdir="${FVT.build.classes.dir}"
+                  wsdl="${work.dir.warsvc}/wsdl/WebReferenceSupplierService.wsdl"
+                  wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/ReferenceSupplierService3/WebReferenceSupplierService?wsdl">
+        </wsimport>
+    </target>
+
+    <!-- ================================= 
+          target: test              
+         =================================
+-->
+    <target name="test"
+            depends="setenv, wsimport_test"
+            description="--> compiles the test class(es)">
+        <javac compiler="modern" srcdir="${src.dir}/test"
+               destdir="${FVT.build.classes.dir}"
+               deprecation="${deprecation}"
+               verbose="${verbose.output}"
+               debug="${debug}"
+               source="${build.tests.with.java.level}"
+               target="${build.tests.with.java.level}"
+               failonerror="${failonerror}">
+            <compilerarg line="-endorseddirs ${WAS.base.dir}/runtimes/endorsed"/>
+            <classpath>
+                <path refid="classpath" />
+                <pathelement path="${work.dir.test}" />
+            </classpath>
+            <include name="**/*.java" />
+        </javac>
+    </target>
+
+    <!-- ================================= 
+          target: install              
+         =================================
+-->
+    <target name="install"
+            depends="setenv, preinstall"
+            description="--> Installs the App">
+        <ant antfile="${src.dir}/installTest.xml" dir="${src.dir}">
+            <property name="install.mode" value="${rt.install.mode}" />
+        </ant>
+    </target>
+
+    <!-- ================================= 
+          target: uninstall              
+         =================================
+-->
+    <target name="uninstall"
+            depends="setenv"
+            description="--> Uninstalls the App">
+        <ant antfile="${src.dir}/uninstallTest.xml" dir="${src.dir}">
+            <property name="uninstall.mode" value="${rt.uninstall.mode}" />
+        </ant>
+    </target>
+</project>

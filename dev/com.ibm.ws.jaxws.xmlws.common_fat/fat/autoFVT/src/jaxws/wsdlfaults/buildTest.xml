@@ -1,0 +1,310 @@
+<?xml version="1.0"?>                     
+<!DOCTYPE project [
+        <!ENTITY instance SYSTEM "../../../instance.xml"><!-- file:34 -->
+        <!ENTITY properties SYSTEM "../../xmls/properties.xml"><!-- file:36 -->
+        <!ENTITY paths SYSTEM "../../xmls/path_refs.xml"><!-- file:31 -->
+        <!ENTITY targets SYSTEM "../../xmls/targets.xml"><!-- file:33 -->
+        <!ENTITY taskdefs SYSTEM "../../xmls/taskdefs.xml"><!-- file:34 -->
+        <!ENTITY taskdefs_post_compile SYSTEM "../../xmls/taskdefs_post_compile.xml"><!-- file:47 -->
+]>
+
+
+<!--
+  Description: This is the build file for the JAX-WS wsdlfaults test.
+
+  Change History:
+
+  Date        UserId         Feature/Defect    Description
+  08/28/2006  mzheng         LIDB3296-46.01    New File
+  04/16/2007  mzheng         432698            Fix ND mixed cell build problem
+-->
+
+
+<project name="jaxws-wsdlfaults" default="buildall" basedir=".">
+     
+  <!-- These are XML entity refs.  Basically these statements cause the
+       files declared in the DOCTYPE at the top of the file to be imported
+       into this build file.
+  -->   
+  &instance;
+  &properties;
+  &paths;
+  &targets;
+  &taskdefs;
+  &taskdefs_post_compile;
+
+     
+  <!-- This property should match the package name of the test class.  The
+       property is used in the targets.xml file when running any of the
+       component-run* targets for running a single test case class.
+  -->                     
+  <property name="componentName" value="jaxws/wsdlfaults/wsfvt/test" />
+  <property name="testDir" value="jaxws/wsdlfaults" />
+  <property name="testName" value="jaxws-wsdlfaults" />
+
+  <property name="wsdl.file1" value="FaultsService.wsdl" />
+  <property name="serviceName1" value="FaultsService" />
+
+  <property name="wsdl.file2" value="Inventory.wsdl" />
+  <property name="serviceName2" value="InventoryService" />
+  <property name="server.binding2" value="etc/inventory/custom-server.xml" />
+  
+  <property name="keep" value="true" />
+  <property name="debug" value="false" />
+  <property name="verbose" value="false" />
+
+  <!-- This path id is used in the targets.xml file when running any of
+       the component-run* targets.  This allows setting the classpath 
+       for an individual test.
+  -->
+  <path id="componentClasspath">
+    <path refid="thinclientclasspath"/>
+  </path>
+
+     
+  <!-- The init target will initialize any directories, properties, etc.
+       that are needed for the test.
+  -->    
+  <target name="init" depends="setenv">
+    <antcall target="component-init"/>
+    <mkdir dir="${FVT.build.work.dir}/${testDir}" />
+    <mkdir dir="${FVT.build.classes.dir}/${testDir}" />
+  </target>                       
+
+     
+  <!-- The clean target will clean any files, classes, or directories
+       so that a new copy of the test can be built and run.
+  -->                       
+  <target name="clean" depends="setenv">
+    <delete dir="${FVT.build.classes.dir}/${testDir}" />
+    <delete dir="${FVT.build.work.dir}/${testDir}" />
+    <delete file="${FVT.build.lib.dir}/${serviceName1}.war"/>
+    <delete file="${FVT.build.installableApps.dir}/${serviceName1}.ear"/>
+    <delete file="${FVT.build.lib.dir}/${serviceName2}.war"/>
+    <delete file="${FVT.build.installableApps.dir}/${serviceName2}.ear"/>
+  </target>
+
+  
+  <!-- The buildall target will execute all of the targets necessary
+       before installing the test into WebSphere.
+  -->
+  <target name="buildall" depends="setenv, clean, init, server, client, test, preinstall"/>  
+     
+  
+  <!-- The server target will build anything necessary for the server
+       piece of the test.  Typically this target builds the server side
+       EAR.
+  -->                               
+  <target name="server" depends="setenv">
+    <readCellConfig prefix="server1" key="defaultServer" verbose="false"/>
+
+    <copy todir="${FVT.build.work.dir}/${testDir}" overwrite="yes">
+      <fileset dir="${basedir}">
+        <include name="**/etc/custom*.xml"/>
+        <include name="**/etc/*.wsdl"/>
+        <include name="**/etc/web.xml"/>
+        <include name="**/etc/application.xml" />
+        <include name="**/etc/inventory/*" />
+        <include name="**/wsfvt/server/*.java"/>
+        <include name="**/wsfvt/server/inventory/*.java"/>
+      </fileset>
+      <filterset>
+        <filter token="myHostTag" value="${server1.hostName}" />
+        <filter token="myPortTag" value="${server1.WC_defaulthost}" />
+      </filterset>
+    </copy>
+
+    <wsimport 
+      keep="${keep}"
+      verbose="${verbose}"
+      debug="${debug}"
+      destdir="${FVT.build.classes.dir}"
+      sourcedestdir="${FVT.build.work.dir}"
+      package="jaxws.wsdlfaults.wsfvt.server"
+      wsdl="${FVT.build.work.dir}/${testDir}/etc/${wsdl.file1}"
+      wsdlLocation="WEB-INF/wsdl/${wsdl.file1}" >
+    </wsimport>
+
+    <wsimport fork="true"
+      keep="${keep}"
+      verbose="${verbose}"
+      debug="${debug}"
+      destdir="${FVT.build.classes.dir}"
+      sourcedestdir="${FVT.build.work.dir}"
+      package="jaxws.wsdlfaults.wsfvt.server.inventory"
+      wsdl="${FVT.build.work.dir}/${testDir}/etc/inventory/${wsdl.file2}"
+      wsdlLocation="WEB-INF/wsdl/${wsdl.file2}" >
+      <binding dir="${FVT.build.work.dir}/${testDir}" includes="${server.binding2}"/>
+      <jvmarg line="-Djava.endorsed.dirs=${FVT.base.dir}/common/jars/endorsed"/>
+    </wsimport>
+
+    <javac compiler="modern" srcdir="${FVT.build.work.dir}/${testDir}" fork="true"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+      <include name="**/server/*.java"/>
+      <include name="**/server/inventory/*.java"/>
+      <compilerarg value="-J-Xbootclasspath/p:${ref.to.22api}"/>
+    </javac>
+      
+    <war destfile="${FVT.build.lib.dir}/${serviceName1}.war"
+         webxml="${FVT.build.work.dir}/${testDir}/etc/web.xml">
+      
+      <zipfileset
+        dir="${FVT.build.work.dir}/${testDir}/etc"
+        includes="*.wsdl"
+        prefix="WEB-INF/wsdl"/>
+
+      <classes dir="${FVT.build.classes.dir}">
+        <include name="${testDir}/wsfvt/server/*.class"/>
+      </classes>
+    </war>
+
+    <ear earfile="${FVT.build.installableApps.dir}/${serviceName1}.ear" 
+         appxml="${FVT.build.work.dir}/${testDir}/etc/application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="${serviceName1}.war"/>
+    </ear>
+
+    <war destfile="${FVT.build.lib.dir}/${serviceName2}.war"
+         webxml="${FVT.build.work.dir}/${testDir}/etc/inventory/web.xml">
+      
+      <zipfileset
+        dir="${FVT.build.work.dir}/${testDir}/etc/inventory"
+        includes="*.wsdl"
+        prefix="WEB-INF/wsdl"/>
+
+      <classes dir="${FVT.build.classes.dir}">
+        <include name="${testDir}/wsfvt/server/inventory/*.*"/>
+      </classes>
+    </war>
+
+    <ear earfile="${FVT.build.installableApps.dir}/${serviceName2}.ear" 
+         appxml="${FVT.build.work.dir}/${testDir}/etc/inventory/application.xml">
+      <fileset dir="${FVT.build.lib.dir}" includes="${serviceName2}.war"/>
+    </ear>
+  </target>
+
+               
+  <!-- The client target will build anything necessary for the client
+       piece of the test.  This could just be compiling the client class
+       or in the case of a managed client, building a client side EAR
+       file.
+  -->                               
+  <target name="client" depends="setenv">
+    <readCellConfig prefix="server1" key="defaultServer" verbose="false"/>
+
+    <copy todir="${FVT.build.work.dir}/${testDir}" overwrite="yes">
+      <fileset dir="${basedir}">
+        <include name="**/etc/custom*.xml"/>
+        <include name="**/etc/*.wsdl"/>
+        <include name="**/etc/inventory/custom*.xml"/>
+        <include name="**/etc/inventory/*.wsdl"/>
+      </fileset>
+      <filterset>
+        <filter token="myHostTag" value="${server1.hostName}" />
+        <filter token="myPortTag" value="${server1.WC_defaulthost}" />
+      </filterset>
+    </copy>
+
+    <wsimport fork="true"
+      keep="${keep}"
+      verbose="${verbose}"
+      debug="${debug}"
+      destdir="${FVT.build.classes.dir}"
+      sourcedestdir="${FVT.build.work.dir}"
+      package="jaxws.wsdlfaults.wsfvt.client"
+      wsdl="${FVT.build.work.dir}/${testDir}/etc/${wsdl.file1}"
+      wsdlLocation="http://${server1.hostName}:${server1.WC_defaulthost}/${testName}1/${serviceName1}?wsdl" > 
+      <jvmarg line="-Djava.endorsed.dirs=${FVT.base.dir}/common/jars/endorsed"/>
+    </wsimport>
+
+    <wsimport fork="true"
+      keep="${keep}"
+      verbose="${verbose}"
+      debug="${debug}"
+      destdir="${FVT.build.classes.dir}"
+      sourcedestdir="${FVT.build.work.dir}"
+      package="jaxws.wsdlfaults.wsfvt.client.inventory"
+      wsdl="${FVT.build.work.dir}/${testDir}/etc/inventory/${wsdl.file2}"
+      wsdlLocation="http://${server1.hostName}:${server1.WC_defaulthost}/${testName}2/${serviceName2}?wsdl" > 
+      <jvmarg line="-Djava.endorsed.dirs=${FVT.base.dir}/common/jars/endorsed"/>
+    </wsimport>
+
+    <javac compiler="modern" srcdir="${FVT.build.work.dir}/${testDir}" fork="true"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+      <include name="**/client/*.java"/>
+      <include name="**/client/inventory/*.java"/>
+      <compilerarg value="-J-Xbootclasspath/p:${ref.to.22api}"/>
+    </javac>
+      
+  </target>
+
+                            
+  <!-- The test target will build anything necessary for the test
+       piece of the test.  Often this will just include compiling the
+       the JUnit test case file.
+  -->                               
+  <target name="test" depends="setenv, client">
+  
+    <copy todir="${FVT.build.work.dir}/${testDir}" overwrite="yes">
+      <fileset dir="${basedir}">
+        <include name="**/wsfvt/test/*.java"/>
+      </fileset>
+    </copy>
+
+    <javac compiler="modern" srcdir="${FVT.build.work.dir}/${testDir}"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="false"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+      <classpath refid="classpath"/>
+      <include name="**/test/*.java"/>
+    </javac>
+      
+  </target>         
+  
+             
+  <!-- The preinstall target will perform any tasks necessary before the
+       application is installed into WebSphere.  This could include running
+       ejbdeploy or endptenabler for an EAR that contains an EJB.
+  -->                               
+  <target name="preinstall" depends="setenv">
+  </target>         
+  
+  
+  <!-- The install target will install the server side piece of the test
+       into WebSphere.  This target calls the installTest.xml file for
+       the test.
+  -->           
+  <target name="install" depends="setenv">
+    <ant antfile="${basedir}/installTest.xml"
+         dir="${basedir}">
+      <property name="install.mode" value="${rt.install.mode}"/>
+    </ant>
+  </target>
+  
+    
+  <!-- The uninstall target will uninstall the server side piece of the test
+       from WebSphere.  This target calls the uninstallTest.xml file for
+       the test.
+  -->           
+  <target name="uninstall" depends="setenv">
+    <ant antfile="${basedir}/uninstallTest.xml"
+         dir="${basedir}">
+      <property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+    </ant>
+  </target>
+ 
+</project>

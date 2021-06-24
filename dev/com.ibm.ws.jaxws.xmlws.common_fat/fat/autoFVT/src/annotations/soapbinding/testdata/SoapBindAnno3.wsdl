@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><definitions xmlns:tns="http://testdata.soapbinding.annotations/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://testdata.soapbinding.annotations/" name="SoapBindAnno3ImplService">
+<!-- This is a commment.  It should be in the wsdl delivered by the server as well -->
+  <types>
+   <!-- used in tooling test, do not modify for runtime -->
+   <!-- embedded from: C:\eclipse\WFVT\ws\code\websvcs.fvt\build\work\SOAPBindingTestCase\j2w/SoapBindAnno2Service_schema1.xsd-->
+     <xs:schema version="1.0" targetNamespace="http://testdata.soapbinding.annotations/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+       <xs:element name="echodlb" type="xs:string"/>
+
+       <xs:element name="echodlbResponse" type="xs:string"/>
+
+       <xs:element name="echodlw" type="ns1:echodlw" xmlns:ns1="http://testdata.soapbinding.annotations/"/>
+
+       <xs:complexType name="echodlw">
+         <xs:sequence>
+           <xs:element name="arg0" type="xs:string" minOccurs="0"/>
+         </xs:sequence>
+       </xs:complexType>
+
+       <xs:element name="echodlwResponse" type="ns2:echodlwResponse" xmlns:ns2="http://testdata.soapbinding.annotations/"/>
+
+       <xs:complexType name="echodlwResponse">
+         <xs:sequence>
+           <xs:element name="return" type="xs:string" minOccurs="0"/>
+         </xs:sequence>
+       </xs:complexType>
+     </xs:schema>
+  </types>
+  <message name="echodlw">
+    <part element="tns:echodlw" name="parameters"></part>
+  </message>
+  <message name="echodlwResponse">
+    <part element="tns:echodlwResponse" name="parameters"></part>
+  </message>
+  <message name="echodlb">
+    <part element="tns:echodlb" name="echodlb"></part>
+  </message>
+  <message name="echodlbResponse">
+    <part element="tns:echodlbResponse" name="echodlbResponse"></part>
+  </message>
+  <portType name="SoapBindAnno3">
+    <operation name="echodlw">
+      <input message="tns:echodlw"></input>
+      <output message="tns:echodlwResponse"></output>
+    </operation>
+    <operation name="echodlb">
+      <input message="tns:echodlb"></input>
+      <output message="tns:echodlbResponse"></output>
+    </operation>
+  </portType>
+  <binding type="tns:SoapBindAnno3" name="SoapBindAnno3ImplPortBinding">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+    <operation name="echodlw">
+      <soap:operation soapAction=""></soap:operation>
+      <input>
+        <soap:body use="literal"></soap:body>
+      </input>
+      <output>
+        <soap:body use="literal"></soap:body>
+      </output>
+    </operation>
+    <operation name="echodlb">
+      <soap:operation soapAction=""></soap:operation>
+      <input>
+        <soap:body use="literal"></soap:body>
+      </input>
+      <output>
+        <soap:body use="literal"></soap:body>
+      </output>
+    </operation>
+  </binding>
+  <service name="SoapBindAnno3ImplService">
+    <port binding="tns:SoapBindAnno3ImplPortBinding" name="SoapBindAnno3ImplPort">
+      <soap:address location="tbd"></soap:address>
+    </port>
+  </service>
+</definitions>

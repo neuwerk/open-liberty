@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://fieldinjectionserver.injection.resource.annotations/" 
+	name="FieldInjectionImplService" 
+	xmlns:tns="http://fieldinjectionserver.injection.resource.annotations/" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+	xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://fieldinjectionserver.injection.resource.annotations/" schemaLocation="FieldInjectionImplService_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="getServletContextName">
+    <part name="parameters" element="tns:getServletContextName"/>
+  </message>
+  <message name="getServletContextNameResponse">
+    <part name="parameters" element="tns:getServletContextNameResponse"/>
+  </message>
+  <message name="isPCvisited">
+    <part name="parameters" element="tns:isPCvisited"/>
+  </message>
+  <message name="isPCvisitedResponse">
+    <part name="parameters" element="tns:isPCvisitedResponse"/>
+  </message>
+  <portType name="FieldInjectionImpl">
+    <operation name="getServletContextName">
+      <input message="tns:getServletContextName"/>
+      <output message="tns:getServletContextNameResponse"/>
+    </operation>
+    <operation name="isPCvisited">
+      <input message="tns:isPCvisited"/>
+      <output message="tns:isPCvisitedResponse"/>
+    </operation>
+  </portType>
+  <binding name="FieldInjectionImplPortBinding" type="tns:FieldInjectionImpl">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="getServletContextName">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="isPCvisited">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="FieldInjectionImplService">
+    <port name="FieldInjectionImplPort" binding="tns:FieldInjectionImplPortBinding">
+      <soap:address location="http://@REPLACE_WITH_HOST_NAME@:@REPLACE_WITH_PORT_NUM@/fieldinjection/services/FieldInjectionImplService"/>
+    </port>
+  </service>
+</definitions>
+

@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+    <!ENTITY instance SYSTEM "../../../../instance.xml"><!-- file:30 -->
+<!ENTITY properties SYSTEM "../../../xmls/properties.xml"><!-- file:28 -->
+<!ENTITY paths SYSTEM "../../../xmls/path_refs.xml"><!-- file:23 -->
+<!ENTITY targets SYSTEM "../../../xmls/targets.xml"><!-- file:25 -->
+<!ENTITY taskdefs SYSTEM "../../../xmls/taskdefs.xml"><!-- file:26 -->
+<!ENTITY taskdefs_post_compile SYSTEM "../../../xmls/taskdefs_post_compile.xml"><!-- file:39 -->
+]>
+
+<!-- 1.2, 8/3/07
+	
+	Description: Build file for the webfault/multipleexceptions test.
+	
+	Date        Author       Feature/Defect          Description
+	08/14/2006  euzunca      LIDB3296.31.01          new File
+	08/24/2006  euzunca      LIDB3296.31.01          ported to WAS
+-->
+
+<project name="build" default="buildall" basedir=".">
+
+
+	<!-- These are XML entity refs.  Basically these statements cause the
+		files declared in the DOCTYPE at the top of the file to be imported
+		into this build file. -->
+	  &instance;
+	  &properties;
+	  &paths;
+	  &targets;
+	  &taskdefs;
+	  &taskdefs_post_compile;
+
+	<property name="componentName" value="annotations/webfault/multipleexceptions/test" />
+	<path id="componentClasspath">
+		<path refid="thinclientclasspath" />
+	</path>
+
+	
+	<!-- only compile the support classes if not already done -->
+	<uptodate property="supportBuild.notRequired" targetfile="${FVT.base.dir}/build/classes/annotations/support/Support.class">
+		<srcfiles dir="${FVT.base.dir}/src/annotations/support" includes="**/*.java" />
+	</uptodate>
+			
+	<target name="buildall" depends="setenv, clean, init, compileSupport, server, test, preinstall"/>
+
+	<target name="clean" depends="setenv">
+		<delete dir="${FVT.build.classes.dir}/annotations/webfault/multipleexceptions" />
+		<delete dir="${FVT.build.work.dir}/annotations/webfault/multipleexceptions" />
+		<delete dir="${FVT.build.lib.dir}/MultipleExceptionsService.war" />
+	</target>
+
+	<target name="init" depends="setenv">
+		<antcall target="component-init" />
+		<mkdir dir="${FVT.build.work.dir}/annotations/webfault/multipleexceptions" />
+	</target>
+
+	<!-- compile annotations.support package-->
+	<target name="compileSupport" depends="setenv" unless="supportBuild.notRequired">
+		<javac compiler="modern" srcdir="${FVT.base.dir}/src/annotations/support" destdir="${FVT.build.classes.dir}" deprecation="${deprecation}" debug="${debug}" source="${build.tests.with.java.level}" target="${build.tests.with.java.level}" failonerror="${failonerror}">
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+
+	<target name="server" depends="setenv">
+		<javac compiler="modern"
+			srcdir="${FVT.base.dir}/src/annotations/webfault/multipleexceptions"
+			destdir="${FVT.build.classes.dir}" 
+			deprecation="${deprecation}"
+			debug="${debug}"
+			source="${build.tests.with.java.level}"
+			target="${build.tests.with.java.level}"
+			failonerror="${failonerror}">
+			<classpath refid="thinclientclasspath" />
+			<include name="**/server*/**/*.java" />
+		</javac>
+
+		<mkdir dir="${FVT.build.work.dir}/annotations/webfault/multipleexceptions/server"/>
+		<mkdir dir="${FVT.build.work.dir}/annotations/webfault/multipleexceptions/server1"/>
+
+		<wsgen genwsdl="true" keep="true" verbose="true" fork="true"
+			destdir="${FVT.build.work.dir}"
+			resourcedestdir="${FVT.build.work.dir}/annotations/webfault/multipleexceptions/server"
+			sei="annotations.webfault.multipleexceptions.server.MultipleExceptionsImpl">
+			<classpath refid="classpath" />
+            <jvmarg line="-Djava.endorsed.dirs=${FVT.base.dir}/common/jars/endorsed"/>
+		</wsgen>
+
+		<wsgen genwsdl="true" keep="true" verbose="true" fork="true"
+			destdir="${FVT.build.work.dir}"
+			resourcedestdir="${FVT.build.work.dir}/annotations/webfault/multipleexceptions/server1"
+			sei="annotations.webfault.multipleexceptions.server1.MultipleExceptionsImpl">
+			<classpath refid="classpath" />
+            <jvmarg line="-Djava.endorsed.dirs=${FVT.base.dir}/common/jars/endorsed"/>
+		</wsgen>
+	</target>
+
+	<target name="test" depends="setenv">
+		<javac compiler="modern"
+			srcdir="${FVT.base.dir}/src/annotations/webfault/multipleexceptions"
+			includes="**/test/*.java"
+			destdir="${FVT.build.classes.dir}"
+			deprecation="${deprecation}"
+			debug="${debug}"
+		    source="${build.tests.with.java.level}"
+		    target="${build.tests.with.java.level}"
+			failonerror="${failonerror}">
+			<classpath refid="thinclientclasspath" />
+		</javac>
+	</target>
+
+	<target name="preinstall" depends="setenv">
+	</target>
+
+</project>
+
+
+
+
+

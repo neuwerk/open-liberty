@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+
+<!--
+    %I, 6/30/09
+    
+    Change History:
+    Date       UserId              Feature/Defect          Description
+    ****************************************************************************
+    06/29/2009 samerrel            552420                  New File
+    
+-->
+
+<project default="install" basedir=".">
+    <import file="../../xmls/common_imports.xml" />
+    <import file="buildTest.xml" />
+
+    <target name="install" depends="setenv">
+        <InstallApp earName="${hellowar}.ear"
+                    appName="${hellowar}"
+                    localInstall="${conn.type}"
+                    useDefaultBindings="true"
+                    installRootLocation="${FVT.build.installableApps.dir}"
+                    installMode="${install.mode}"
+                    fvtRootLocation="${FVT.base.dir}">
+        </InstallApp>
+        <InstallApp earName="${helloejb}.ear"
+                    appName="${helloejb}"
+                    localInstall="${conn.type}"
+                    useDefaultBindings="true"
+                    installRootLocation="${FVT.build.installableApps.dir}"
+                    installMode="${install.mode}"
+                    fvtRootLocation="${FVT.base.dir}">
+        </InstallApp>
+        <InstallApp earName="${hellowarclient}.ear"
+                    appName="${hellowarclient}"
+                    localInstall="${conn.type}"
+                    useDefaultBindings="true"
+                    installRootLocation="${FVT.build.installableApps.dir}"
+                    installMode="${install.mode}"
+                    fvtRootLocation="${FVT.base.dir}">
+        </InstallApp>
+        <InstallApp earName="${helloejbclient}.ear"
+                    appName="${helloejbclient}"
+                    localInstall="${conn.type}"
+                    useDefaultBindings="true"
+                    installRootLocation="${FVT.build.installableApps.dir}"
+                    installMode="${install.mode}"
+                    fvtRootLocation="${FVT.base.dir}">
+        </InstallApp>
+    </target>
+</project>

@@ -1,0 +1,49 @@
+<?xml version="1.0"?>                     
+<!DOCTYPE project [
+        <!ENTITY instance SYSTEM "../../../instance.xml"><!-- file:34 -->
+        <!ENTITY properties SYSTEM "../../xmls/properties.xml"><!-- file:36 -->
+        <!ENTITY targets SYSTEM "../../xmls/targets.xml"><!-- file:33 -->
+        <!ENTITY taskdefs SYSTEM "../../xmls/taskdefs.xml"><!-- file:34 -->
+        <!ENTITY taskdefs_post_compile SYSTEM "../../xmls/taskdefs_post_compile.xml"><!-- file:47 -->
+        <!ENTITY path_refs SYSTEM "../../xmls/path_refs.xml"><!-- file:35 -->
+]>
+
+<!--
+   1.1, 07/20/06
+
+   Description: This is the uninstall file for the JAX-WS clienthandlers test.
+
+   Change History:
+   Date        UserId         Feature/Defect          Description
+   07/20/2006  mzheng                                 New File
+-->
+
+<project default="uninstall" basedir=".">
+   
+  <!-- These are XML entity refs.  Basically these statements cause the
+       files declared in the DOCTYPE at the top of the file to be imported
+       into this build file.
+  -->   
+  &instance;
+  &properties;
+  &path_refs;
+  &taskdefs;
+  &taskdefs_post_compile;
+  &targets;
+
+  <property name="testName" value="jaxws-handlerdeploy" />
+
+  <!-- The uninstall target will uninstall the EAR or WAR file from
+       WebSphere.
+  -->
+  <target name="uninstall" depends="setenv">
+   
+    <UninstallApp appName="${testName}"
+                  fvtRootLocation="${FVT.base.dir}"
+                  uninstallMode="${uninstall.mode}"
+                  localInstall="${conn.type}">
+    </UninstallApp>
+
+  </target>
+  
+</project>

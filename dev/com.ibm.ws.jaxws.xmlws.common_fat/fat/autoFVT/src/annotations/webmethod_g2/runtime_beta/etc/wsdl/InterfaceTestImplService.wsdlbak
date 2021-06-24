@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://server.runtime_beta.webmethod_g2.annotations/" name="InterfaceTestImplService" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://server.runtime_beta.webmethod_g2.annotations/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://server.runtime_beta.webmethod_g2.annotations/" schemaLocation="InterfaceTestImplService_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="methodOne">
+    <part name="parameters" element="tns:methodOne"/>
+  </message>
+  <message name="methodOneResponse">
+    <part name="parameters" element="tns:methodOneResponse"/>
+  </message>
+  <message name="methodTwo">
+    <part name="parameters" element="tns:methodTwo"/>
+  </message>
+  <message name="methodTwoResponse">
+    <part name="parameters" element="tns:methodTwoResponse"/>
+  </message>
+  <portType name="InterfaceTest">
+    <operation name="methodOne">
+      <input message="tns:methodOne"/>
+      <output message="tns:methodOneResponse"/>
+    </operation>
+    <operation name="methodTwo">
+      <input message="tns:methodTwo"/>
+      <output message="tns:methodTwoResponse"/>
+    </operation>
+  </portType>
+  <binding name="InterfaceTestImplPortBinding" type="tns:InterfaceTest">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="methodOne">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="methodTwo">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="InterfaceTestImplService">
+    <port name="InterfaceTestImplPort" binding="tns:InterfaceTestImplPortBinding">
+      <soap:address location="REPLACE_WITH_ACTUAL_URL"/>
+    </port>
+  </service>
+</definitions>
+

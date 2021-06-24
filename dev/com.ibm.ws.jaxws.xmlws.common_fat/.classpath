@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry combineaccessrules="false" kind="src" path="/fattest.simplicity"/>
+	<classpathentry kind="lib" path="fat/autoFVT/common/jars/websvcs.fvt.framework.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.ibm.ws.org.apache.ant"/>
+	<classpathentry kind="lib" path="/ant_build/lib/junit.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+</classpath>

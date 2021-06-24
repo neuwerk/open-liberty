@@ -1,0 +1,28 @@
+<?xml version="1.0"?>                     
+
+<!-- 
+  Date        Author       Feature/Defect          Description
+
+-->
+
+<project default="install" basedir=".">
+	
+    <import file="../../../xmls/common_imports.xml" />
+
+  <!-- The install target will install the EAR or WAR file into WebSphere.
+  -->
+  <target name="install" depends="setenv">
+   <echo message="Installing nullprovider.ear ..." />
+    <InstallApp earName="nullprovider.ear"
+                appName="jaxws.provider.nullreturn"
+                localInstall="${conn.type}"
+                useDefaultBindings="true"
+                installRootLocation="${FVT.build.installableApps.dir}"
+                installMode="${install.mode}"
+                fvtRootLocation="${FVT.base.dir}">
+    </InstallApp>
+
+  </target>
+  
+</project>
+

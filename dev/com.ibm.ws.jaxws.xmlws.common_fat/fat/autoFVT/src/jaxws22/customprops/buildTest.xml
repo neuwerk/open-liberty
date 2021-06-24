@@ -1,0 +1,358 @@
+<?xml version="1.0"?>                     
+<!DOCTYPE project [
+		<!ENTITY instance SYSTEM "../../../instance.xml"><!-- file:28 -->
+		<!ENTITY properties SYSTEM "../../xmls/properties.xml"><!-- file:30 -->
+		<!ENTITY paths SYSTEM "../../xmls/path_refs.xml"><!-- file:25 -->
+		<!ENTITY targets SYSTEM "../../xmls/targets.xml"><!-- file:27 -->
+		<!ENTITY taskdefs SYSTEM "../../xmls/taskdefs.xml"><!-- file:28 -->
+		<!ENTITY taskdefs_post_compile SYSTEM "../../xmls/taskdefs_post_compile.xml"><!-- file:41 -->
+]>
+
+<!--   1.1, 12/15/10
+
+     Description: Build file for the custom properties in V8
+     
+     Date        Author       Feature/Defect            Description
+     12/07/2010  jtnguyen     F743-23362                new file
+-->
+
+<project name="build" default="buildall" basedir=".">
+
+     
+  <!-- These are XML entity refs.  Basically these statements cause the
+       files declared in the DOCTYPE at the top of the file to be imported
+       into this build file.
+  -->   
+  &instance;
+  &properties;
+  &paths;
+  &targets;
+  &taskdefs;
+  &taskdefs_post_compile;
+  
+     
+  <!-- This property should match the package name of the test class.  The
+       property is used in the targets.xml file when running any of the
+       component-run* targets for running a single test case class.
+  -->                     
+  <property name="componentName" value="jaxws22/customprops/wsfvt/test"/>
+
+     
+  <!-- This path id is used in the targets.xml file when running any of
+       the component-run* targets.  This allows setting the classpath 
+       for an individual test.
+  -->
+  <path id="componentClasspath">
+    <path refid="thinclientclasspath"/>
+    
+    <!-- added to classpath location of client side's META_INF -->
+    <pathelement location="${FVT.build.classes.dir}/jaxws22/customprops/wsfvt/test"/>
+    
+    
+  </path>
+
+     
+     
+  <!-- The init target will initialize any directories, properties, etc.
+       that are needed for the test.
+  -->    
+  <target name="init" depends="setenv">
+    <antcall target="component-init"/>
+	<mkdir dir="${FVT.build.work.dir}/jaxws22/customprops"/>
+  </target>                       
+  
+     
+  <!-- The clean target will clean any files, classes, or directories
+       so that a new copy of the test can be built and run.
+  -->                       
+  <target name="clean" depends="setenv">  
+    
+    <delete dir="${FVT.build.classes.dir}/jaxws22/customprops"/>
+	<delete dir="${FVT.build.work.dir}/jaxws22/customprops"/>
+	<delete dir="${FVT.build.installableApps.dir}/customprops"/>
+    <delete file="${FVT.build.lib.dir}/CustomProps.war"/>
+  </target>
+  
+                                                  
+  <!-- The buildall target will execute all of the targets necessary
+       before installing the test into WebSphere.
+  -->                                                                                      
+  <target name="buildall" depends="setenv, clean, init, server, client, test, preinstall"/> 
+
+     
+  
+  <!-- The server target will build anything necessary for the server
+       piece of the test.  Typically this target builds the server side
+       EAR.
+  -->                               
+  <target name="server" depends="setenv">
+
+    
+	<!-- Build the WAR files
+    -->
+
+	<echo message="Compiling server code..."/>
+    <javac compiler="modern" srcdir="${FVT.base.dir}/src/jaxws22/customprops/wsfvt/server"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+	  <include name="*.java"/>
+    </javac>
+	 
+
+    
+	<war warfile="${FVT.build.lib.dir}/CustomProps.war" 
+		webxml="${FVT.base.dir}/src/jaxws22/customprops/etc/dd/web.xml">
+		<webinf dir="${FVT.base.dir}/src/jaxws22/customprops/etc">
+			<include name="wsdl/CustomPropsService.wsdl"/>
+		</webinf>
+		<classes dir="${FVT.build.classes.dir}">
+			<include name="jaxws22/customprops/wsfvt/server/CustomProps.class"/>
+	    </classes>
+	</war>
+
+
+    <!-- copy server's binding files to work directory and modify them - for server/CustomProps -->
+    
+    
+    <!-- reads all the cell variables into ant properties  --> 
+    <readCellConfig prefix="root" key="defaultServer" verbose="false"/>
+	<mkdir dir="${FVT.build.work.dir}/jaxws22/customprops/server/CustomProps/META-INF/MyBinding/PolicyTypes/WSSecurity"/>
+    
+    <!-- modify bindings.xml -->
+	<copy todir="${FVT.build.work.dir}/jaxws22/customprops/server/CustomProps/META-INF/MyBinding/PolicyTypes/WSSecurity" overwrite="yes">
+		<fileset dir="${FVT.base.dir}/src/jaxws22/customprops/wsfvt/server/CustomProps/META-INF/MyBinding/PolicyTypes/WSSecurity">
+           <include name="bindings.xml"/>
+		</fileset>
+      <filterset id="replace.filter.set1">
+        <filter token="USER_INSTALL_ROOT" value="${root.profileDir}" />
+      </filterset>
+	</copy>
+    
+    <!-- copy other files -->
+	<copy todir="${FVT.build.work.dir}/jaxws22/customprops/server/CustomProps/META-INF/MyBinding" overwrite="yes">
+		<fileset dir="${FVT.base.dir}/src/jaxws22/customprops/wsfvt/server/CustomProps/META-INF/MyBinding">
+           <include name="bindingDefinition.xml"/>           
+           <include name="provider.txt"/>
+		</fileset>
+	</copy>
+
+	<copy todir="${FVT.build.work.dir}/jaxws22/customprops/server/CustomProps/META-INF" overwrite="yes">
+		<fileset dir="${FVT.base.dir}/src/jaxws22/customprops/wsfvt/server/CustomProps/META-INF">
+           <include name="policyAttachments.xml"/>           
+		</fileset>
+	</copy>
+
+
+    <!-- Build the EAR files -->
+        
+    <!-- Create CustomProps ear file - it has a WAR file and binding/policy set-->
+    
+	<mkdir dir="${FVT.build.installableApps.dir}"/>    
+    
+	<ear earfile="${FVT.build.installableApps.dir}/CustomProps.ear" 
+		appxml="${FVT.base.dir}/src/jaxws22/customprops/etc/dd/application.xml">
+      <fileset dir="${FVT.build.lib.dir}">
+        <include name="CustomProps.war"/>
+      </fileset>            
+            
+     <!-- julie include all binding files from work directory -->
+     <fileset dir="${FVT.build.work.dir}/jaxws22/customprops/server/CustomProps">
+        <include name="META-INF/**/*"/>
+      </fileset>
+	</ear>     
+
+
+<!-- 
+    <echo message="wsgen..." />
+     <wsgen
+             destdir="${FVT.build.classes.dir}"
+             resourcedestdir="${FVT.build.classes.dir}"
+             sourcedestdir="${FVT.build.classes.dir}"
+             genwsdl="true"
+             sei="jaxws22.customprops.wsfvt.server.CustomProps"
+             >
+             <classpath>
+                     <pathelement path="${FVT.build.classes.dir}"/>                  
+             </classpath>
+     </wsgen>
+-->     
+     
+   
+  </target>
+
+
+    <!-- The client target will build anything necessary for the client
+       piece of the test.
+   -->           
+   <target name="client" depends="setenv">
+   
+   <!-- build the client ear -->
+   
+		<readCellConfig prefix="server1" key="defaultServer" verbose="false" />
+
+    <wsimport                 
+         wsdl="${FVT.base.dir}/src/jaxws22/customprops/etc/wsdl/CustomPropsService.wsdl"            
+         destdir="${FVT.build.classes.dir}"                                 
+         verbose="true"                           
+         package="jaxws22.customprops.wsfvt.server"  
+         keep="true"
+         wsdllocation="http://${server1.hostName}:${server1.WC_defaulthost}/CustomProps/CustomPropsService?wsdl"
+         sourcedestdir="${FVT.build.classes.dir}">     
+    </wsimport>
+
+
+		<javac compiler="modern" srcdir="${FVT.base.dir}/src/jaxws22/customprops/wsfvt/client" destdir="${FVT.build.classes.dir}" deprecation="${deprecation}" debug="${debug}" source="${build.tests.with.java.level}" target="${build.tests.with.java.level}" failonerror="${failonerror}">
+			<classpath refid="classpath" />
+			<include name="*.java" />
+		</javac>
+		
+		    <!--  create test/META-INF in build classes directory -->
+    <mkdir dir="${FVT.build.classes.dir}/jaxws22/customprops/wsfvt/client/META-INF"/>	
+    
+    <!-- copy client binding -->
+    
+	<copy toDir="${FVT.build.classes.dir}/jaxws22/customprops/wsfvt/client/META-INF" overwrite="yes">
+		<fileset dir="${FVT.base.dir}/src/jaxws22/customprops/wsfvt/client/CustomProps/META-INF">
+			<include name="**"/>
+		</fileset>
+        
+		<filterset id="replace.filter.set1">
+			<filter token="REPLACE_WITH_HOST_NAME" value="${server1.hostName}"/>
+			<filter token="REPLACE_WITH_PORT_NUM"  value="${server1.WC_defaulthost}"/>            
+
+		</filterset>
+	</copy>
+	
+	<!-- copy binding to directory installableApps, same location of client ear, as it's needed by launchClient  -->
+	<mkdir dir="${FVT.build.installableApps.dir}/META-INF" />
+
+	<copy toDir="${FVT.build.installableApps.dir}/META-INF" overwrite="yes">
+		<fileset dir="${FVT.base.dir}/src/jaxws22/customprops/wsfvt/client/CustomProps/META-INF">
+			<include name="**"/>
+		</fileset>
+        
+		<filterset id="replace.filter.set1">
+			<filter token="REPLACE_WITH_HOST_NAME" value="${server1.hostName}"/>
+			<filter token="REPLACE_WITH_PORT_NUM"  value="${server1.WC_defaulthost}"/>            
+
+		</filterset>
+
+	</copy>
+
+
+		<jar jarfile="${FVT.build.lib.dir}/CustomPropsManagedClient.jar"
+         manifest="${FVT.base.dir}/src/jaxws22/customprops/etc/dd/custompropsmanagedclient/MANIFEST.MF">
+         
+			<fileset dir="${FVT.build.classes.dir}">
+				<include name="jaxws22/customprops/wsfvt/client/CustomPropsManagedClient.class" />
+			</fileset>
+			
+			<fileset dir="${FVT.build.classes.dir}">
+				<include name="jaxws22/customprops/wsfvt/server/**" />
+			</fileset>
+
+			<zipfileset dir="${FVT.base.dir}/src/jaxws22/customprops/etc/dd/custompropsmanagedclient" prefix="META-INF">
+				<include name="application-client.xml" />
+			</zipfileset>
+			
+			
+			<zipfileset dir="${FVT.base.dir}/src/jaxws22/customprops/etc" prefix="META-INF">
+				<include name="wsdl/**" />
+			</zipfileset>
+
+		</jar>
+
+		<ear earfile="${FVT.build.installableApps.dir}/CustomPropsManagedClient.ear" 
+		     appxml="${FVT.base.dir}/src/jaxws22/customprops/etc/dd/custompropsmanagedclient/application.xml">
+			<fileset dir="${FVT.build.lib.dir}">
+				<include name="CustomPropsManagedClient.jar" />
+			</fileset>
+		</ear>
+		
+
+   </target>
+
+              
+              
+  <!-- The test target will build anything necessary for the test
+       piece of the test.  This could just be compiling the test class
+       or in the case of a managed test, building a test side EAR
+       file.
+  -->                               
+  <target name="test" depends="setenv, client">    
+  
+
+	<javac compiler="modern" srcdir="${FVT.base.dir}/src/jaxws22/customprops"
+           destdir="${FVT.build.classes.dir}"
+           deprecation="${deprecation}"
+           debug="${debug}"
+           source="${build.tests.with.java.level}"
+           target="${build.tests.with.java.level}"
+           failonerror="${failonerror}">
+	  <include name="**/test/*.java"/>
+    </javac>
+      
+      
+  <!-- copy test policy sets and bindings to ${FVT.build.classes.dir}/jaxws22/customprops/wsfvt/test directory for thin client test run-->  
+  <echo message="Copying test policy sets and bindings to build's classes directory"/>     
+  
+   
+    
+    <!-- reads all the cell variables into ant properties  --> 
+    <readCellConfig prefix="server1" key="defaultServer" verbose="true"/>    
+    <mkdir dir="${FVT.build.classes.dir}/jaxws22/customprops/wsfvt/test/META-INF"/>	
+    
+	<copy toDir="${FVT.build.classes.dir}/jaxws22/customprops/wsfvt/test/META-INF" overwrite="yes">
+		<fileset dir="${FVT.base.dir}/src/jaxws22/customprops/wsfvt/client/CustomProps/META-INF">
+			<include name="**"/>
+		</fileset>
+        
+		<filterset id="replace.filter.set1">
+			<filter token="REPLACE_WITH_HOST_NAME" value="${server1.hostName}"/>
+			<filter token="REPLACE_WITH_PORT_NUM"  value="${server1.WC_defaulthost}"/>            
+
+		</filterset>
+	</copy>
+    
+    
+    
+  </target>
+                            
+
+             
+  <!-- The preinstall target will perform any tasks necessary before the
+       application is installed into WebSphere.  This could include running
+       ejbdeploy or endptenabler for an EAR that contains an EJB.
+  -->                               
+  <target name="preinstall" depends="setenv">
+  </target>         
+  
+  
+  <!-- The install target will install the server side piece of the test
+       into WebSphere.  This target calls the installTest.xml file for
+       the test.
+  -->           
+  <target name="install" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/jaxws22/customprops/installTest.xml"
+         dir="${FVT.base.dir}/src/jaxws22/customprops">
+      <property name="install.mode" value="${rt.install.mode}"/>
+    </ant>
+  </target>
+  
+    
+  <!-- The uninstall target will uninstall the server side piece of the test
+       from WebSphere.  This target calls the uninstallTest.xml file for
+       the test.
+  -->           
+  <target name="uninstall" depends="setenv">
+    <ant antfile="${FVT.base.dir}/src/jaxws22/customprops/uninstallTest.xml"
+         dir="${FVT.base.dir}/src/jaxws22/customprops">
+      <property name="uninstall.mode" value="${rt.uninstall.mode}"/>
+    </ant>
+  </target>
+ 
+</project>
