@@ -619,7 +619,7 @@
     <dependency>
       <groupId>io.smallrye.config</groupId>
       <artifactId>smallrye-config-common</artifactId>
-      <version>2.1.0</version>
+      <version>2.4.0</version>
     </dependency>
     <dependency>
       <groupId>io.smallrye.config</groupId>
