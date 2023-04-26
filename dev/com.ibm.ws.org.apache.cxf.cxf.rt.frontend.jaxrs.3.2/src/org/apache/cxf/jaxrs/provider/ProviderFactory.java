@@ -104,7 +104,7 @@ import com.ibm.ws.jaxrs21.providers.json.JsonBProvider;
 import com.ibm.ws.jaxrs21.providers.json.JsonPProvider;
 
 public abstract class ProviderFactory {
-    private static final TraceComponent tc = Tr.register(ProviderFactory.class);
+    private static final TraceComponent tc = Tr.register(ProviderFactory.class); // Liberty Change 
     public static final String DEFAULT_FILTER_NAME_BINDING = "org.apache.cxf.filter.binding";
     public static final String PROVIDER_SELECTION_PROPERTY_CHANGED = "provider.selection.property.changed";
     public static final String ACTIVE_JAXRS_PROVIDER_KEY = "active.jaxrs.provider";
@@ -113,7 +113,7 @@ public abstract class ProviderFactory {
     protected static final String CLIENT_FACTORY_NAME = "org.apache.cxf.jaxrs.client.ClientProviderFactory";
     protected static final String IGNORE_TYPE_VARIABLES = "org.apache.cxf.jaxrs.providers.ignore.typevars";
 
-    //private static final Logger LOG = LogUtils.getL7dLogger(ProviderFactory.class);
+    //private static final Logger LOG = LogUtils.getL7dLogger(ProviderFactory.class); // Liberty Change 
 
     private static final String JAXB_PROVIDER_NAME = "org.apache.cxf.jaxrs.provider.JAXBElementProvider";
     private static final String JSON_PROVIDER_NAME = "org.apache.cxf.jaxrs.provider.json.JSONProvider";
@@ -304,8 +304,8 @@ public abstract class ProviderFactory {
             } else {
                 message += ", exception class : " + ex.getClass().getName();
             }
-            if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-                Tr.debug(tc, message);
+            if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) { // Liberty Change 
+                Tr.debug(tc, message); // Liberty Change 
             }
         }
         return null;
@@ -332,8 +332,6 @@ public abstract class ProviderFactory {
 
         return new JsonPProvider(jsonProvider);
     }
-    // Liberty Change for CXF End
-
 
     @FFDCIgnore(value = { ClassNotFoundException.class })
     public static Class<?> loadClass(ClassLoader cl, String className) {
@@ -382,7 +380,7 @@ public abstract class ProviderFactory {
 
         Message responseMessage = isRequestor ? m.getExchange().getInMessage()
                                               : m.getExchange().getOutMessage();
-        Object ctProperty = null;
+        final Object ctProperty;
         if (responseMessage != null) {
             ctProperty = responseMessage.get(Message.CONTENT_TYPE);
         } else {
@@ -480,6 +478,9 @@ public abstract class ProviderFactory {
 
         return null;
     }
+	
+	
+    // Liberty Change for CXF Start
 
     /**
      * _PERF_
@@ -533,6 +534,9 @@ public abstract class ProviderFactory {
 
         return false;
     }
+	
+	
+    // Liberty Change for CXF End
 
     protected <T> boolean handleMapper(ProviderInfo<T> em,
                                        Class<?> expectedType,
@@ -548,10 +552,11 @@ public abstract class ProviderFactory {
                                        Class<?> providerClass,
                                        Class<?> commonBaseClass,
                                        boolean injectContext) {
+		// Liberty Change for CXF Begin
         if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
             Tr.debug(tc, "handleMapper", new Object[]{em, expectedType, m, providerClass, commonBaseClass, injectContext});
         }
-        // Liberty Change for CXF Begin
+        
         Class<?> mapperClass = ClassHelper.getRealClass(bus, em.getOldProvider());
         // Liberty Change for CXF End
         Type[] types = null;
@@ -582,8 +587,8 @@ public abstract class ProviderFactory {
                         if (injectContext) {
                             injectContextValues(em, m);
                         }
-                        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-                            Tr.debug(tc, "handleMapper return true");
+                        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) { // Liberty Change
+                            Tr.debug(tc, "handleMapper return true"); // Liberty Change
                         }
                         return true;
                     }
@@ -598,8 +603,8 @@ public abstract class ProviderFactory {
                         if (injectContext) {
                             injectContextValues(em, m);
                         }
-                        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-                            Tr.debug(tc, "handleMapper return true");
+                        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) { // Liberty Change
+                            Tr.debug(tc, "handleMapper return true"); // Liberty Change
                         }
                         return true;
                     }
@@ -608,8 +613,8 @@ public abstract class ProviderFactory {
                 if (injectContext) {
                     injectContextValues(em, m);
                 }
-                if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-                    Tr.debug(tc, "handleMapper return true");
+                if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) { // Liberty Change
+                    Tr.debug(tc, "handleMapper return true"); // Liberty Change
                 }
                 return true;
             }
@@ -634,7 +639,7 @@ public abstract class ProviderFactory {
         if (mr != null || size > 0) {
             ReaderInterceptor mbrReader = new ReaderInterceptorMBR(mr, getResponseMessage(m));
 
-            List<ReaderInterceptor> interceptors = null;
+            final List<ReaderInterceptor> interceptors;
             if (size > 0) {
                 interceptors = new ArrayList<>(size + 1);
                 List<ProviderInfo<ReaderInterceptor>> readers =
@@ -672,7 +677,7 @@ public abstract class ProviderFactory {
             })
             WriterInterceptor mbwWriter = new WriterInterceptorMBW((MessageBodyWriter)mw, m);
 
-            List<WriterInterceptor> interceptors = null;
+            final List<WriterInterceptor> interceptors;
             if (size > 0) {
                 interceptors = new ArrayList<>(size + 1);
                 List<ProviderInfo<WriterInterceptor>> writers =
@@ -747,8 +752,8 @@ public abstract class ProviderFactory {
                                                             MediaType mediaType,
                                                             Message m) {
 
-        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-            Tr.debug(tc, "createMessageBodyWriter ",  new Object[]{type, genericType, annotations, mediaType, m});
+        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) { // Liberty Change
+            Tr.debug(tc, "createMessageBodyWriter ",  new Object[]{type, genericType, annotations, mediaType, m}); // Liberty Change
         }
 
         // Step1: check the cache.
@@ -825,7 +830,7 @@ public abstract class ProviderFactory {
     protected abstract void setProviders(boolean custom, boolean busGlobal, Object... providers);
 
     @SuppressWarnings("unchecked")
-    protected void setCommonProviders(List<ProviderInfo<? extends Object>> theProviders) {
+    protected void setCommonProviders(List<ProviderInfo<? extends Object>> theProviders, RuntimeType type) {
         //Liberty code change start
         List<ProviderInfo<MessageBodyReader<?>>> newReaders = new ArrayList<>();
         List<ProviderInfo<MessageBodyWriter<?>>> newWriters = new ArrayList<>();
@@ -840,6 +845,11 @@ public abstract class ProviderFactory {
             new LinkedList<>();
         for (ProviderInfo<? extends Object> provider : theProviders) {
             Class<?> providerCls = ClassHelper.getRealClass(bus, provider.getProvider());
+
+            // Check if provider is constrained to runtime type
+            if (!constrainedTo(providerCls, type)) {
+                continue;
+            }
 
             if (filterContractSupported(provider, providerCls, MessageBodyReader.class)) {
                 //Liberty code change start
@@ -1114,7 +1124,8 @@ public abstract class ProviderFactory {
         theProviders.sort(theComparator);
     }
 
-private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = new IdentityHashMap<>();
+    // Liberty Change Start
+    private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = new IdentityHashMap<>(); 
 
 
 
@@ -1136,6 +1147,7 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
         }
         return mediaTypes;
     }
+	// Liberty Change End
 
     private <T> boolean matchesReaderMediaTypes(ProviderInfo<MessageBodyReader<?>> pi,
                                                 MediaType mediaType) {
@@ -1184,8 +1196,8 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
 
     private <T> boolean matchesWriterMediaTypes(ProviderInfo<MessageBodyWriter<?>> pi,
                                                 MediaType mediaType) {
-        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-            Tr.debug(tc, "matchesWriterMediaTypes ",  new Object[]{pi, mediaType});
+        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) { // Liberty Change
+            Tr.debug(tc, "matchesWriterMediaTypes ",  new Object[]{pi, mediaType}); // Liberty Change
         }
         MessageBodyWriter<?> ep = pi.getProvider();
         List<MediaType> supportedMediaTypes = JAXRSUtils.getProviderProduceTypes(ep);
@@ -1254,7 +1266,7 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
             this.cache = cache;
         }
 
-        @Override
+        @Override //Liberty Change
         public int compare(ProviderInfo<MessageBodyReader<?>> p1,
                            ProviderInfo<MessageBodyReader<?>> p2) {
             MessageBodyReader<?> e1 = p1.getOldProvider();
@@ -1281,6 +1293,8 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
         }
     }
 
+
+    //Liberty code change start
     private static class MessageBodyWriterComparator implements Comparator<ProviderInfo<MessageBodyWriter<?>>> {
 
         private final Map<MessageBodyWriter<?>, List<MediaType>> cache;
@@ -1299,7 +1313,6 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
             if (result != 0) {
                 return result;
             }
-            //Liberty code change start
             List<MediaType> types1 = getSortedProviderProduceTypes(e1, cache);
             List<MediaType> types2 = getSortedProviderProduceTypes(e2, cache);
             //Liberty code change end
@@ -1319,6 +1332,8 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
     private static class ParamConverterProviderComparator implements Comparator<ProviderInfo<ParamConverterProvider>> {
 
 
+
+		// Liberty Change Start
         @Override
         public int compare(ProviderInfo<ParamConverterProvider> p1,
                            ProviderInfo<ParamConverterProvider> p2) {
@@ -1332,9 +1347,10 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
 
             return comparePriorityStatus(p1.getProvider().getClass(), p2.getProvider().getClass());
         }
+		// Liberty Change End
     }
 
-    public static int compareCustomStatus(ProviderInfo<?> p1, ProviderInfo<?> p2) {
+    public static int compareCustomStatus(ProviderInfo<?> p1, ProviderInfo<?> p2) { // Liberty Change
         boolean custom1 = p1.isCustom();
         int result = Boolean.compare(p2.isCustom(), custom1);
         if (result == 0 && custom1) {
@@ -1350,11 +1366,11 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
 
     private static class ContextResolverComparator
         implements Comparator<ProviderInfo<ContextResolver<?>>> {
-        @Override
+        @Override // Liberty Change
         public int compare(ProviderInfo<ContextResolver<?>> p1,
                            ProviderInfo<ContextResolver<?>> p2) {
-            ContextResolver<?> e1 = p1.getOldProvider();
-            ContextResolver<?> e2 = p2.getOldProvider();
+            ContextResolver<?> e1 = p1.getOldProvider(); // Liberty Change
+            ContextResolver<?> e2 = p2.getOldProvider(); // Liberty Change
 
             List<MediaType> types1 =
                 JAXRSUtils.sortMediaTypes(JAXRSUtils.getProduceTypes(
@@ -1481,7 +1497,7 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
             this.expectedCls = expectedCls;
         }
 
-        @Override
+        @Override // Liberty Change 
         public int compare(Object em1, Object em2) {
             return compareClasses(expectedCls, em1, em2);
         }
@@ -1525,7 +1541,6 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
         }
     }
 
-
     public static ProviderFactory getInstance(Message m) {
         Endpoint e = m.getExchange().getEndpoint();
 
@@ -1535,11 +1550,9 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
 
         return (ProviderFactory)e.get(name);
     }
-
     protected static int compareClasses(Object o1, Object o2) {
         return compareClasses(null, o1, o2);
     }
-
     protected static int compareClasses(Class<?> expectedCls, Object o1, Object o2) {
         Class<?> cl1 = ClassHelper.getRealClass(o1);
         Class<?> cl2 = ClassHelper.getRealClass(o2);
@@ -1577,7 +1590,7 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
     private static Type[] getGenericInterfaces(Class<?> cls, Class<?> expectedClass,
                                                Class<?> commonBaseCls) {
         if (Object.class == cls) {
-            return emptyType;
+            return emptyType; 
         }
         Type[] cachedTypes = getTypes(cls, expectedClass, commonBaseCls);
         if (cachedTypes != null)
@@ -1651,7 +1664,7 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
             this.candidates = candidates;
         }
 
-        @Override
+        @Override // Liberty Change
         public T getContext(Class<?> cls) {
             for (ContextResolver<T> resolver : candidates) {
                 T context = resolver.getContext(cls);
@@ -1689,7 +1702,7 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
                 }
             }
         }
-        Object instance = null;
+        final Object instance;
         try {
             instance = c.newInstance(cArgs);
         } catch (Throwable ex) {
@@ -1757,7 +1770,7 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
             return providerInfo;
         }
 
-        @Override
+        @Override // Liberty Change 
         public boolean equals(Object o) {
             if (!(o instanceof NameKey)) {
                 return false;
@@ -1767,12 +1780,12 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
                 && providerCls == other.providerCls;
         }
 
-        @Override
+        @Override // Liberty Change 
         public int hashCode() {
             return super.hashCode();
         }
 
-        @Override
+        @Override // Liberty Change 
         public String toString() {
             return name + ":" + priority;
         }
@@ -1804,8 +1817,7 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
 
     }
     protected static Set<String> getFilterNameBindings(Bus bus, Object provider) {
-        Class<?> pClass = ClassHelper.getRealClass(bus, provider);
-        Set<String> names = AnnotationUtils.getNameBindings(pClass.getAnnotations());
+        Set<String> names = AnnotationUtils.getInstanceNameBindings(bus, provider);
         if (names.isEmpty()) {
             names = Collections.singleton(DEFAULT_FILTER_NAME_BINDING);
         }
@@ -2095,4 +2107,16 @@ private final Map<MessageBodyReader<?>, List<MediaType>> readerMediaTypesMap = n
         }
     }
     //Liberty code change end
+	
+	    /**
+     * Checks the presence of {@link ConstrainedTo} annotation and, if present, applicability to 
+     * the runtime type.
+     * @param providerCls provider class
+     * @param type runtime type
+     * @return "true" if provider could be used with runtime type, "false" otherwise
+     */
+    protected static boolean constrainedTo(Class<?> providerCls, RuntimeType type) {
+        final ConstrainedTo constrained = AnnotationUtils.getClassAnnotation(providerCls, ConstrainedTo.class);
+        return constrained == null || constrained.value() == type;
+    }
 }

@@ -81,11 +81,12 @@ import com.ibm.websphere.ras.TraceComponent;
 import com.ibm.ws.jaxrs21.providers.NoOpPreprocessor;
 
 public final class ServerProviderFactory extends ProviderFactory {
-    @SuppressWarnings("unused")
-    private static final TraceComponent tc = Tr.register(ServerProviderFactory.class);
+    @SuppressWarnings("unused") // Liberty Specific Change
+    private static final TraceComponent tc = Tr.register(ServerProviderFactory.class); // Liberty Specific Change
 
     private static final String WADL_PROVIDER_NAME = "org.apache.cxf.jaxrs.model.wadl.WadlGenerator";
     private static final String MAKE_DEFAULT_WAE_LEAST_SPECIFIC = "default.wae.mapper.least.specific";
+	// Liberty Change Start - Set final modifiers
     private final List<ProviderInfo<ExceptionMapper<?>>> exceptionMappers = new ArrayList<>(1);
 
     private final List<ProviderInfo<ContainerRequestFilter>> preMatchContainerRequestFilters = new ArrayList<>(1);
@@ -96,6 +97,7 @@ public final class ServerProviderFactory extends ProviderFactory {
     private final Set<DynamicFeature> dynamicFeatures = new LinkedHashSet<>();
 
     private final Map<Class<?>, BeanParamInfo> beanParams = new ConcurrentHashMap<>();
+	// Liberty Change End
     private ProviderInfo<ContainerRequestFilter> wadlGenerator;
 
     private ServerProviderFactory(Bus bus) {
@@ -193,8 +195,8 @@ public final class ServerProviderFactory extends ProviderFactory {
                                                                           Message m) {
 
         boolean makeDefaultWaeLeastSpecific =
-            MessageUtils.getContextualBoolean(m, MAKE_DEFAULT_WAE_LEAST_SPECIFIC, false);
-
+            MessageUtils.getContextualBoolean(m, MAKE_DEFAULT_WAE_LEAST_SPECIFIC, true);
+        
         return (ExceptionMapper<T>)exceptionMappers.stream()
                 .filter(em -> handleMapper(em, exceptionType, m, ExceptionMapper.class, Throwable.class, true))
                 .sorted(new ExceptionProviderInfoComparator(exceptionType,
@@ -205,7 +207,7 @@ public final class ServerProviderFactory extends ProviderFactory {
 
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked", "rawtypes" }) // Liberty Specific Change
     @Override
     protected void setProviders(boolean custom, boolean busGlobal, Object... providers) {
         List<Object> allProviders = new LinkedList<>();
@@ -242,10 +244,16 @@ public final class ServerProviderFactory extends ProviderFactory {
         List<ProviderInfo<ContainerRequestFilter>> postMatchRequestFilters = new LinkedList<>();
         List<ProviderInfo<ContainerResponseFilter>> postMatchResponseFilters = new LinkedList<>();
 
-        List<ProviderInfo<? extends Object>> theProviders = prepareProviders(custom, busGlobal, allProviders.toArray(), application);
-        super.setCommonProviders(theProviders);
+        List<ProviderInfo<? extends Object>> theProviders =
+            prepareProviders(custom, busGlobal, allProviders.toArray(), application);
+        super.setCommonProviders(theProviders, RuntimeType.SERVER);
         for (ProviderInfo<? extends Object> provider : theProviders) {
             Class<?> providerCls = ClassHelper.getRealClass(getBus(), provider.getProvider());
+
+            // Check if provider is constrained to server
+            if (!constrainedTo(providerCls, RuntimeType.SERVER)) {
+                continue;
+            }
 
             if (filterContractSupported(provider, providerCls, ContainerRequestFilter.class)) {
                 addContainerRequestFilter(postMatchRequestFilters,
@@ -415,7 +423,7 @@ public final class ServerProviderFactory extends ProviderFactory {
         }
     }
 
-    @Override
+    @Override // Liberty Specific Change
     public Configuration getConfiguration(Message m) {
         return new ServerConfigurationImpl();
     }
@@ -529,10 +537,10 @@ public final class ServerProviderFactory extends ProviderFactory {
             return application != null ? application.getProvider().getSingletons() : Collections.emptySet();
         }
 
-        @SuppressWarnings("unlikely-arg-type")
+        @SuppressWarnings("unlikely-arg-type") // Liberty Specific Change
         @Override
         public boolean isEnabled(Feature f) {
-            return dynamicFeatures.contains(f);
+            return dynamicFeatures.contains(f); // Liberty Specific Change
         }
 
         @Override
@@ -651,6 +659,7 @@ public final class ServerProviderFactory extends ProviderFactory {
             this.makeDefaultWaeLeastSpecific = makeDefaultWaeLeastSpecific;
         }
 
+		// Liberty Change Start
         @Override
         public int compare(ProviderInfo<?> p1, ProviderInfo<?> p2) {
             // ExceptionMapper classes may be turned to proxy classes due to dependency
@@ -673,5 +682,6 @@ public final class ServerProviderFactory extends ProviderFactory {
             }
             return result;
         }
+		// Liberty Change End
     }
 }

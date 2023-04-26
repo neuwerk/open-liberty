@@ -7,10 +7,8 @@
  * 
  * SPDX-License-Identifier: EPL-2.0
  *
- * Contributors:
- *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-// Liberty Change for CXF Begin
+// Liberty Change for CXF Begin - Entire class is unique to our fork, could it be contributed back? 
 package org.apache.cxf.jaxrs.interceptor;
 
 import java.time.Instant;

@@ -92,16 +92,17 @@ public class JAXBElementProvider<T> extends AbstractJAXBProvider<T>  {
     private static final String XML_PI_PROPERTY_RI = "com.sun.xml.bind.xmlHeaders";
     private static final String XML_PI_PROPERTY_RI_INT = "com.sun.xml.internal.bind.xmlHeaders";
 
-    private static final List<String> MARSHALLER_PROPERTIES =
-        Arrays.asList(new String[] {Marshaller.JAXB_ENCODING,
-                                    Marshaller.JAXB_FORMATTED_OUTPUT,
-                                    Marshaller.JAXB_FRAGMENT,
-                                    Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION,
-                                    Marshaller.JAXB_SCHEMA_LOCATION,
-                                    NS_MAPPER_PROPERTY_RI,
-                                    NS_MAPPER_PROPERTY_RI_INT,
-                                    XML_PI_PROPERTY_RI,
-                                    XML_PI_PROPERTY_RI_INT});
+    private static final String[] MARSHALLER_PROPERTIES = {
+        Marshaller.JAXB_ENCODING,
+        Marshaller.JAXB_FORMATTED_OUTPUT,
+        Marshaller.JAXB_FRAGMENT,
+        Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION,
+        Marshaller.JAXB_SCHEMA_LOCATION,
+        NS_MAPPER_PROPERTY_RI,
+        NS_MAPPER_PROPERTY_RI_INT,
+        XML_PI_PROPERTY_RI,
+        XML_PI_PROPERTY_RI_INT
+    };
 
     private Map<String, Object> mProperties = Collections.emptyMap();
     private Map<String, String> nsPrefixes = Collections.emptyMap();
@@ -152,7 +153,7 @@ public class JAXBElementProvider<T> extends AbstractJAXBProvider<T>  {
     }
 
     @FFDCIgnore({JAXBException.class, DepthExceededStaxException.class, WebApplicationException.class,
-                 Exception.class, XMLStreamException.class})
+                 Exception.class, XMLStreamException.class}) // Liberty Change
     public T readFrom(Class<T> type, Type genericType, Annotation[] anns, MediaType mt,
         MultivaluedMap<String, String> headers, InputStream is)
         throws IOException {
@@ -177,12 +178,20 @@ public class JAXBElementProvider<T> extends AbstractJAXBProvider<T>  {
             if (JAXBElement.class.isAssignableFrom(type)
                 || !isCollection && (unmarshalAsJaxbElement
                 || jaxbElementClassMap != null && jaxbElementClassMap.containsKey(theType.getName()))) {
-                reader = getStreamReader(is, type, mt);
-                reader = TransformUtils.createNewReaderIfNeeded(reader, is);
-                if (JAXBElement.class.isAssignableFrom(type) && type == theType) {
-                    response = unmarshaller.unmarshal(reader);
-                } else {
-                    response = unmarshaller.unmarshal(reader, theType);
+                try (InputStream in = IOUtils.nullOrNotEmptyStream(is)) {
+                    // The return value might be "null" in case of empty stream, in this
+                    // case the unmarshaller fails with javax.xml.bind.UnmarshalException instead
+                    // of returning empty response.
+                    if (in != null) {
+                        reader = getStreamReader(in, type, mt);
+                        reader = TransformUtils.createNewReaderIfNeeded(reader, in);
+                        
+                        if (JAXBElement.class.isAssignableFrom(type) && type == theType) {
+                            response = unmarshaller.unmarshal(reader);
+                        } else {
+                            response = unmarshaller.unmarshal(reader, theType);
+                        }
+                    }
                 }
             } else {
                 response = doUnmarshal(unmarshaller, type, is, anns, mt);
@@ -220,7 +229,7 @@ public class JAXBElementProvider<T> extends AbstractJAXBProvider<T>  {
         return null;
     }
 
-    @FFDCIgnore({JAXBException.class, XMLStreamException.class})
+    @FFDCIgnore({JAXBException.class, XMLStreamException.class}) // Liberty Change
     protected Object doUnmarshal(Unmarshaller unmarshaller, Class<?> type, InputStream is,
                                  Annotation[] anns, MediaType mt)
         throws JAXBException {
@@ -241,7 +250,7 @@ public class JAXBElementProvider<T> extends AbstractJAXBProvider<T>  {
         return unmarshalFromInputStream(unmarshaller, is, anns, mt);
     }
 
-    @FFDCIgnore({XMLStreamException.class})
+    @FFDCIgnore({XMLStreamException.class}) // Liberty Change
     protected XMLStreamReader getStreamReader(InputStream is, Class<?> type, MediaType mt) {
         MessageContext mc = getContext();
         XMLStreamReader reader = mc != null ? mc.getContent(XMLStreamReader.class) : null;
@@ -270,7 +279,7 @@ public class JAXBElementProvider<T> extends AbstractJAXBProvider<T>  {
 
     }
 
-    @FFDCIgnore({PrivilegedActionException.class, XMLStreamException.class})
+    @FFDCIgnore({PrivilegedActionException.class, XMLStreamException.class}) // Liberty Change
     protected Object unmarshalFromInputStream(Unmarshaller unmarshaller, InputStream is,
                                               Annotation[] anns, MediaType mt)
         throws JAXBException {
@@ -317,7 +326,7 @@ public class JAXBElementProvider<T> extends AbstractJAXBProvider<T>  {
         return unmarshaller.unmarshal(reader);
     }
 
-    @FFDCIgnore({JAXBException.class, WebApplicationException.class, Exception.class})
+    @FFDCIgnore({JAXBException.class, WebApplicationException.class, Exception.class}) // Liberty Change
     public void writeTo(T obj, Class<?> cls, Type genericType, Annotation[] anns,
         MediaType m, MultivaluedMap<String, Object> headers, OutputStream os)
         throws IOException {
@@ -356,7 +365,7 @@ public class JAXBElementProvider<T> extends AbstractJAXBProvider<T>  {
 
         Object firstObj = it.hasNext() ? it.next() : null;
 
-        QName qname = null;
+        final QName qname;
         if (firstObj instanceof JAXBElement) {
             JAXBElement<?> el = (JAXBElement<?>)firstObj;
             qname = el.getName();
@@ -371,20 +380,18 @@ public class JAXBElementProvider<T> extends AbstractJAXBProvider<T>  {
                                               .entity(message).build());
         }
 
-        StringBuilder pi = new StringBuilder();
-        pi.append(XML_PI_START + (enc == null ? StandardCharsets.UTF_8.name() : enc) + "\"?>");
-        os.write(pi.toString().getBytes());
-        String startTag = null;
-        String endTag = null;
+        os.write((XML_PI_START + (enc == null ? StandardCharsets.UTF_8.name() : enc) + "\"?>").getBytes());
 
-        if (qname.getNamespaceURI().length() > 0) {
+        final String startTag;
+        final String endTag;
+        if (!qname.getNamespaceURI().isEmpty()) {
             String prefix = nsPrefixes.get(qname.getNamespaceURI());
             if (prefix == null) {
                 prefix = "ns1";
             }
-            startTag = "<" + prefix + ":" + qname.getLocalPart() + " xmlns:" + prefix + "=\""
+            startTag = "<" + prefix + ':' + qname.getLocalPart() + " xmlns:" + prefix + "=\""
                 + qname.getNamespaceURI() + "\">";
-            endTag = "</" + prefix + ":" + qname.getLocalPart() + ">";
+            endTag = "</" + prefix + ':' + qname.getLocalPart() + ">";
         } else {
             startTag = "<" + qname.getLocalPart() + ">";
             endTag = "</" + qname.getLocalPart() + ">";
@@ -514,7 +521,7 @@ public class JAXBElementProvider<T> extends AbstractJAXBProvider<T>  {
         MessageContext mc = getContext();
         if (mc != null) {
             String httpBasePath = (String)mc.get("http.base.path");
-            UriBuilder builder = null;
+            final UriBuilder builder;
             if (httpBasePath != null) {
                 builder = UriBuilder.fromPath(httpBasePath);
             } else {
@@ -594,7 +601,7 @@ public class JAXBElementProvider<T> extends AbstractJAXBProvider<T>  {
         }
     }
 
-    @FFDCIgnore({XMLStreamException.class})
+    @FFDCIgnore({XMLStreamException.class}) // Liberty Change
     protected XMLStreamWriter getStreamWriter(Object obj, OutputStream os, MediaType mt) {
         XMLStreamWriter writer = null;
         MessageContext mc = getContext();

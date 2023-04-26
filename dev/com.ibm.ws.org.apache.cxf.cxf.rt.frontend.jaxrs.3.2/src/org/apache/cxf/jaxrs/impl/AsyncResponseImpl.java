@@ -63,8 +63,8 @@ public class AsyncResponseImpl implements AsyncResponse, ContinuationCallback {
     private volatile boolean resumedByApplication;
     private volatile Long pendingTimeout;
 
-    private final List<CompletionCallback> completionCallbacks = new LinkedList<>();
-    private final List<ConnectionCallback> connectionCallbacks = new LinkedList<>();
+    private final List<CompletionCallback> completionCallbacks = new LinkedList<>(); // Liberty Change
+    private final List<ConnectionCallback> connectionCallbacks = new LinkedList<>(); // Liberty Change
     private Throwable unmappedThrowable;
     //Liberty code change start
     //defect 168372
@@ -200,12 +200,12 @@ public class AsyncResponseImpl implements AsyncResponse, ContinuationCallback {
             timeoutFuture = asyncScheduler.schedule(task, time, unit);
             return true;
         } else {
-            //Liberty code change end
             setAsyncResponseOnExchange();
             initialSuspend = false;
             cont.suspend(timeout);
             return true;
         }
+		//Liberty code change end
     }
 
     private void setAsyncResponseOnExchange() {

@@ -71,7 +71,7 @@ import com.ibm.websphere.ras.TraceComponent;
 import com.ibm.ws.jaxrs20.JaxRsConstants;
 
 public class JAXRSOutInterceptor extends AbstractOutDatabindingInterceptor {
-    private static final TraceComponent tc = Tr.register(JAXRSOutInterceptor.class);
+    private static final TraceComponent tc = Tr.register(JAXRSOutInterceptor.class); // Liberty change Start
     private static final ResourceBundle BUNDLE = BundleUtils.getBundle(JAXRSOutInterceptor.class);
 
     public JAXRSOutInterceptor() {
@@ -104,7 +104,7 @@ public class JAXRSOutInterceptor extends AbstractOutDatabindingInterceptor {
 
         Object responseObj = objs.get(0);
 
-        Response response = null;
+        final Response response;
         if (responseObj instanceof Response) {
             response = (Response)responseObj;
             if (response.getStatus() == 500
@@ -145,14 +145,14 @@ public class JAXRSOutInterceptor extends AbstractOutDatabindingInterceptor {
             && ori != null && HttpMethod.HEAD.equals(ori.getHttpMethod());
         Object entity = response.getActualEntity();
         if (headResponse && entity != null) {
-            Tr.info(tc, new org.apache.cxf.common.i18n.Message("HEAD_WITHOUT_ENTITY", BUNDLE).toString());
+            Tr.info(tc, new org.apache.cxf.common.i18n.Message("HEAD_WITHOUT_ENTITY", BUNDLE).toString()); // Liberty change Start
             entity = null;
         }
 
         Method invoked = ori == null ? null : ori.getAnnotatedMethod() != null
             ? ori.getAnnotatedMethod() : ori.getMethodToInvoke();
 
-        Annotation[] annotations = null;
+        Annotation[] annotations;
         Annotation[] staticAnns = ori != null ? ori.getOutAnnotations() : new Annotation[]{};
         Annotation[] responseAnns = response.getEntityAnnotations();
         if (responseAnns != null) {
@@ -171,7 +171,7 @@ public class JAXRSOutInterceptor extends AbstractOutDatabindingInterceptor {
             prepareResponseHeaders(message, response, entity, firstTry);
 
         // Run the filters
-        if (JaxRsConstants.JAXRS_CONTAINER_FILTER_DISABLED == false) {
+        if (JaxRsConstants.JAXRS_CONTAINER_FILTER_DISABLED == false) { // Liberty change Start
             try {
                 JAXRSUtils.runContainerResponseFilters(providerFactory, response, message, ori, invoked);
             } catch (Throwable ex) {
@@ -232,15 +232,15 @@ public class JAXRSOutInterceptor extends AbstractOutDatabindingInterceptor {
             }
             responseMediaType = checkFinalContentType(responseMediaType, writers, checkWriters);
         } catch (Throwable ex) {
-            if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-                Tr.debug(tc, ex.getMessage() + ", " + ex);
+            if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) { // Liberty change Start
+                Tr.debug(tc, ex.getMessage() + ", " + ex); // Liberty change Start
             }
 	    handleWriteException(providerFactory, message, ex, firstTry);
             return;
         }
         String finalResponseContentType = JAXRSUtils.mediaTypeToString(responseMediaType);
-        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-            Tr.debug(tc, "Response content type is: " + finalResponseContentType);
+        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) { // Liberty change Start
+            Tr.debug(tc, "Response content type is: " + finalResponseContentType); // Liberty change Start
         }
         responseHeaders.putSingle(HttpHeaders.CONTENT_TYPE, finalResponseContentType);
         message.put(Message.CONTENT_TYPE, finalResponseContentType);
@@ -348,7 +348,7 @@ public class JAXRSOutInterceptor extends AbstractOutDatabindingInterceptor {
     }
 
     private void checkCachedStream(Message m, OutputStream osOriginal, boolean enabled) throws Exception {
-        XMLStreamWriter writer = null;
+        final XMLStreamWriter writer;
         if (enabled) {
             writer = m.getContent(XMLStreamWriter.class);
         } else {
@@ -356,7 +356,7 @@ public class JAXRSOutInterceptor extends AbstractOutDatabindingInterceptor {
         }
         if (writer instanceof CachingXmlEventWriter) {
             CachingXmlEventWriter cache = (CachingXmlEventWriter)writer;
-            if (cache.getEvents().size() != 0) {
+            if (!cache.getEvents().isEmpty()) {
                 XMLStreamWriter origWriter = null;
                 try {
                     origWriter = StaxUtils.createXMLStreamWriter(osOriginal);
@@ -469,7 +469,7 @@ public class JAXRSOutInterceptor extends AbstractOutDatabindingInterceptor {
             byte[] bytes = responseObj.toString().getBytes(StandardCharsets.UTF_8);
             os.write(bytes, 0, bytes.length);
         } catch (Exception ex) {
-            Tr.error(tc, "Problem with writing the data to the output stream");
+            Tr.error(tc, "Problem with writing the data to the output stream"); // Liberty change Start
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
@@ -497,7 +497,7 @@ public class JAXRSOutInterceptor extends AbstractOutDatabindingInterceptor {
         return PropertyUtils.isTrue(message.get(AbstractHTTPDestination.RESPONSE_HEADERS_COPIED));
     }
 
-    @Override
+    @Override // Liberty change Start
     public void handleFault(Message message) {
         // complete
     }

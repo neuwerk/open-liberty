@@ -48,9 +48,11 @@ import com.ibm.ws.jaxrs20.injection.InjectionRuntimeContextHelper;
  * a new resource instance per every request
  */
 public class PerRequestResourceProvider implements ResourceProvider {
+    // Liberty Change Start
     private final Constructor<?> c;
     private final Method postConstructMethod;
     private final Method preDestroyMethod;
+	// Liberty Change End
     private final Class<?>[] params;
     private final Annotation[][] anns;
     private final Type[] genericTypes;
@@ -71,7 +73,7 @@ public class PerRequestResourceProvider implements ResourceProvider {
     /**
      * {@inheritDoc}
      */
-    @Override
+    @Override // Liberty Change
     public boolean isSingleton() {
         return false;
     }
@@ -79,7 +81,7 @@ public class PerRequestResourceProvider implements ResourceProvider {
     /**
      * {@inheritDoc}
      */
-    @Override
+    @Override // Liberty Change
     public Object getInstance(Message m) {
         return createInstance(m);
     }
@@ -92,10 +94,10 @@ public class PerRequestResourceProvider implements ResourceProvider {
         Object[] values = ResourceUtils.createConstructorArguments(c, m, true, mapValues, params, anns, genericTypes);
         try {
             Object instance = values.length > 0 ? c.newInstance(values) : c.newInstance(new Object[] {});
-//Liberty Change for CXF Begin
-            //do not call postConstruct here as no context injection happens
-//            InjectionUtils.invokeLifeCycleMethod(instance, postConstructMethod);
-//Liberty Change for CXF End
+            // Liberty Change for CXF Begin
+            // do not call postConstruct here as no context injection happens
+            // InjectionUtils.invokeLifeCycleMethod(instance, postConstructMethod);
+            // Liberty Change for CXF End
             return instance;
         } catch (InstantiationException ex) {
             String msg = "Resource class " + c.getDeclaringClass().getName() + " can not be instantiated";
@@ -111,8 +113,8 @@ public class PerRequestResourceProvider implements ResourceProvider {
                 throw new WebApplicationException();
             }
             String msg = "Resource class "
-                         + c.getDeclaringClass().getName() + " can not be instantiated"
-                         + " due to InvocationTargetException";
+                + c.getDeclaringClass().getName() + " can not be instantiated"
+                + " due to InvocationTargetException";
             throw ExceptionUtils.toInternalServerErrorException(null, serverError(msg));
         }
 
@@ -125,11 +127,11 @@ public class PerRequestResourceProvider implements ResourceProvider {
     /**
      * {@inheritDoc}
      */
-    @Override
+    @Override // Liberty Change
     public void releaseInstance(Message m, Object o) {
-//Liberty Change for CXF Begain
-        //if not managed by CDI or EJB, then call preDestory by ourself.
-        //otherwise, perDestory has already been called by CDI/EJB
+        // Liberty Change for CXF Begain
+        // if not managed by CDI or EJB, then call preDestory by ourself.
+        // otherwise, perDestory has already been called by CDI/EJB
         JaxRsFactoryBeanCustomizer beanCustomizer = null;
         if (o != null)
         {
@@ -140,13 +142,13 @@ public class PerRequestResourceProvider implements ResourceProvider {
         {
             InjectionUtils.invokeLifeCycleMethod(o, preDestroyMethod);
         }
-//Liberty Change for CXF End
+        // Liberty Change for CXF End
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
+    @Override // Liberty Change
     public Class<?> getResourceClass() {
         return c.getDeclaringClass();
     }

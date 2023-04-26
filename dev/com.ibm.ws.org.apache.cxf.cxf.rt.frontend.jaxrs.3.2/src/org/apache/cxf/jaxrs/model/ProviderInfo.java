@@ -77,8 +77,8 @@ public class ProviderInfo<T> extends AbstractResourceInfo {
         super(resourceClass, serviceClass, true, checkContexts, constructorProxies, bus, provider);
         this.provider = provider;
         this.custom = custom;
-        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-            Tr.debug(tc, "<init> provider.getClass()=" + provider.getClass() + " isProxy=" + Proxy.isProxyClass(provider.getClass()));
+        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) { // Liberty Change
+            Tr.debug(tc, "<init> provider.getClass()=" + provider.getClass() + " isProxy=" + Proxy.isProxyClass(provider.getClass())); // Liberty Change
         }
     }
 
@@ -95,16 +95,16 @@ public class ProviderInfo<T> extends AbstractResourceInfo {
         return true;
     }
 
-    @Trivial
+    @Trivial // Liberty Change
     public T getProvider() {
-        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
+        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) { // Liberty Change
             Tr.debug(tc, "getProvider : provider=" + (provider==null?"null":provider.getClass()) + 
-                            " oldProvider=" + (oldProvider==null?"null":oldProvider.getClass()));
+                            " oldProvider=" + (oldProvider==null?"null":oldProvider.getClass())); // Liberty Change
         }
         return provider;
     }
 
-// Liberty Change for CXF Begin
+    // Liberty Change for CXF Begin
     @Trivial
     public T getOldProvider() {
         if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
@@ -148,21 +148,23 @@ public class ProviderInfo<T> extends AbstractResourceInfo {
         this.isInit = check;
     }
 
-// Liberty Change for CXF End
-    @Override
+    // Liberty Change for CXF End
+    @Override // Liberty Change
     public boolean equals(Object obj) {
         if (!(obj instanceof ProviderInfo)) {
             return false;
         }
         return provider.equals(((ProviderInfo<?>) obj).getProvider());
     }
-
-    @Override
+ 
+    @Override // Liberty Change
     public int hashCode() {
-        if (provider != null)
+	    // Liberty Change Start
+        if (provider != null) 
             return provider.hashCode();
-        else
+        else 
             return super.hashCode();
+		// Liberty Change End
     }
 
     public boolean isCustom() {

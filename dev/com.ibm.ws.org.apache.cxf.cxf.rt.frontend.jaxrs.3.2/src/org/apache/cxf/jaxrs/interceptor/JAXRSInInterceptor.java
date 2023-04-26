@@ -69,7 +69,7 @@ import com.ibm.ws.jaxrs20.cache.LibertyJaxRsResourceMethodCache.ResourceMethodCa
 
 public class JAXRSInInterceptor extends AbstractPhaseInterceptor<Message> {
 
-    private static final TraceComponent tc = Tr.register(JAXRSInInterceptor.class);
+    private static final TraceComponent tc = Tr.register(JAXRSInInterceptor.class); // Liberty Change
     private static final Logger LOG = LogUtils.getL7dLogger(JAXRSInInterceptor.class);
     private static final ResourceBundle BUNDLE = BundleUtils.getBundle(JAXRSInInterceptor.class);
     private static final String RESOURCE_METHOD = "org.apache.cxf.resource.method";
@@ -78,7 +78,7 @@ public class JAXRSInInterceptor extends AbstractPhaseInterceptor<Message> {
         super(Phase.UNMARSHAL);
     }
 
-    @FFDCIgnore(value = { Fault.class, RuntimeException.class, IOException.class })
+    @FFDCIgnore(value = { Fault.class, RuntimeException.class, IOException.class }) // Liberty Change
     @Override
     public void handleMessage(Message message) {
         // Liberty change start - set strict mode for media types unless already set by user
@@ -114,7 +114,7 @@ public class JAXRSInInterceptor extends AbstractPhaseInterceptor<Message> {
         }
     }
 
-    @FFDCIgnore(value = { IllegalArgumentException.class, WebApplicationException.class })
+    @FFDCIgnore(value = { IllegalArgumentException.class, WebApplicationException.class }) // Liberty Change
     private void processRequest(Message message, Exchange exchange) throws IOException {
 
         ServerProviderFactory providerFactory = ServerProviderFactory.getInstance(message);
@@ -125,7 +125,7 @@ public class JAXRSInInterceptor extends AbstractPhaseInterceptor<Message> {
         }
 
         // Global pre-match request filters
-        if (JaxRsConstants.JAXRS_CONTAINER_FILTER_DISABLED == false) {
+        if (JaxRsConstants.JAXRS_CONTAINER_FILTER_DISABLED == false) { // Liberty Change
             if (JAXRSUtils.runContainerRequestFilters(providerFactory, message, true, null)) {
                 return;
             }
@@ -169,7 +169,7 @@ public class JAXRSInInterceptor extends AbstractPhaseInterceptor<Message> {
                 message.put(Message.ACCEPT_CONTENT_TYPE, acceptTypes);
             }
         }
-        List<MediaType> acceptContentTypes = null;
+        final List<MediaType> acceptContentTypes;
         try {
             acceptContentTypes = JAXRSUtils.sortMediaTypes(acceptTypes, JAXRSUtils.MEDIA_TYPE_Q_PARAM);
         } catch (IllegalArgumentException ex) {
@@ -183,9 +183,10 @@ public class JAXRSInInterceptor extends AbstractPhaseInterceptor<Message> {
         //1. Matching target resource class
         List<ClassResourceInfo> resources = JAXRSUtils.getRootResources(message);
 
+        // Liberty change Start
         LibertyJaxRsResourceMethodCache resourceMethodCache = exchange.getBus().getExtension(LibertyJaxRsResourceMethodCache.class);
 
-        MultivaluedMap<String, String> matchedValues = null; // Liberty change
+        MultivaluedMap<String, String> matchedValues = null; 
 
         OperationResourceInfo ori = null;
 
@@ -227,10 +228,11 @@ public class JAXRSInInterceptor extends AbstractPhaseInterceptor<Message> {
             Tr.debug(tc, "shouldFind = " + shouldFind);
         }
         if (shouldFind == true) {
-            matchedValues = new MetadataMap<>(); // Liberty change
+            matchedValues = new MetadataMap<>(); 
 
             Map<ClassResourceInfo, MultivaluedMap<String, String>> matchedResources = JAXRSUtils.selectResourceClass(resources, rawPath, message);
 
+        // Liberty change End
         if (matchedResources == null) {
             org.apache.cxf.common.i18n.Message errorMsg =
                 new org.apache.cxf.common.i18n.Message("NO_ROOT_EXC",
@@ -267,7 +269,7 @@ public class JAXRSInInterceptor extends AbstractPhaseInterceptor<Message> {
             }
             throw ex;
         }
-            if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
+            if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) { // Liberty Change Start
                 Tr.debug(tc, "Request path is: " + rawPath);
                 Tr.debug(tc, "Request HTTP method is: " + httpMethod);
                 Tr.debug(tc, "Request contentType is: " + requestContentType);
@@ -276,7 +278,7 @@ public class JAXRSInInterceptor extends AbstractPhaseInterceptor<Message> {
             }
         }
         // Global and name-bound post-match request filters
-        if (JaxRsConstants.JAXRS_CONTAINER_FILTER_DISABLED == false) {
+        if (JaxRsConstants.JAXRS_CONTAINER_FILTER_DISABLED == false) { // Liberty Change End
             if (!ori.isSubResourceLocator()
                 && JAXRSUtils.runContainerRequestFilters(providerFactory,
                                                          message,
@@ -315,7 +317,13 @@ public class JAXRSInInterceptor extends AbstractPhaseInterceptor<Message> {
         exchange.put(JAXRSUtils.ROOT_RESOURCE_CLASS, cri);
         message.put(RESOURCE_METHOD, ori.getMethodToInvoke());
         message.put(URITemplate.TEMPLATE_PARAMETERS, values);
-        message.put(URITemplate.URI_TEMPLATE, JAXRSUtils.getUriTemplate(message, cri, ori));
+        
+        
+        String uriTemplate = JAXRSUtils.getUriTemplate(message, cri, ori);
+        message.put(URITemplate.URI_TEMPLATE, uriTemplate);
+        if (HttpUtils.isHttpRequest(message)) {
+            HttpUtils.setHttpRequestURI(message, uriTemplate);
+        }
 
         String plainOperationName = ori.getMethodToInvoke().getName();
         if (numberOfResources > 1) {

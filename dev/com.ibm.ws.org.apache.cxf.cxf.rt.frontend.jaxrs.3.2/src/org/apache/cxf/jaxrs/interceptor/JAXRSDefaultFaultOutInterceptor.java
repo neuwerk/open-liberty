@@ -26,6 +26,8 @@ import javax.ws.rs.core.Response;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.w3c.dom.Node;
+
 import org.apache.cxf.common.i18n.BundleUtils;
 import org.apache.cxf.common.util.PropertyUtils;
 import org.apache.cxf.helpers.DOMUtils;
@@ -40,7 +42,6 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageContentsList;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.staxutils.StaxUtils;
-import org.w3c.dom.Node;
 
 import com.ibm.ws.ffdc.annotation.FFDCIgnore;
 
@@ -56,8 +57,8 @@ public class JAXRSDefaultFaultOutInterceptor extends AbstractOutDatabindingInter
         super(phase);
     }
 
-    @Override
-    @FFDCIgnore(Exception.class)
+    @Override // Liberty Change
+    @FFDCIgnore(Exception.class) // Liberty Change
     public void handleMessage(Message message) throws Fault {
         if (PropertyUtils.isTrue(message.getExchange().get(JAXRSUtils.SECOND_JAXRS_EXCEPTION))) {
             return;
@@ -140,5 +141,6 @@ public class JAXRSDefaultFaultOutInterceptor extends AbstractOutDatabindingInter
     protected boolean mustPropogateException(Message m) {
         return Boolean.TRUE.equals(m.getExchange().get(Message.PROPOGATE_EXCEPTION));
     }
+
 
 }

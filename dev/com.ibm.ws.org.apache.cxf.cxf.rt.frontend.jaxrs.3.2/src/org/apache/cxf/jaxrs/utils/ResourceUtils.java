@@ -148,7 +148,7 @@ public final class ResourceUtils {
         return findPostConstructMethod(c, null);
     }
 
-    public static Method findPostConstructMethod(final Class<?> c, String name) {
+    public static Method findPostConstructMethod(final Class<?> c, String name) { // Liberty Change
         if (Object.class == c || null == c) {
             return null;
         }
@@ -331,17 +331,52 @@ public final class ResourceUtils {
         MethodDispatcher md = new MethodDispatcher();
         Class<?> serviceClass = cri.getServiceClass();
 
+        final Map<Method, Method> annotatedMethods = new HashMap<>();
+
         for (Method m : serviceClass.getMethods()) {
-
-            Method annotatedMethod = AnnotationUtils.getAnnotatedMethod(serviceClass, m);
-
-            String httpMethod = AnnotationUtils.getHttpMethodValue(annotatedMethod);
-            Path path = AnnotationUtils.getMethodAnnotation(annotatedMethod, Path.class);
-
-            if (httpMethod != null || path != null) {
-                if (!checkAsyncResponse(annotatedMethod)) {
-                    continue;
+            if (!m.isBridge() && !m.isSynthetic()) {
+                //do real methods first
+                Method annotatedMethod = AnnotationUtils.getAnnotatedMethod(serviceClass, m);
+                if (!annotatedMethods.containsKey(annotatedMethod)) {
+                    evaluateResourceMethod(cri, enableStatic, md, m, annotatedMethod);
+                    annotatedMethods.put(annotatedMethod, m);
                 }
+            }
+        }
+        for (Method m : serviceClass.getMethods()) {
+            if (m.isBridge() || m.isSynthetic()) {
+                //if a bridge/synthetic method isn't already mapped to something, go ahead and do it
+                Method annotatedMethod = AnnotationUtils.getAnnotatedMethod(serviceClass, m);
+                if (!annotatedMethods.containsKey(annotatedMethod)) {
+                    evaluateResourceMethod(cri, enableStatic, md, m, annotatedMethod);
+                    annotatedMethods.put(annotatedMethod, m);
+                } else {
+                    // Certain synthetic / bridge methods could be quite useful to handle
+                    // methods with co-variant return types, especially when used with client proxies,
+                    // see please: https://blogs.oracle.com/sundararajan/covariant-return-types-in-java
+                    bindResourceMethod(md, m, annotatedMethods.get(annotatedMethod));
+                }
+            }
+        }
+        cri.setMethodDispatcher(md);
+    }
+    
+    private static void bindResourceMethod(MethodDispatcher md, Method m, Method bound) {
+        final OperationResourceInfo ori = md.getOperationResourceInfo(bound);
+        if (ori != null && !ori.getMethodToInvoke().equals(m)) {
+            md.bind(ori, bound, m);
+        }
+    }
+
+    private static void evaluateResourceMethod(ClassResourceInfo cri, boolean enableStatic, MethodDispatcher md,
+                                               Method m, Method annotatedMethod) {
+        String httpMethod = AnnotationUtils.getHttpMethodValue(annotatedMethod);
+        Path path = AnnotationUtils.getMethodAnnotation(annotatedMethod, Path.class);
+
+        if (httpMethod != null || path != null) {
+            if (!checkAsyncResponse(annotatedMethod)) {
+                return;
+            }
 
                 md.bind(createOperationInfo(m, annotatedMethod, cri, path, httpMethod), m);
                 if (httpMethod == null) {
@@ -359,16 +394,14 @@ public final class ResourceUtils {
                                                                cri.getBus());
                         }
 
-                        if (subCri != null) {
-                            cri.addSubClassResourceInfo(subCri);
-                        }
+                    if (subCri != null) {
+                        cri.addSubClassResourceInfo(subCri);
                     }
                 }
-            } else {
-                reportInvalidResourceMethod(m, NOT_RESOURCE_METHOD_MESSAGE_ID, Level.FINE);
             }
+        } else {
+            reportInvalidResourceMethod(m, NOT_RESOURCE_METHOD_MESSAGE_ID, Level.FINE);
         }
-        cri.setMethodDispatcher(md);
     }
 
     private static void reportInvalidResourceMethod(Method m, String messageId, Level logLevel) {
@@ -437,7 +470,7 @@ public final class ResourceUtils {
         }
         Collections.sort(cs, new Comparator<Constructor<?>>() {
 
-            @Override
+            @Override // Liberty Change start
             public int compare(Constructor<?> c1, Constructor<?> c2) {
                 int p1 = c1.getParameterTypes().length;
                 int p2 = c2.getParameterTypes().length;
@@ -554,7 +587,7 @@ public final class ResourceUtils {
         return ori;
     }
     
-// start Liberty change    
+	// Start Liberty change    
     private static String getClassNameandPath (String className, Path path) {
         if (path == null) {            
             return getClassNameandPath(className, "/");
@@ -579,7 +612,7 @@ public final class ResourceUtils {
 
         return sb.toString();
     }
-// end Liberty change
+	// End Liberty change
     
     private static boolean checkMethodDispatcher(ClassResourceInfo cr) {
         if (cr.getMethodDispatcher().getOperationResourceInfos().isEmpty()) {
@@ -618,14 +651,15 @@ public final class ResourceUtils {
         return url == null ? null : url.openStream();
     }
 
-    public static URL getResourceURL(final String loc, final Bus bus) throws IOException {
-        URL url = null;
+    public static URL getResourceURL(final String loc, final Bus bus) throws IOException { // Liberty Change - Add final
+        URL url;
         if (loc.startsWith(CLASSPATH_PREFIX)) {
             String path = loc.substring(CLASSPATH_PREFIX.length());
             url = ResourceUtils.getClasspathResourceURL(path, ResourceUtils.class, bus);
         } else {
             try {
-                url = AccessController.doPrivileged(new PrivilegedExceptionAction<URL>() { // Liberty change - added doPriv
+			// Liberty Change Start
+                url = AccessController.doPrivileged(new PrivilegedExceptionAction<URL>() { 
 
                     @Override
                     public URL run() throws MalformedURLException {
@@ -649,6 +683,7 @@ public final class ResourceUtils {
                 Throwable t = pae.getException();
                 throw t instanceof IOException ? (IOException) t : new IOException(t);
             }
+			// Liberty Change End
 
         }
         if (url == null) {
@@ -679,7 +714,7 @@ public final class ResourceUtils {
 
     public static Properties loadProperties(String propertiesLocation, Bus bus) throws IOException {
         Properties props = new Properties();
-        InputStream is = getResourceStream(propertiesLocation, bus);
+        InputStream is = getResourceStream(propertiesLocation, bus); // Liberty Change
         props.load(is);
         return props;
     }

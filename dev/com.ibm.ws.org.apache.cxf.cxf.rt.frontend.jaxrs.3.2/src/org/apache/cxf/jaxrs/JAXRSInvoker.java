@@ -84,7 +84,7 @@ public class JAXRSInvoker extends AbstractInvoker {
     public JAXRSInvoker() {
     }
 
-    @FFDCIgnore({Throwable.class, WebApplicationException.class})
+    @FFDCIgnore({Throwable.class, WebApplicationException.class}) // Liberty Change
     public Object invoke(Exchange exchange, Object request) {
         MessageContentsList responseList = checkExchangeForResponse(exchange);
         if (responseList != null) {
@@ -149,7 +149,7 @@ public class JAXRSInvoker extends AbstractInvoker {
         return new MessageContentsList(asyncObj);
     }
 
-    @FFDCIgnore(Fault.class)
+    @FFDCIgnore(Fault.class) // Liberty Change
     private Object handleAsyncFault(Exchange exchange, AsyncResponseImpl ar, Throwable t) {
         try {
             return handleFault(new Fault(t), exchange.getInMessage(), null, null);
@@ -168,7 +168,7 @@ public class JAXRSInvoker extends AbstractInvoker {
         exchange.put(JAXRSUtils.ROOT_PROVIDER, provider);
     }
 
-    @FFDCIgnore({Fault.class, IOException.class, WebApplicationException.class})
+    @FFDCIgnore({Fault.class, IOException.class, WebApplicationException.class}) // Liberty Change
     @SuppressWarnings("unchecked")
     public Object invoke(Exchange exchange, Object request, Object resourceObject) {
 
@@ -251,7 +251,7 @@ public class JAXRSInvoker extends AbstractInvoker {
 
                 result = checkSubResultObject(result, subResourcePath);
 
-                Class<?> subResponseType = null;
+                final Class<?> subResponseType;
                 if (result.getClass() == Class.class) {
                     ResourceContext rc = new ResourceContextImpl(inMessage, ori);
                     result = rc.getResource((Class<?>)result);
@@ -380,7 +380,7 @@ public class JAXRSInvoker extends AbstractInvoker {
     protected Method getMethodToInvoke(ClassResourceInfo cri, OperationResourceInfo ori, Object resourceObject) {
         Method resourceMethod = cri.getMethodDispatcher().getMethod(ori);
 
-        Method methodToInvoke = null;
+        Method methodToInvoke;
         if (Proxy.class.isInstance(resourceObject)) {
             methodToInvoke = cri.getMethodDispatcher().getProxyMethod(resourceMethod);
             if (methodToInvoke == null) {
@@ -513,4 +513,3 @@ public class JAXRSInvoker extends AbstractInvoker {
 
 
 }
-

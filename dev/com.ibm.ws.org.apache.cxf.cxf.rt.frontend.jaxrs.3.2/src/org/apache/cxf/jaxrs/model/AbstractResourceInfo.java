@@ -54,16 +54,17 @@ import com.ibm.websphere.ras.TraceComponent;
 import com.ibm.ws.ffdc.annotation.FFDCIgnore;
 
 public abstract class AbstractResourceInfo {
-    private static final TraceComponent tc = Tr.register(AbstractResourceInfo.class);
+    private static final TraceComponent tc = Tr.register(AbstractResourceInfo.class); // Liberty Change
     //Liberty code change start defect 169218
     //Property name of the set used to store the ThreadLocalProxy objects in bus
     public static final String PROXY_SET = "proxy-set";
     //Liberty code change end
     public static final String CONSTRUCTOR_PROXY_MAP = "jaxrs-constructor-proxy-map";
-    //private static final Logger LOG = LogUtils.getL7dLogger(AbstractResourceInfo.class);
+    //private static final Logger LOG = LogUtils.getL7dLogger(AbstractResourceInfo.class); // Liberty Change
     private static final String FIELD_PROXY_MAP = "jaxrs-field-proxy-map";
     private static final String SETTER_PROXY_MAP = "jaxrs-setter-proxy-map";
 
+    // Liberty Code Change Sart
     private static final Set<String> STANDARD_CONTEXT_CLASSES = new HashSet<String>();
     static {
         // JAX-RS 1.0-1.1
@@ -82,6 +83,7 @@ public abstract class AbstractResourceInfo {
         STANDARD_CONTEXT_CLASSES.add("javax.ws.rs.container.ResourceInfo");
         STANDARD_CONTEXT_CLASSES.add("javax.ws.rs.core.Configuration");
     }
+	// Liberty Code Change End
 
     protected boolean root;
     protected Class<?> resourceClass;
@@ -89,7 +91,7 @@ public abstract class AbstractResourceInfo {
 
     private Map<Class<?>, List<Field>> contextFields;
     private Map<Class<?>, Map<Class<?>, Method>> contextMethods;
-    private final Bus bus;
+    private final Bus bus; // Liberty Change
     private boolean constructorProxiesAvailable;
     private boolean contextsAvailable;
 
@@ -216,12 +218,12 @@ public abstract class AbstractResourceInfo {
         if (constructorProxies != null) {
             Map<Class<?>, Map<Class<?>, ThreadLocalProxy<?>>> proxies = getConstructorProxyMap();
             proxies.put(serviceClass, constructorProxies);
-            //Liberty code change start defect 169218
-            //Add the constructorProxies to the set
+            // Liberty code change start defect 169218
+            // Add the constructorProxies to the set
             ThreadLocalProxyCopyOnWriteArraySet<ThreadLocalProxy<?>> proxySet = getProxySet();
             proxySet.addAll(constructorProxies.values());
 
-            //Liberty code change end
+            // Liberty code change end
             constructorProxiesAvailable = true;
         }
 
@@ -317,7 +319,7 @@ public abstract class AbstractResourceInfo {
         return InjectionUtils.createThreadLocalProxy(f.getType());
     }
 
-    @FFDCIgnore(Throwable.class)
+    @FFDCIgnore(Throwable.class) // Liberty Change
     private static ThreadLocalProxy<?> getMethodThreadLocalProxy(Method m, Object provider) {
         if (provider != null) {
             Object proxy = null;
@@ -334,7 +336,7 @@ public abstract class AbstractResourceInfo {
                     InjectionUtils.injectThroughMethod(provider, m, proxy);
                 }
             }
-            return (ThreadLocalProxy<?>) proxy;
+            return (ThreadLocalProxy<?>)proxy;
         }
         return InjectionUtils.createThreadLocalProxy(m.getParameterTypes()[0]);
     }
@@ -348,15 +350,15 @@ public abstract class AbstractResourceInfo {
             );
         }
 
-        Object property = null;
-        //synchronized (bus) {
+        Object property;
+        //synchronized (bus) { // Liberty Change
         property = bus.getProperty(prop);
         if (property == null && create) {
             Map<Class<?>, Map<T, ThreadLocalProxy<?>>> map = new ConcurrentHashMap<>(2);
             bus.setProperty(prop, map);
             property = map;
         }
-        //}
+        //} // Liberty Change
         return (Map<Class<?>, Map<T, ThreadLocalProxy<?>>>) property;
     }
 
@@ -458,18 +460,18 @@ public abstract class AbstractResourceInfo {
     }
 
     private void checkContextClass(Class<?> type) {
-        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
+        if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) { // Liberty Change
             if (!STANDARD_CONTEXT_CLASSES.contains(type.getName())) {
-                Tr.debug(tc, "Injecting a custom context " + type.getName()
+                Tr.debug(tc, "Injecting a custom context " + type.getName() // Liberty Change
                              + ", ContextProvider is required for this type");
             }
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // Liberty Change
     public Map<Class<?>, Method> getContextMethods() {
         Map<Class<?>, Method> methods = contextMethods == null ? null : contextMethods.get(getServiceClass());
-        return methods == null ? Collections.EMPTY_MAP : Collections.unmodifiableMap(methods);
+        return methods == null ? Collections.EMPTY_MAP : Collections.unmodifiableMap(methods); // Liberty Change
     }
 
     private void addContextMethod(Class<?> contextClass, Method m, Object provider) {
@@ -477,7 +479,7 @@ public abstract class AbstractResourceInfo {
             contextMethods = new HashMap<>();
         }
         addToMap(contextMethods, contextClass, m);
-        if (m.getParameterTypes()[0] != Application.class) {
+        if (m.getParameterTypes()[0] != Application.class) { // Liberty Change
             //Liberty code change start defect 169218
             //Add the MethodProxy to the set
             ThreadLocalProxy<?> proxy = getMethodThreadLocalProxy(m, provider);
@@ -518,15 +520,15 @@ public abstract class AbstractResourceInfo {
         if (bus != null) {
             Object property = bus.getProperty(FIELD_PROXY_MAP);
             if (property != null) {
-                ((Map) property).clear();
+                ((Map)property).clear();
             }
             property = bus.getProperty(SETTER_PROXY_MAP);
             if (property != null) {
-                ((Map) property).clear();
+                ((Map)property).clear();
             }
             property = bus.getProperty(CONSTRUCTOR_PROXY_MAP);
             if (property != null) {
-                ((Map) property).clear();
+                ((Map)property).clear();
             }
         }
     }
