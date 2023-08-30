@@ -21,8 +21,8 @@ dependencies {
                'com.ibm.ws.org.apache.yoko:yoko-spec-corba:1.5.+',
                'javax.activation:activation:1.1',
                'javax.xml.bind:jaxb-api:2.2.+',
-               'com.sun.xml.bind:jaxb-core:2.2.+',
-               'com.sun.xml.bind:jaxb-impl:2.2.+'
+               'com.sun.xml.bind:jaxb-core:2.3.+',
+               'com.sun.xml.bind:jaxb-impl:2.3.+'
   // restConnector
   requiredLibs(project(':com.ibm.ws.jmx.connector.client.restConnector')) {
     transitive = false
